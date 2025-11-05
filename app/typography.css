@@ -1,0 +1,70 @@
+/* Fluid Typography System - Source Design System */
+
+/* Hero Typography - Ultra Large */
+.text-hero {
+  font-size: clamp(3rem, 8vw, 8rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.text-hero-sub {
+  font-size: clamp(2rem, 5vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Section Headings */
+.text-section-title {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.text-section-subtitle {
+  font-size: clamp(1.25rem, 3vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* Body Text */
+.text-body-large {
+  font-size: clamp(1.125rem, 1.5vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.text-body {
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Display Numbers */
+.text-display-number {
+  font-size: clamp(4rem, 10vw, 12rem);
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+/* Service Numbers (01, 02, etc) */
+.text-service-number {
+  font-size: clamp(6rem, 12vw, 16rem);
+  font-weight: 200;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  opacity: 0.1;
+}
+
+/* Overline/Label */
+.text-overline {
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
