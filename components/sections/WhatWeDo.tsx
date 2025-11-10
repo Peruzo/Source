@@ -2,6 +2,7 @@
 
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const services = [
@@ -17,6 +18,7 @@ const services = [
       'SEO-optimering',
     ],
     imagePlaceholder: 'E-commerce UI',
+    imageSrc: '/bild.png',
     bgColor: 'from-white to-beige-light',
   },
   {
@@ -174,14 +176,27 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass rounded-3xl p-6 md:p-8 aspect-[4/3] flex items-center justify-center border border-white/20 overflow-hidden">
+                      <div className="glass relative rounded-3xl p-6 md:p-8 aspect-[4/3] flex items-center justify-center border border-white/20 overflow-hidden">
                         {/* Placeholder content - replace with actual screenshots */}
-                        <div className="text-center">
-                          <p className="text-6xl md:text-8xl font-bold text-white/10 mb-4">
-                            {service.number}
-                          </p>
-                          <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
-                        </div>
+                        {service.imageSrc ? (
+                          <div className="absolute inset-0">
+                            <Image
+                              src={service.imageSrc}
+                              alt={service.title}
+                              fill
+                              className="object-cover"
+                              sizes="(min-width: 1024px) 480px, 100vw"
+                              priority={index === 0}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <p className="text-6xl md:text-8xl font-bold text-white/10 mb-4">
+                              {service.number}
+                            </p>
+                            <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
+                          </div>
+                        )}
 
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
