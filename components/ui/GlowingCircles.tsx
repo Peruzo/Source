@@ -42,14 +42,17 @@ export function GlowingCircles() {
             transform: 'translate(-50%, -50%)',
           }}
           initial={{ scale: 0, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{
-            delay: circle.delay + 1,
-            duration: 0.5,
-            type: 'spring',
-            stiffness: 200,
+          whileInView={{
+            scale: 1,
+            opacity: 1,
+            transition: {
+              delay: circle.delay + 1,
+              duration: 0.5,
+              type: 'spring',
+              stiffness: 200,
+            },
           }}
+          viewport={{ once: true }}
           animate={{
             y: [0, -10, 0],
             scale: [1, 1.1, 1],

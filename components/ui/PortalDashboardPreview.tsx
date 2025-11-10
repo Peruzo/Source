@@ -3,7 +3,7 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface MetricData {
   label: string;
@@ -19,7 +19,8 @@ interface ActivityItem {
 }
 
 export function PortalDashboardPreview() {
-  const { ref, inView } = useInView({ once: true, margin: '0px' });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { once: true, margin: '0px' });
   const [selectedMetric, setSelectedMetric] = useState<number | null>(null);
   const [selectedBar, setSelectedBar] = useState<number | null>(null);
 
@@ -43,9 +44,9 @@ export function PortalDashboardPreview() {
 
   return (
     <motion.div
-      ref={ref}
+      ref={containerRef}
       initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       whileHover={{ scale: 1.01 }}
       className="portal-preview-container relative"

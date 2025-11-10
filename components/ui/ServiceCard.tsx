@@ -11,6 +11,7 @@ interface ServiceCardProps {
   color: 'analytics' | 'payments' | 'ecommerce' | 'support';
   delay?: number;
   span?: string; // 'md:col-span-2' etc
+  index?: number;
 }
 
 const serviceColors = {
@@ -36,8 +37,9 @@ const serviceColors = {
   },
 };
 
-export function ServiceCard({ title, description, features, color, delay = 0, span }: ServiceCardProps) {
+export function ServiceCard({ title, description, features, color, delay, span, index }: ServiceCardProps) {
   const colors = serviceColors[color];
+  const computedDelay = delay ?? (index !== undefined ? index * 0.15 : 0);
 
   return (
     <motion.div
@@ -45,7 +47,7 @@ export function ServiceCard({ title, description, features, color, delay = 0, sp
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 0.6, delay, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.6, delay: computedDelay, ease: [0.4, 0, 0.2, 1] }}
     >
       <MagneticButton strength={0.2}>
         <GlassCard
