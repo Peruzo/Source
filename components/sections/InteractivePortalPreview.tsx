@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { MagneticButton } from '@/components/ui/MagneticButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Container } from '@/components/ui/Container';
@@ -74,6 +74,8 @@ const services = [
 
 export function InteractivePortalPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoFinished, setVideoFinished] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start end', 'end start'],
@@ -81,15 +83,66 @@ export function InteractivePortalPreview() {
 
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    const handleEnded = () => {
+      setVideoFinished(true);
+    };
+
+    const handleCanPlay = () => {
+      video.play().catch(() => {
+        // Autoplay blocked, reveal content immediately
+        setVideoFinished(true);
+      });
+    };
+
+    const handleError = () => {
+      setVideoFinished(true);
+    };
+
+    video.addEventListener('ended', handleEnded);
+    video.addEventListener('canplay', handleCanPlay, { once: true });
+    video.addEventListener('error', handleError);
+
+    // In case the video metadata is already loaded
+    if (video.readyState >= 3) {
+      handleCanPlay();
+    }
+
+    return () => {
+      video.removeEventListener('ended', handleEnded);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('error', handleError);
+    };
+  }, []);
+
   return (
     <section
       ref={containerRef}
       className="relative min-h-screen bg-black text-white py-16 md:py-20 lg:py-32 overflow-hidden"
       aria-label="Source kundportal preview"
     >
-      {/* Background effects */}
-      <div className="absolute inset-0 gradient-mesh opacity-30" />
-      
+      {/* Background video */}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 h-full w-full object-cover"
+        src="/Raket.mp4"
+        muted
+        playsInline
+        preload="auto"
+      />
+
+      {/* Background gradient overlay */}
+      <div
+        className={`absolute inset-0 bg-gradient-to-br from-black/60 via-black/65 to-black/70 transition-opacity duration-700 ${
+          videoFinished ? 'opacity-90' : 'opacity-70'
+        }`}
+      />
+
       {/* Animated glow spots */}
       <motion.div
         animate={{
@@ -117,73 +170,95 @@ export function InteractivePortalPreview() {
         className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-teal/10 rounded-full blur-3xl"
       />
 
-      <Container className="relative z-10">
-        {/* Hero/Slogan section */}
-        <FadeIn className="text-center mb-16 md:mb-20">
-          <motion.h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
-            style={{ opacity }}
-          >
-            Rooted in{' '}
-            <span className="text-teal">Data</span>
-            , Growing with You
-          </motion.h2>
-          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
-            En komplett plattform för att växa online. Verkligen.
-          </p>
-        </FadeIn>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 md:mb-20">
-          {stats.map((stat, i) => (
-            <MagneticButton key={i} strength={0.15}>
-              <GlassCard className="text-center p-6 md:p-8">
-                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-teal mb-2">
-                  <AnimatedCounter end={stat.value} suffix={stat.suffix} />
-                </div>
-                <p className="text-sm md:text-base text-gray-300">{stat.label}</p>
-              </GlassCard>
-            </MagneticButton>
-          ))}
-        </div>
-
-        {/* Bento Grid Services */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16 md:mb-20">
-          {services.map((service) => (
-            <ServiceCard
-              key={service.title}
-              title={service.title}
-              description={service.description}
-              features={service.features}
-              color={service.color}
-              delay={service.delay}
-              span={service.span}
-            />
-          ))}
-        </div>
-
-        {/* CTA */}
-        <FadeIn delay={0.5} className="text-center">
+      <AnimatePresence>
+        {videoFinished && (
           <motion.div
+            key="content"
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+            className="relative z-10"
           >
-            <h3 className="text-2xl md:text-3xl font-bold mb-6">
-              Redo att växa online?
-            </h3>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <AnimatedButton href="/kontakt" variant="primary" size="lg">
-                Boka en demo
-              </AnimatedButton>
-              <AnimatedButton href="/tjanster" variant="secondary" size="lg">
-                Se alla tjänster
-              </AnimatedButton>
-            </div>
+            <Container>
+              {/* Hero/Slogan section */}
+              <FadeIn className="text-center mb-16 md:mb-20">
+                <motion.h2 
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+                  style={{ opacity }}
+                >
+                  Rooted in{' '}
+                  <span className="text-teal">Data</span>
+                  , Growing with You
+                </motion.h2>
+                <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+                  En komplett plattform för att växa online. Verkligen.
+                </p>
+              </FadeIn>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 md:mb-20">
+                {stats.map((stat, i) => (
+                  <MagneticButton key={i} strength={0.15}>
+                    <GlassCard className="text-center p-6 md:p-8 bg-black/60 backdrop-blur">
+                      <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-teal mb-2">
+                        <AnimatedCounter end={stat.value} suffix={stat.suffix} />
+                      </div>
+                      <p className="text-sm md:text-base text-gray-300">{stat.label}</p>
+                    </GlassCard>
+                  </MagneticButton>
+                ))}
+              </div>
+
+              {/* Bento Grid Services */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16 md:mb-20">
+                {services.map((service, index) => (
+                  <ServiceCard
+                    key={service.title}
+                    title={service.title}
+                    description={service.description}
+                    features={service.features}
+                    color={service.color}
+                    delay={service.delay}
+                    span={service.span}
+                    index={index}
+                  />
+                ))}
+              </div>
+
+              {/* CTA */}
+              <FadeIn delay={0.5} className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                >
+                  <h3 className="text-2xl md:text-3xl font-bold mb-6">
+                    Redo att växa online?
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <AnimatedButton href="/kontakt" variant="primary" size="lg">
+                      Boka en demo
+                    </AnimatedButton>
+                    <AnimatedButton href="/tjanster" variant="secondary" size="lg">
+                      Se alla tjänster
+                    </AnimatedButton>
+                  </div>
+                </motion.div>
+              </FadeIn>
+            </Container>
           </motion.div>
-        </FadeIn>
-      </Container>
+        )}
+      </AnimatePresence>
+
+      {!videoFinished && (
+        <div className="relative z-10 flex items-center justify-center h-full">
+          <span className="text-lg md:text-xl text-white/70 tracking-wide uppercase">
+            Laddar upplevelse …
+          </span>
+        </div>
+      )}
     </section>
   );
 }
