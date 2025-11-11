@@ -276,11 +276,16 @@ export function InteractivePortalPreview() {
         )}
       </AnimatePresence>
 
-      {!videoFinished && !videoStarted && (
+      {!videoFinished && (
         <div className="relative z-10 flex items-center justify-center h-full">
-          <span className="text-lg md:text-xl text-white/70 tracking-wide uppercase">
-            Laddar upplevelse …
-          </span>
+          <div className="bg-black/50 backdrop-blur-sm px-6 py-4 rounded-full border border-white/10">
+            <p className="text-sm md:text-base text-white/80 tracking-wide uppercase text-center">
+              Laddar upplevelse
+            </p>
+            <p className="text-lg md:text-2xl font-semibold text-white text-center">
+              “We grow with you”
+            </p>
+          </div>
         </div>
       )}
     </section>
