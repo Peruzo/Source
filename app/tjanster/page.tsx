@@ -95,12 +95,68 @@ const services = [
 
 export default function ServicesPage() {
   const [primaryService, ...otherServices] = services;
+  const heroSectionRef = useRef<HTMLElement | null>(null);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [hasPlayedHeroVideo, setHasPlayedHeroVideo] = useState(false);
   const ecommerceSectionRef = useRef<HTMLElement | null>(null);
   const ecommerceVideoRef = useRef<HTMLVideoElement | null>(null);
   const [hasPlayedEcommerceVideo, setHasPlayedEcommerceVideo] = useState(false);
   const logisticsSectionRef = useRef<HTMLElement | null>(null);
   const logisticsVideoRef = useRef<HTMLVideoElement | null>(null);
   const [hasPlayedLogisticsVideo, setHasPlayedLogisticsVideo] = useState(false);
+
+  useEffect(() => {
+    const sectionEl = heroSectionRef.current;
+    const videoEl = heroVideoRef.current;
+
+    if (!sectionEl || !videoEl || hasPlayedHeroVideo) {
+      return;
+    }
+
+    const handleEnded = () => {
+      videoEl.pause();
+      if (!Number.isNaN(videoEl.duration)) {
+        videoEl.currentTime = videoEl.duration;
+      }
+    };
+
+    videoEl.loop = false;
+    videoEl.addEventListener('ended', handleEnded);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasPlayedHeroVideo) {
+            videoEl.currentTime = 0;
+            const playPromise = videoEl.play();
+
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  setHasPlayedHeroVideo(true);
+                  observer.disconnect();
+                })
+                .catch(() => {
+                  setHasPlayedHeroVideo(true);
+                  observer.disconnect();
+                });
+            } else {
+              setHasPlayedHeroVideo(true);
+              observer.disconnect();
+            }
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(sectionEl);
+
+    return () => {
+      observer.disconnect();
+      videoEl.removeEventListener('ended', handleEnded);
+    };
+  }, [hasPlayedHeroVideo]);
 
   useEffect(() => {
     const sectionEl = ecommerceSectionRef.current;
@@ -150,6 +206,16 @@ export default function ServicesPage() {
       return;
     }
 
+    const handleEnded = () => {
+      videoEl.pause();
+      if (!Number.isNaN(videoEl.duration)) {
+        videoEl.currentTime = videoEl.duration;
+      }
+    };
+
+    videoEl.loop = false;
+    videoEl.addEventListener('ended', handleEnded);
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -179,18 +245,23 @@ export default function ServicesPage() {
 
     observer.observe(sectionEl);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      videoEl.removeEventListener('ended', handleEnded);
+    };
   }, [hasPlayedLogisticsVideo]);
 
   return (
     <>
       {/* Hero */}
-      <section className="relative min-h-[100svh] overflow-hidden bg-black text-white">
+      <section
+        ref={heroSectionRef}
+        className="relative min-h-[100svh] overflow-hidden bg-black text-white"
+      >
         <video
+          ref={heroVideoRef}
           src="/social_u6293379286_create_a_video_of_a_lady_having_her_head_out_of_t_fa3cf5e8-c008-4ece-8889-13e225e0a8ed_3.mp4"
-          autoPlay
           muted
-          loop
           playsInline
           preload="metadata"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center lg:object-right"
@@ -485,16 +556,14 @@ export default function ServicesPage() {
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: 'easeOut' }}
-                className="absolute inset-0"
+                className="absolute inset-0 flex items-center justify-center bg-black"
               >
                 <video
                   ref={logisticsVideoRef}
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className="max-h-full max-w-full object-contain"
                   src="/logistikvideo.mp4"
                   poster="/u6293379286_create_a_black_background_with_a_delivery_truck_t_28e332cb-4cb6-4f9d-a17d-f54645d753d4_3.png"
                   muted
-                  autoPlay
-                  loop
                   playsInline
                   preload="metadata"
                   controls={false}
