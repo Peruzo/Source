@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 
@@ -49,28 +50,39 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative py-24 md:py-32 lg:py-40 bg-gradient-to-br from-black via-black-secondary to-black-tertiary text-white overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal/5 rounded-full blur-3xl"></div>
-        
-        <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-            <div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                Vi finns här för att hjälpa företag växa.
-              </h1>
-              <p className="text-5xl md:text-6xl font-bold text-teal">
-                Verkligen.
-              </p>
-            </div>
-            <div className="aspect-square bg-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/10">
-              <div className="text-center">
-                <div className="w-32 h-32 bg-teal/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-4xl">🚀</span>
-                </div>
-                <p className="text-white/80 text-lg">Vi hjälper företag växa</p>
-              </div>
+      <section className="relative isolate min-h-screen overflow-hidden text-white">
+        <Image
+          src="/u6293379286_make_a_picture_of_two_people_from_behind_were_the_5f586b53-e006-4127-b94f-23fde9c403b1_3.png"
+          alt="Två personer blickar ut över horisonten"
+          fill
+          priority
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/60 to-black/10 sm:to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10"></div>
+
+        <Container className="h-full">
+          <div className="relative z-10 flex min-h-screen flex-col justify-center py-32">
+            <span className="text-sm font-semibold uppercase tracking-[0.4em] text-white/70">
+              Om oss
+            </span>
+            <h1 className="mt-6 text-4xl font-semibold leading-tight md:text-5xl lg:text-6xl">
+              Vi finns här för att hjälpa företag växa.
+              <span className="block text-white/90">Verkligen.</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-base text-white/80 md:text-lg">
+              Source ger dig rådgivning, insikter och verktyg för att skala smartare. Vi är det
+              dedikerade teamet som står vid din sida genom varje steg av tillväxtresan.
+            </p>
+            <div className="mt-10">
+              <Button
+                href="/kontakt"
+                size="lg"
+                variant="ghost"
+                className="!bg-white !text-black !border-white/60 !hover:bg-white/90 rounded-full shadow-lg shadow-black/20"
+              >
+                Boka ett möte
+              </Button>
             </div>
           </div>
         </Container>
