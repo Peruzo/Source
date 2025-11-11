@@ -1,11 +1,12 @@
 'use client';
 
-import { Metadata } from 'next';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
 const services = [
   {
@@ -93,6 +94,51 @@ const services = [
 ];
 
 export default function ServicesPage() {
+  const [primaryService, ...otherServices] = services;
+  const ecommerceSectionRef = useRef<HTMLElement | null>(null);
+  const ecommerceVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [hasPlayedEcommerceVideo, setHasPlayedEcommerceVideo] = useState(false);
+
+  useEffect(() => {
+    const sectionEl = ecommerceSectionRef.current;
+    const videoEl = ecommerceVideoRef.current;
+
+    if (!sectionEl || !videoEl || hasPlayedEcommerceVideo) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasPlayedEcommerceVideo) {
+            videoEl.currentTime = 0;
+            const playPromise = videoEl.play();
+
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  setHasPlayedEcommerceVideo(true);
+                  observer.disconnect();
+                })
+                .catch(() => {
+                  setHasPlayedEcommerceVideo(true);
+                  observer.disconnect();
+                });
+            } else {
+              setHasPlayedEcommerceVideo(true);
+              observer.disconnect();
+            }
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(sectionEl);
+
+    return () => observer.disconnect();
+  }, [hasPlayedEcommerceVideo]);
+
   return (
     <>
       {/* Hero */}
@@ -119,8 +165,421 @@ export default function ServicesPage() {
         </Container>
       </section>
 
+      {/* Design & Utveckling Highlight */}
+      {primaryService && (
+        <section
+          id={primaryService.id}
+          className="relative overflow-hidden pt-24 md:pt-32 pb-10 text-white"
+        >
+          <motion.div
+            initial={{ scale: 1.05, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+            className="absolute inset-0"
+          >
+            <Image
+              src="/u6293379286_create_a_close_up_picture_with_high_grafic_were_y_60a11c9e-1c40-467a-b49e-5c0625b3e7d7_0.png"
+              alt="Händer som arbetar på en laptop"
+              fill
+              priority
+              className="object-cover object-center"
+            />
+          </motion.div>
+
+          <Container>
+            <div className="relative z-10 flex flex-col items-center justify-between min-h-[820px] md:min-h-[940px]">
+              <div className="w-full max-w-2xl mx-auto space-y-7 text-center">
+                <motion.span
+                  initial={{ opacity: 0, y: -16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                  className="inline-flex items-center justify-center text-xs md:text-sm uppercase tracking-[0.4em] text-white/70"
+                >
+                  01 · DESIGN & UTVECKLING
+                </motion.span>
+
+                <motion.h2
+                  initial={{ opacity: 0, y: -20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight text-white"
+                >
+                  Design och Utveckling
+                </motion.h2>
+
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
+                  className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl mx-auto"
+                >
+                  {primaryService.intro}
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                  className="flex flex-wrap items-center justify-center gap-4"
+                >
+                  <AnimatedButton
+                    href="/kontakt"
+                    size="lg"
+                    className="!bg-teal !text-white !font-semibold !px-8 !py-3 !rounded-full !shadow-[0_18px_45px_-15px_rgba(0,191,166,0.55)] hover:!bg-teal-hover"
+                  >
+                    Boka en demo
+                  </AnimatedButton>
+                  <Link
+                    href="#design"
+                    className="text-sm md:text-base font-semibold text-white/70 hover:text-white transition-colors"
+                  >
+                    Visa alla funktioner →
+                  </Link>
+                </motion.div>
+
+                <motion.p
+                  initial={{ opacity: 0, y: -8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+                  className="text-sm md:text-base text-white/60"
+                >
+                  {primaryService.result}
+                </motion.p>
+              </div>
+
+              <div className="w-full flex justify-center mt-auto pb-4 md:pb-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
+                  className="relative w-full max-w-md"
+                >
+                  <div className="relative rounded-[36px] border border-white/25 bg-transparent p-10 text-center">
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60 mb-6">
+                      Vad som ingår
+                    </p>
+                    <ul className="space-y-4">
+                      {primaryService.included.map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-center justify-center gap-3 text-sm md:text-base text-white/85"
+                        >
+                          <span className="inline-block h-[6px] w-[6px] rounded-full bg-white/80"></span>
+                          <span className="leading-relaxed text-left">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </Container>
+        </section>
+      )}
+
       {/* Service Sections */}
-      {services.map((service, index) => {
+      {otherServices.map((service, index) => {
+        if (service.id === 'ecommerce') {
+          return (
+            <Fragment key={service.id}>
+              <section
+                id={service.id}
+                ref={ecommerceSectionRef}
+                className="relative overflow-hidden bg-gradient-to-br from-[#f7f8fb] via-white to-white py-24 md:py-32"
+              >
+                <Container>
+                  <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] items-center gap-16 lg:gap-20">
+                    <div className="space-y-8 max-w-xl">
+                      <motion.span
+                        initial={{ opacity: 0, y: -12 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-xs md:text-sm uppercase tracking-[0.4em] text-gray-500"
+                      >
+                        {service.number} · E-handel
+                      </motion.span>
+
+                      <motion.h2
+                        initial={{ opacity: 0, y: -20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, ease: 'easeOut' }}
+                        className="text-4xl md:text-5xl font-semibold leading-tight text-gray-900"
+                      >
+                        {service.title}
+                      </motion.h2>
+
+                      <motion.p
+                        initial={{ opacity: 0, y: -12 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
+                        className="text-lg md:text-xl text-gray-600 leading-relaxed"
+                      >
+                        {service.intro}
+                      </motion.p>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: -12 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                        className="pt-6"
+                      >
+                        <p className="text-xs uppercase tracking-[0.35em] text-gray-500">
+                          Vad ingår
+                        </p>
+                        <ul className="mt-6 space-y-3 text-base md:text-lg text-gray-700">
+                          {service.included.map((item) => (
+                            <li key={item} className="flex items-center gap-3">
+                              <span className="inline-block h-[6px] w-[6px] rounded-full bg-gray-900/70"></span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </motion.div>
+
+                      <motion.p
+                        initial={{ opacity: 0, y: -8 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+                        className="text-sm md:text-base text-gray-500"
+                      >
+                        {service.result}
+                      </motion.p>
+                    </div>
+
+                    <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                  className="relative flex w-full justify-center lg:justify-end"
+                >
+                  <div className="absolute -top-24 -right-10 h-80 w-80 rounded-full bg-teal/15 blur-3xl"></div>
+                  <div className="absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-indigo-200/20 blur-3xl"></div>
+                  <div className="relative w-full max-w-lg overflow-hidden rounded-[40px] border border-gray-200 bg-white shadow-[0_45px_120px_-60px_rgba(15,23,42,0.35)]">
+                    <video
+                      ref={ecommerceVideoRef}
+                      src="/ehnadelvideo.mp4"
+                      muted
+                      playsInline
+                      preload="metadata"
+                      controls={false}
+                      loop={false}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </motion.div>
+                </div>
+              </Container>
+            </section>
+
+            <section className="relative overflow-hidden py-28 md:py-36 bg-black text-white">
+              <motion.div
+                initial={{ scale: 1.05, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src="/u6293379286_create_a_black_background_with_a_delivery_truck_t_28e332cb-4cb6-4f9d-a17d-f54645d753d4_3.png"
+                  alt="Minimalistisk scen med lastbil"
+                  fill
+                  className="object-contain object-center bg-black"
+                  sizes="100vw"
+                  priority={false}
+                />
+              </motion.div>
+
+              <Container>
+                <div className="relative z-10 flex flex-col items-center text-center gap-8">
+                  <motion.span
+                    initial={{ opacity: 0, y: -10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                    className="inline-flex items-center gap-3 text-sm uppercase tracking-[0.2em] text-white/70"
+                  >
+                    Logistik
+                  </motion.span>
+
+                  <motion.h2
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7 }}
+                    className="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight"
+                  >
+                    Få en överblick över din logistik.
+                    <span className="block text-2xl md:text-3xl text-white/80 mt-4">
+                      Synka leveranser, lager och returer i realtid.
+                    </span>
+                  </motion.h2>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className="relative w-full max-w-xl pt-12"
+                  >
+                    <div className="relative mx-auto w-[260px] sm:w-[320px] rounded-[36px] bg-gradient-to-b from-[#1b1f27] via-black to-black border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.6)] p-8">
+                      <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48">
+                        <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_135deg,_#4f46e5_0deg,_#6366f1_220deg,_rgba(255,255,255,0.08)_220deg,_rgba(255,255,255,0.05)_360deg)]"></div>
+                        <div className="absolute inset-[14%] rounded-full bg-black flex flex-col items-center justify-center gap-1">
+                          <span className="text-xs uppercase tracking-wider text-white/60">
+                            Försäljning
+                          </span>
+                          <span className="text-2xl sm:text-3xl font-semibold text-white">
+                            25 200 kr
+                          </span>
+                          <span className="text-xs text-white/50">Januari</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-8 flex flex-col items-center text-white/70">
+                        <p className="text-xs uppercase tracking-[0.3em]">
+                          NÄSTA LEVERANS
+                        </p>
+                        <p className="mt-3 text-lg font-semibold text-white">
+                          ETA 23 minuter · Göteborg
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 flex justify-center">
+                      <div className="w-[360px] max-w-full h-12 rounded-[999px] bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.18)_0%,_rgba(255,255,255,0)_70%)] opacity-80"></div>
+                    </div>
+                  </motion.div>
+                </div>
+              </Container>
+            </section>
+
+            </Fragment>
+          );
+        }
+
+        if (service.id === 'payments') {
+          return (
+            <section
+              key={service.id}
+              id={service.id}
+              className="relative overflow-hidden py-32 md:py-36 text-white"
+            >
+              <motion.div
+                initial={{ scale: 1.05, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+                className="absolute inset-0"
+              >
+                <Image
+                  src="/u6293379286_create_a_picture_of_two_people_one_man_one_women__d9289ed4-880e-4a28-9b2e-2a190bdf96df_0.png"
+                  alt="Två personer som ler mot varandra"
+                  fill
+                  priority={false}
+                  className="object-cover"
+                />
+              </motion.div>
+              <div className="absolute inset-0 bg-black/25"></div>
+
+              <Container>
+                <div className="relative z-10 flex flex-col items-center text-center gap-8">
+                  <motion.span
+                    initial={{ opacity: 0, y: -12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                    className="text-xs md:text-sm uppercase tracking-[0.35em] text-white/70"
+                  >
+                    {service.number} · {service.title}
+                  </motion.span>
+
+                  <motion.h2
+                    initial={{ opacity: 0, y: -18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                    className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-tight"
+                  >
+                    {service.title}
+                  </motion.h2>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, ease: 'easeOut', delay: 0.1 }}
+                    className="text-lg md:text-xl text-white/85 max-w-2xl leading-relaxed"
+                  >
+                    {service.intro}
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.75, ease: 'easeOut', delay: 0.15 }}
+                    className="grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2"
+                  >
+                    {[
+                      { title: 'Betalningar', value: '282 804 kr', label: 'Månadsflöde' },
+                      { title: 'Hosting', value: '99.9%', label: 'Uptime SLA' },
+                    ].map((item) => (
+                      <div
+                        key={item.title}
+                        className="group flex flex-col items-center rounded-[32px] border border-white/20 bg-white/15 px-8 py-10 backdrop-blur-xl transition-colors duration-200 hover:bg-white/20"
+                      >
+                        <span className="text-sm uppercase tracking-[0.2em] text-white/70">
+                          {item.title}
+                        </span>
+                        <span className="mt-5 text-4xl font-semibold tracking-tight text-white">
+                          {item.value}
+                        </span>
+                        <span className="mt-4 inline-flex items-center rounded-full bg-white text-sm font-semibold text-gray-900 px-5 py-2">
+                          {item.label}
+                        </span>
+                        <div className="mt-6 flex items-center gap-4 text-white/80 text-sm">
+                          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30">
+                            +
+                          </span>
+                          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30">
+                            ↺
+                          </span>
+                          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30">
+                            …
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, delay: 0.2 }}
+                    className="text-sm md:text-base text-white/75 max-w-xl"
+                  >
+                    {service.result}
+                  </motion.p>
+                </div>
+              </Container>
+            </section>
+          );
+        }
+
         const bgColor = service.featured
           ? 'bg-black'
           : index % 2 === 0
