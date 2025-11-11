@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useScroll, useTransform } from 'framer-motion';
 import { MagneticButton } from '@/components/ui/MagneticButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Container } from '@/components/ui/Container';
@@ -76,10 +76,12 @@ export function InteractivePortalPreview() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoFinished, setVideoFinished] = useState(false);
+  const [videoStarted, setVideoStarted] = useState(false);
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start end', 'end start'],
   });
+  const isInView = useInView(containerRef, { once: true, margin: '-20% 0px' });
 
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
 
@@ -93,32 +95,54 @@ export function InteractivePortalPreview() {
       setVideoFinished(true);
     };
 
-    const handleCanPlay = () => {
-      video.play().catch(() => {
-        // Autoplay blocked, reveal content immediately
-        setVideoFinished(true);
-      });
-    };
-
     const handleError = () => {
       setVideoFinished(true);
     };
 
     video.addEventListener('ended', handleEnded);
-    video.addEventListener('canplay', handleCanPlay, { once: true });
     video.addEventListener('error', handleError);
-
-    // In case the video metadata is already loaded
-    if (video.readyState >= 3) {
-      handleCanPlay();
-    }
 
     return () => {
       video.removeEventListener('ended', handleEnded);
-      video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('error', handleError);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isInView || videoStarted) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    const playVideo = async () => {
+      try {
+        await video.play();
+        setVideoStarted(true);
+      } catch {
+        setVideoStarted(true);
+        setVideoFinished(true);
+      }
+    };
+
+    if (video.readyState >= 3) {
+      playVideo();
+      return;
+    }
+
+    const handleCanPlay = () => {
+      playVideo();
+    };
+
+    video.addEventListener('canplay', handleCanPlay, { once: true });
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [isInView, videoStarted]);
 
   return (
     <section
@@ -130,7 +154,7 @@ export function InteractivePortalPreview() {
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
-        src="/Raket.mp4"
+        src="/Raket12.mp4"
         muted
         playsInline
         preload="auto"
@@ -252,7 +276,7 @@ export function InteractivePortalPreview() {
         )}
       </AnimatePresence>
 
-      {!videoFinished && (
+      {!videoFinished && !videoStarted && (
         <div className="relative z-10 flex items-center justify-center h-full">
           <span className="text-lg md:text-xl text-white/70 tracking-wide uppercase">
             Laddar upplevelse …
