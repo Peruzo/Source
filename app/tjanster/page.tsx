@@ -185,25 +185,74 @@ export default function ServicesPage() {
   return (
     <>
       {/* Hero */}
-      <section className="py-32 md:py-40 gradient-mesh text-white relative overflow-hidden">
-        <div className="absolute inset-0 noise-overlay"></div>
-        
-        <Container>
-          <FadeIn className="relative z-10 text-center max-w-4xl mx-auto">
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-overline text-teal mb-6"
+      <section className="relative min-h-[100svh] overflow-hidden bg-black text-white">
+        <video
+          src="/social_u6293379286_create_a_video_of_a_lady_having_her_head_out_of_t_fa3cf5e8-c008-4ece-8889-13e225e0a8ed_3.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center lg:object-right"
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-r from-[#04070d] via-[#04070d]/90 via-[#04070d]/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,191,166,0.18),transparent_60%)]"></div>
+        <div className="absolute -bottom-20 -left-24 h-[360px] w-[360px] rounded-full bg-indigo-500/20 blur-[180px]"></div>
+
+        <Container className="relative z-10 flex min-h-[100svh] items-center">
+          <FadeIn className="max-w-2xl space-y-8 py-24 lg:py-0">
+            <motion.span
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="text-xs uppercase tracking-[0.4em] text-white/60"
             >
               VÅRA TJÄNSTER
-            </motion.p>
-            <h1 className="text-section-title text-white mb-8">
-              Inte bara en tjänst.<br />
-              <span className="text-teal">En komplett lösning.</span>
-            </h1>
-            <p className="text-body-large text-gray-300">
-              Design • E-handel • AI-analys • Hosting • Support
-            </p>
+            </motion.span>
+
+            <div className="space-y-6">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight"
+              >
+                Inte bara en tjänst.
+                <span className="block text-teal">En komplett lösning.</span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+                className="max-w-xl text-lg md:text-xl text-white/70 leading-relaxed"
+              >
+                Design • E-handel • AI-analys • Hosting • Support. Allt samlat i en upplevelse som känns lika självklar som den ser ut.
+              </motion.p>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.75, ease: 'easeOut', delay: 0.3 }}
+              className="flex flex-col items-start gap-4 sm:flex-row"
+            >
+              <AnimatedButton
+                href="/kontakt"
+                size="lg"
+                className="!px-10 !py-4 !rounded-full !bg-teal !text-white !font-semibold !shadow-[0_30px_80px_rgba(0,191,166,0.45)] hover:!bg-teal-hover"
+              >
+                Boka en demo
+              </AnimatedButton>
+              <Link
+                href="#design"
+                className="inline-flex items-center text-base font-semibold text-white/70 transition-colors hover:text-white"
+              >
+                Utforska våra tjänster
+                <span className="ml-2 text-lg">→</span>
+              </Link>
+            </motion.div>
           </FadeIn>
         </Container>
       </section>
@@ -429,7 +478,7 @@ export default function ServicesPage() {
 
             <section
               ref={logisticsSectionRef}
-              className="relative overflow-hidden py-28 md:py-36 bg-black text-white"
+              className="relative overflow-hidden bg-black text-white py-28 md:py-36 lg:py-40 min-h-[680px] md:min-h-[760px]"
             >
               <motion.div
                 initial={{ scale: 1.02, opacity: 0 }}
@@ -444,6 +493,8 @@ export default function ServicesPage() {
                   src="/logistikvideo.mp4"
                   poster="/u6293379286_create_a_black_background_with_a_delivery_truck_t_28e332cb-4cb6-4f9d-a17d-f54645d753d4_3.png"
                   muted
+                  autoPlay
+                  loop
                   playsInline
                   preload="metadata"
                   controls={false}
@@ -451,7 +502,7 @@ export default function ServicesPage() {
               </motion.div>
 
               <Container>
-                <div className="relative z-10 flex flex-col items-center text-center gap-8">
+                <div className="relative z-10 flex min-h-[520px] flex-col items-center justify-between text-center gap-8">
                   <motion.span
                     initial={{ opacity: 0, y: -10 }}
                     whileInView={{ opacity: 1, y: 0 }}
