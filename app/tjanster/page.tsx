@@ -98,6 +98,9 @@ export default function ServicesPage() {
   const ecommerceSectionRef = useRef<HTMLElement | null>(null);
   const ecommerceVideoRef = useRef<HTMLVideoElement | null>(null);
   const [hasPlayedEcommerceVideo, setHasPlayedEcommerceVideo] = useState(false);
+  const logisticsSectionRef = useRef<HTMLElement | null>(null);
+  const logisticsVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [hasPlayedLogisticsVideo, setHasPlayedLogisticsVideo] = useState(false);
 
   useEffect(() => {
     const sectionEl = ecommerceSectionRef.current;
@@ -138,6 +141,46 @@ export default function ServicesPage() {
 
     return () => observer.disconnect();
   }, [hasPlayedEcommerceVideo]);
+
+  useEffect(() => {
+    const sectionEl = logisticsSectionRef.current;
+    const videoEl = logisticsVideoRef.current;
+
+    if (!sectionEl || !videoEl || hasPlayedLogisticsVideo) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasPlayedLogisticsVideo) {
+            videoEl.currentTime = 0;
+            const playPromise = videoEl.play();
+
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  setHasPlayedLogisticsVideo(true);
+                  observer.disconnect();
+                })
+                .catch(() => {
+                  setHasPlayedLogisticsVideo(true);
+                  observer.disconnect();
+                });
+            } else {
+              setHasPlayedLogisticsVideo(true);
+              observer.disconnect();
+            }
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(sectionEl);
+
+    return () => observer.disconnect();
+  }, [hasPlayedLogisticsVideo]);
 
   return (
     <>
@@ -384,21 +427,26 @@ export default function ServicesPage() {
               </Container>
             </section>
 
-            <section className="relative overflow-hidden py-28 md:py-36 bg-black text-white">
+            <section
+              ref={logisticsSectionRef}
+              className="relative overflow-hidden py-28 md:py-36 bg-black text-white"
+            >
               <motion.div
-                initial={{ scale: 1.05, opacity: 0 }}
+                initial={{ scale: 1.02, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: 'easeOut' }}
                 className="absolute inset-0"
               >
-                <Image
-                  src="/u6293379286_create_a_black_background_with_a_delivery_truck_t_28e332cb-4cb6-4f9d-a17d-f54645d753d4_3.png"
-                  alt="Minimalistisk scen med lastbil"
-                  fill
-                  className="object-contain object-center bg-black"
-                  sizes="100vw"
-                  priority={false}
+                <video
+                  ref={logisticsVideoRef}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src="/logistikvideo.mp4"
+                  poster="/u6293379286_create_a_black_background_with_a_delivery_truck_t_28e332cb-4cb6-4f9d-a17d-f54645d753d4_3.png"
+                  muted
+                  playsInline
+                  preload="metadata"
+                  controls={false}
                 />
               </motion.div>
 
@@ -574,6 +622,141 @@ export default function ServicesPage() {
                   >
                     {service.result}
                   </motion.p>
+                </div>
+              </Container>
+            </section>
+          );
+        }
+
+        if (service.id === 'support') {
+          const supportCards = [
+            {
+              title: 'Alla betalningar är säkrade',
+              imageSrc: '/stripebild.png',
+              imageAlt: 'Stripe-visualisering med neonpunkter.',
+            },
+            {
+              title: 'Kundsupport dygnet runt',
+              imageSrc: '/supportbild.png',
+              imageAlt: 'Person med telefon och chattmeddelande.',
+            },
+            {
+              title: 'Håll allt säkert på ett ställe',
+              imageSrc:
+                '/u6293379286_create_a_glass_blur_background_with_a_up_close_fr_dc71dc67-7e71-4045-859c-3ade356e8ca9_3.png',
+              imageAlt: 'Glasikon framför suddig laptop.',
+            },
+          ];
+
+          return (
+            <section
+              key={service.id}
+              id={service.id}
+              className="relative overflow-hidden bg-[#11131b] py-28 md:py-36 text-white"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.18),rgba(17,19,27,0.92)_55%)]"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0e16]/40 to-[#05060b]"></div>
+
+              <Container>
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <motion.span
+                    initial={{ opacity: 0, y: -12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                    className="text-xs md:text-sm uppercase tracking-[0.35em] text-white/60"
+                  >
+                    {service.number} · {service.title}
+                  </motion.span>
+
+                  <motion.h2
+                    initial={{ opacity: 0, y: -18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, ease: 'easeOut' }}
+                    className="mt-6 text-4xl md:text-5xl font-semibold tracking-tight"
+                  >
+                    {service.title}
+                  </motion.h2>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: -12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, ease: 'easeOut', delay: 0.1 }}
+                    className="mt-5 max-w-2xl text-lg md:text-xl leading-relaxed text-white/75"
+                  >
+                    {service.intro}
+                  </motion.p>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, ease: 'easeOut', delay: 0.15 }}
+                    className="mt-3 max-w-2xl text-base md:text-lg text-white/65"
+                  >
+                    {service.result}
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+                    className="mt-16 w-full"
+                  >
+                    <div className="flex w-full gap-6 overflow-x-auto pb-4 sm:justify-center sm:overflow-visible">
+                      {supportCards.map((card) => (
+                        <div
+                          key={card.title}
+                          className="group relative min-w-[260px] flex-1 max-w-[360px] overflow-hidden rounded-[32px] border border-white/10 bg-[#101321] p-[1.5px] shadow-[0_45px_120px_-60px_rgba(5,8,20,0.85)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_60px_140px_-60px_rgba(6,10,24,0.9)]"
+                          style={{ aspectRatio: '3 / 4' }}
+                        >
+                          <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(0,204,255,0.12),rgba(9,12,20,0.92)_65%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                          <div className="relative h-full overflow-hidden rounded-[30px]">
+                            <div className="absolute inset-0">
+                              <Image
+                                src={card.imageSrc}
+                                alt={card.imageAlt}
+                                fill
+                                sizes="(min-width: 1280px) 320px, (min-width: 768px) 45vw, 80vw"
+                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-active:scale-105"
+                                priority={false}
+                              />
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/60"></div>
+                            <div className="relative z-10 flex h-full flex-col justify-between px-8 py-10">
+                              <p className="max-w-[220px] text-left text-lg md:text-xl font-semibold tracking-tight text-white">
+                                {card.title}
+                              </p>
+                              <div className="h-12 w-32 rounded-full border border-white/20 bg-white/10 backdrop-blur-md transition duration-300 group-hover:border-white/40 group-hover:bg-white/15"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, ease: 'easeOut', delay: 0.25 }}
+                    className="mt-16 w-full max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-10 text-left"
+                  >
+                    <p className="text-xs uppercase tracking-[0.3em] text-white/60">
+                      Vad ingår:
+                    </p>
+                    <div className="mt-6 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 md:text-base text-white/75">
+                      {service.included.map((item) => (
+                        <div key={item} className="flex items-center gap-3">
+                          <span className="inline-flex h-2 w-2 rounded-full bg-teal"></span>
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
                 </div>
               </Container>
             </section>
