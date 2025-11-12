@@ -113,6 +113,42 @@ export default function AboutPage() {
         </Container>
       </section>
 
+      {/* Simplify E-commerce */}
+      <section className="bg-white py-20 md:py-32">
+        <Container size="lg">
+          <div className="mx-auto max-w-4xl text-center md:text-left">
+            <span className="text-xs font-semibold uppercase tracking-[0.4em] text-teal/70">
+              E-handel utan friktion
+            </span>
+            <h2 className="mt-6 text-3xl font-semibold leading-tight text-black md:text-4xl lg:text-5xl">
+              Lås oss förenkla allting som rör E-handel
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-gray-700 md:text-xl">
+              Vi kopplar samman logistik, lager, kundresor och betalningar i en sammanhållen vy
+              så att ditt team snabbt ser var ni skapar mest värde och var ni tappar fart. Insikter
+              som tidigare tog veckor att få fram landar nu i din inkorg på minuter.
+            </p>
+            <p className="mt-4 text-lg leading-relaxed text-gray-700 md:text-xl">
+              Resultatet? Ett ekosystem där alla förstår nästa steg—från butiksgolvet till
+              slutkunden. Det är så vi gör e-handel enklare, snabbare och mer lönsam.
+            </p>
+          </div>
+          <div className="mx-auto mt-14 max-w-5xl">
+            <div className="relative overflow-hidden rounded-[32px] bg-[#F5F7FA] p-6 shadow-[0_30px_60px_rgba(15,23,42,0.08)] ring-1 ring-black/5">
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src="/kedjereaktion.png"
+                  alt="Illustration av Source-ekosystemet för e-handel"
+                  fill
+                  className="object-contain object-center"
+                  sizes="(min-width: 1024px) 800px, 100vw"
+                />
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
       {/* Origin Story + Values */}
       <section className="py-20 md:py-32 bg-gradient-to-br from-white to-beige-light">
         <Container>
