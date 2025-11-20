@@ -3,66 +3,16 @@
 import Image from 'next/image';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const [hasSnappedToSection2, setHasSnappedToSection2] = useState(false);
-  const lastScrollY = useRef(0);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     // Track from top of page until end of hero to drive the whole transition.
     offset: ['start start', 'end start'],
   });
-
-  // When the user starts scrolling down in the hero, gently snap them to
-  // the start of section 2 so a small scroll leads directly to that view.
-  useEffect(() => {
-    const unsubscribe = scrollYProgress.on('change', (value) => {
-      // As soon as the user nudges the scroll from the top of the hero,
-      // immediately jump to section 2 so no intermediate hero state is visible.
-      if (!hasSnappedToSection2 && value > 0.02) {
-        const nextSection = document.getElementById('value-proposition');
-        if (nextSection) {
-          setHasSnappedToSection2(true);
-          nextSection.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [hasSnappedToSection2, scrollYProgress]);
-
-  // When the user scrolls back up towards the hero from section 2,
-  // snap them back to the top hero view so there is no in-between state.
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      const goingUp = currentY < lastScrollY.current;
-      lastScrollY.current = currentY;
-
-      const valueSection = document.getElementById('value-proposition');
-      if (!valueSection) return;
-
-      const sectionTop = valueSection.offsetTop;
-
-      // If we're scrolling up and are just below the start of section 2,
-      // jump straight to the top (hero full view).
-      if (
-        goingUp &&
-        currentY >= sectionTop - 200 &&
-        currentY <= sectionTop + 200
-      ) {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // IMAGE / CARD TRANSFORM
   // Låt animationen spela ut över lite mer scroll (ca 50% av hero),
@@ -82,6 +32,34 @@ export function Hero() {
 
   // OVERLAY CONTENT (text) – keep it readable on top of the image.
   const overlayGradientOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.85]);
+
+  // Fullpage-like scroll locking between section 1 (Hero) and section 2
+  // so the user only ever settles on full views of these two sections.
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      const hero = sectionRef.current;
+      const valueSection = document.getElementById('value-proposition');
+      if (!hero || !valueSection) return;
+
+      const section2Top = valueSection.offsetTop;
+      const scrollY = window.scrollY;
+
+      // Only intercept scroll while we're between top of page and start of section 2
+      if (scrollY < section2Top && scrollY >= 0) {
+        event.preventDefault();
+
+        // Scroll direction: down → snap to section 2, up → snap to top of page
+        if (event.deltaY > 0) {
+          window.scrollTo({ top: section2Top, behavior: 'smooth' });
+        } else if (event.deltaY < 0) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel as any);
+  }, []);
 
   return (
     <section
