@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "preview": "npx serve out -l 3000"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
