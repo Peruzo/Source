@@ -4,21 +4,41 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Container } from '@/components/ui/Container';
 import { FadeIn } from '@/components/animations/FadeIn';
+import {
+  CubeIcon,
+  ArrowPathIcon,
+  TruckIcon,
+  InboxIcon,
+  MapPinIcon,
+  CheckIcon,
+  BoltIcon,
+} from '@heroicons/react/24/outline';
 
 // Tab views for the interactive card
 const tabViews = {
   orders: [
-    { name: 'Ny beställning', amount: '12 st', icon: '📦', active: true },
-    { name: 'Pågående', amount: '8 st', icon: '🔄', active: false },
+    { name: 'Ny beställning', amount: '12 st', icon: 'package', active: true },
+    { name: 'Pågående', amount: '8 st', icon: 'refresh', active: false },
   ],
   shipping: [
-    { name: 'PostNord Express', amount: '5 st', icon: '🚚', active: true },
-    { name: 'PostNord Standard', amount: '3 st', icon: '📮', active: false },
+    { name: 'PostNord Express', amount: '5 st', icon: 'truck', active: true },
+    { name: 'PostNord Standard', amount: '3 st', icon: 'inbox', active: false },
   ],
   status: [
-    { name: 'På väg', amount: '7 st', icon: '📍', active: true },
-    { name: 'Levererat', amount: '13 st', icon: '✅', active: false },
+    { name: 'På väg', amount: '7 st', icon: 'location', active: true },
+    { name: 'Levererat', amount: '13 st', icon: 'check', active: false },
   ],
+};
+
+// Icon mapping
+const iconMap = {
+  package: CubeIcon,
+  refresh: ArrowPathIcon,
+  truck: TruckIcon,
+  inbox: InboxIcon,
+  location: MapPinIcon,
+  check: CheckIcon,
+  bolt: BoltIcon,
 };
 
 export function LogisticsWidgetsSection() {
@@ -50,8 +70,8 @@ export function LogisticsWidgetsSection() {
                   transition={{ duration: 0.6 }}
                   className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-4xl mb-4">
-                    📦
+                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
+                    <CubeIcon className="w-10 h-10 text-[#FF6B35]" />
                   </div>
                   <h3 className="text-base font-semibold text-white mb-2">Ny beställning</h3>
                   <p className="text-xs text-white/60">Skapa ny</p>
@@ -65,8 +85,8 @@ export function LogisticsWidgetsSection() {
                   transition={{ duration: 0.6, delay: 0.1 }}
                   className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-4xl mb-4">
-                    🚚
+                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
+                    <TruckIcon className="w-10 h-10 text-[#FF6B35]" />
                   </div>
                   <h3 className="text-base font-semibold text-white mb-2">Frakta med PostNord</h3>
                   <p className="text-xs text-white/60">Integrerad</p>
@@ -80,8 +100,8 @@ export function LogisticsWidgetsSection() {
                   transition={{ duration: 0.6, delay: 0.2 }}
                   className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-4xl mb-4">
-                    ⚡
+                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
+                    <BoltIcon className="w-10 h-10 text-[#FF6B35]" />
                   </div>
                   <h3 className="text-base font-semibold text-white mb-2">Express/Standard</h3>
                   <p className="text-xs text-white/60">Välj leverans</p>
@@ -95,8 +115,8 @@ export function LogisticsWidgetsSection() {
                   transition={{ duration: 0.6, delay: 0.3 }}
                   className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center text-4xl mb-4">
-                    📍
+                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
+                    <MapPinIcon className="w-10 h-10 text-[#FF6B35]" />
                   </div>
                   <h3 className="text-base font-semibold text-white mb-2">Status påväg</h3>
                   <p className="text-xs text-white/60">Realtid</p>
@@ -113,27 +133,30 @@ export function LogisticsWidgetsSection() {
               className="absolute -bottom-6 -left-6 w-full max-w-[280px] rounded-2xl bg-[#1a1a1a] border border-white/10 p-5 shadow-2xl z-10"
             >
               <div className="space-y-4">
-                {currentView.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3"
-                  >
+                {currentView.map((item, index) => {
+                  const IconComponent = iconMap[item.icon as keyof typeof iconMap];
+                  return (
                     <div
-                      className="relative w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0"
-                      style={{ backgroundColor: '#FF6B35' }}
+                      key={index}
+                      className="flex items-center gap-3"
                     >
-                      {item.active ? (
-                        <span className="text-white text-lg">✓</span>
-                      ) : (
-                        <span>{item.icon}</span>
-                      )}
+                      <div
+                        className="relative w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: '#FF6B35' }}
+                      >
+                        {item.active ? (
+                          <CheckIcon className="w-6 h-6 text-white" />
+                        ) : (
+                          IconComponent && <IconComponent className="w-6 h-6 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-white">{item.name}</div>
+                        <div className="text-xs text-white/60">{item.amount}</div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-white">{item.name}</div>
-                      <div className="text-xs text-white/60">{item.amount}</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
 
