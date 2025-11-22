@@ -33,6 +33,9 @@ const services = [
       'Realtidsinsikter & rapporter',
     ],
     imagePlaceholder: 'Analytics Dashboard',
+    imageSrc: '/marketingpicture.png',
+    // Show full image within the square, slightly scaled down so nothing is cut off
+    imageClassName: 'object-contain scale-90',
     bgColor: 'from-beige-light to-white',
   },
   {
@@ -184,7 +187,7 @@ export function WhatWeDo() {
                               src={service.imageSrc}
                               alt={service.title}
                               fill
-                              className="object-cover"
+                              className={`object-cover ${service.imageClassName ?? ''}`}
                               sizes="(min-width: 1024px) 480px, 100vw"
                               priority={index === 0}
                             />

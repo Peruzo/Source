@@ -270,3 +270,144 @@
   animation: highlight-pulse 2s ease-in-out infinite;
 }
 
+/* AI Assistant Bubbles - Floating Conversation Effect */
+@keyframes ai-bubble-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(4px, -8px, 0) scale(1.02);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) scale(1.03);
+  }
+  75% {
+    transform: translate3d(-4px, -8px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.ai-bubble {
+  will-change: transform, opacity;
+  animation-name: ai-bubble-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.ai-bubble-1 {
+  animation-duration: 6s;
+  animation-delay: 0s;
+}
+
+.ai-bubble-2 {
+  animation-duration: 7s;
+  animation-delay: 0.8s;
+}
+
+.ai-bubble-3 {
+  animation-duration: 5.5s;
+  animation-delay: 1.6s;
+}
+
+/* Typing / loading dots effect for three bubbles in a row */
+@keyframes ai-bubble-typing {
+  0%, 80%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.55;
+  }
+  40% {
+    transform: translateY(-6px) scale(1.08);
+    opacity: 1;
+  }
+}
+
+.ai-bubble-loading {
+  will-change: transform, opacity;
+  animation-name: ai-bubble-typing;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: 1s;
+}
+
+.ai-bubble-loading-1 {
+  animation-delay: 0s;
+}
+
+.ai-bubble-loading-2 {
+  animation-delay: 0.15s;
+}
+
+.ai-bubble-loading-3 {
+  animation-delay: 0.3s;
+}
+
+/* Underline draw effect for highlighted words in headings */
+.underline-draw {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.15em;
+}
+
+.underline-draw::after {
+  content: '';
+  position: absolute;
+  left: -4%;
+  bottom: 0;
+  width: 108%;
+  height: 2px;
+  border-radius: 9999px;
+  border-bottom: 2px solid var(--color-cta-bg);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: underline-draw 0.7s ease-out forwards;
+  /* Slight glow to keep it visible on dark backgrounds */
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.underline-draw::before {
+  content: '';
+  position: absolute;
+  left: 8%;
+  bottom: 0.18em;
+  width: 80%;
+  height: 1px;
+  border-radius: 9999px;
+  border-bottom: 1px solid var(--color-cta-bg);
+  opacity: 0.9;
+  transform-origin: left center;
+  transform: scaleX(0) rotate(-1.5deg);
+  animation: underline-draw 0.6s ease-out forwards;
+  animation-delay: 0.05s;
+}
+
+@keyframes underline-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline-draw::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-bubble,
+  .ai-bubble-1,
+  .ai-bubble-2,
+  .ai-bubble-3,
+  .ai-bubble-loading,
+  .ai-bubble-loading-1,
+  .ai-bubble-loading-2,
+  .ai-bubble-loading-3 {
+    animation: none !important;
+  }
+}
+
