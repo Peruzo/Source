@@ -1,6 +1,7 @@
 'use client';
 
 import { FadeIn } from '@/components/animations/FadeIn';
+import { ScrollTimeline } from '@/components/ui/ScrollTimeline';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -74,9 +75,19 @@ const services = [
 ];
 
 export function WhatWeDo() {
+  // Define timeline nodes for each service
+  // Positions are calculated to align with the center of each service section
+  // Now relative to services section only (header excluded)
+  const timelineNodes = [
+    { id: '1', position: 0.2, label: 'Design & E-handel' },
+    { id: '2', position: 0.45, label: 'Marknadsföring & Tillväxt' },
+    { id: '3', position: 0.7, label: 'Ekonomi & Logistik' },
+    { id: '4', position: 0.95, label: 'Support & Utveckling' },
+  ];
+
   return (
     <section className="py-20 md:py-32 lg:py-40 relative">
-      {/* Section header */}
+      {/* Section header - Outside timeline */}
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 mb-20 lg:mb-32">
         <FadeIn className="text-center">
           <motion.p
@@ -94,8 +105,14 @@ export function WhatWeDo() {
         </FadeIn>
       </div>
 
-      {/* Service sections - Full width alternating */}
-      <div className="space-y-0">
+      {/* Service sections with timeline - Timeline starts here */}
+      <ScrollTimeline
+        className=""
+        nodes={timelineNodes}
+        color="#00BFA6"
+        lightColor="rgba(0, 191, 166, 0.1)"
+      >
+        <div className="space-y-0">
         {services.map((service, index) => {
           const isEven = index % 2 === 0;
 
@@ -250,9 +267,10 @@ export function WhatWeDo() {
             </motion.div>
           );
         })}
-      </div>
+        </div>
+      </ScrollTimeline>
 
-      {/* Bottom CTA */}
+      {/* Bottom CTA - Outside timeline */}
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 mt-20 lg:mt-32">
         <FadeIn className="text-center">
           <Link
