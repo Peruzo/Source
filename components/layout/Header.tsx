@@ -91,6 +91,7 @@ export function Header() {
                   height={48}
                   className={`logo-img ${isScrolled ? 'logo-dark' : 'logo-light'}`}
                   priority
+                  unoptimized
                 />
               </motion.div>
             </Link>
@@ -128,18 +129,18 @@ export function Header() {
                         {link.label}
                         {/* Visual indicator for dropdown items */}
                         {link.hasMenu && (
-                          <svg 
-                            className="inline-block w-3 h-3 ml-1 transition-transform group-hover:translate-y-0.5" 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
+                          <span className="inline-block ml-1" style={{ color: '#00BFA6' }}>
+                            <svg 
+                              className="w-3 h-3 transition-transform group-hover:translate-y-0.5" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </span>
                         )}
-                        <span className={`absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${
-                          isScrolled ? 'bg-emerald-600' : 'bg-emerald-300'
-                        }`}></span>
+                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full" style={{ backgroundColor: '#00BFA6' }}></span>
                       </Link>
                     </div>
                     
@@ -167,11 +168,8 @@ export function Header() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               href="https://portal.source.com"
-              className={`border-2 rounded-lg font-semibold transition-all duration-300 px-4 lg:px-5 py-2 lg:py-2.5 text-sm lg:text-base ${
-                isScrolled
-                  ? 'border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                  : 'border-emerald-300 text-emerald-300 hover:bg-emerald-300 hover:text-white'
-              }`}
+              className="border-2 rounded-lg font-semibold transition-all duration-300 px-4 lg:px-5 py-2 lg:py-2.5 text-sm lg:text-base hover:bg-[#00BFA6] hover:text-white"
+              style={{ borderColor: '#00BFA6', color: '#00BFA6' }}
               target="_blank"
               rel="noopener noreferrer"
             >

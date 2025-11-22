@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { LogisticsWidgetsSection } from '@/components/sections/LogisticsWidgetsSection';
 
 const services = [
   {
@@ -40,24 +41,8 @@ const services = [
     result: 'Ditt team har erfarenhet från betalningsbranschen.',
   },
   {
-    id: 'ai-analytics',
-    number: '03',
-    title: 'AI-Driven Analys',
-    subtitle: '★ Vår huvudsakliga skillnad',
-    intro: 'Detta är inte Google Analytics.',
-    included: [
-      'Automatiserade förbättringsförslag baserat på användarbeteende',
-      'Identifiering av konverteringsbarriärer och friktionspunkter',
-      'Optimering av produktpresentation genom visuell analys',
-      'Personalisering av användarupplevelser baserat på preferenser',
-      'Realtids-A/B-testning och kontinuerlig optimering',
-    ],
-    result: 'AI ger konkreta förslag som är bevisat att göra skillnad.',
-    featured: true,
-  },
-  {
     id: 'payments',
-    number: '04',
+    number: '03',
     title: 'Betalningar & Hosting',
     intro: 'Allt ingår. Inga dolda kostnader. Inga tredjeparter.',
     included: [
@@ -75,7 +60,7 @@ const services = [
   },
   {
     id: 'support',
-    number: '05',
+    number: '04',
     title: 'Support & Utveckling',
     intro: 'Vi växer med dig.',
     included: [
@@ -106,57 +91,36 @@ export default function ServicesPage() {
   const [hasPlayedLogisticsVideo, setHasPlayedLogisticsVideo] = useState(false);
 
   useEffect(() => {
-    const sectionEl = heroSectionRef.current;
     const videoEl = heroVideoRef.current;
 
-    if (!sectionEl || !videoEl || hasPlayedHeroVideo) {
+    if (!videoEl) {
       return;
     }
 
-    const handleEnded = () => {
-      videoEl.pause();
-      if (!Number.isNaN(videoEl.duration)) {
-        videoEl.currentTime = videoEl.duration;
+    // Set video to loop continuously
+    videoEl.loop = true;
+    
+    // Play the video when it's ready
+    const playVideo = () => {
+      const playPromise = videoEl.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play was prevented, video will play when user interacts
+        });
       }
     };
 
-    videoEl.loop = false;
-    videoEl.addEventListener('ended', handleEnded);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasPlayedHeroVideo) {
-            videoEl.currentTime = 0;
-            const playPromise = videoEl.play();
-
-            if (playPromise !== undefined) {
-              playPromise
-                .then(() => {
-                  setHasPlayedHeroVideo(true);
-                  observer.disconnect();
-                })
-                .catch(() => {
-                  setHasPlayedHeroVideo(true);
-                  observer.disconnect();
-                });
-            } else {
-              setHasPlayedHeroVideo(true);
-              observer.disconnect();
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(sectionEl);
+    if (videoEl.readyState >= 2) {
+      // Video is already loaded
+      playVideo();
+    } else {
+      videoEl.addEventListener('loadeddata', playVideo, { once: true });
+    }
 
     return () => {
-      observer.disconnect();
-      videoEl.removeEventListener('ended', handleEnded);
+      videoEl.removeEventListener('loadeddata', playVideo);
     };
-  }, [hasPlayedHeroVideo]);
+  }, []);
 
   useEffect(() => {
     const sectionEl = ecommerceSectionRef.current;
@@ -263,7 +227,9 @@ export default function ServicesPage() {
           src="/social_u6293379286_create_a_video_of_a_lady_having_her_head_out_of_t_fa3cf5e8-c008-4ece-8889-13e225e0a8ed_3.mp4"
           muted
           playsInline
-          preload="metadata"
+          loop
+          autoPlay
+          preload="auto"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center lg:object-right"
         />
 
@@ -634,6 +600,9 @@ export default function ServicesPage() {
               </Container>
             </section>
 
+            {/* Logistics Widgets Section - Revolut Design */}
+            <LogisticsWidgetsSection />
+
             </Fragment>
           );
         }
@@ -643,7 +612,7 @@ export default function ServicesPage() {
             <section
               key={service.id}
               id={service.id}
-              className="relative overflow-hidden py-32 md:py-36 text-white"
+              className="relative overflow-hidden min-h-screen py-32 md:py-36 text-white"
             >
               <motion.div
                 initial={{ scale: 1.05, opacity: 0 }}
@@ -699,7 +668,7 @@ export default function ServicesPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.75, ease: 'easeOut', delay: 0.15 }}
-                    className="grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2"
+                    className="grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2 mt-40 md:mt-56 lg:mt-72"
                   >
                     {[
                       { title: 'Betalningar', value: '282 804 kr', label: 'Månadsflöde' },
@@ -826,11 +795,11 @@ export default function ServicesPage() {
                     transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
                     className="mt-16 w-full"
                   >
-                    <div className="flex w-full gap-6 overflow-x-auto pb-4 sm:justify-center sm:overflow-visible">
+                    <div className="grid grid-cols-1 md:grid-cols-3 w-full gap-6">
                       {supportCards.map((card) => (
                         <div
                           key={card.title}
-                          className="group relative min-w-[260px] flex-1 max-w-[360px] overflow-hidden rounded-[32px] border border-white/10 bg-[#101321] p-[1.5px] shadow-[0_45px_120px_-60px_rgba(5,8,20,0.85)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_60px_140px_-60px_rgba(6,10,24,0.9)]"
+                          className="group relative w-full overflow-hidden rounded-[32px] border border-white/10 bg-[#101321] p-[1.5px] shadow-[0_45px_120px_-60px_rgba(5,8,20,0.85)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_60px_140px_-60px_rgba(6,10,24,0.9)]"
                           style={{ aspectRatio: '3 / 4' }}
                         >
                           <div className="absolute inset-0 rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(0,204,255,0.12),rgba(9,12,20,0.92)_65%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>

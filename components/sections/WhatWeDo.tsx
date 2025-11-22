@@ -33,10 +33,15 @@ const services = [
       'Realtidsinsikter & rapporter',
     ],
     imagePlaceholder: 'Analytics Dashboard',
-    imageSrc: '/marketingpicture.png',
+    imageSrc: '/newdesign.png',
     // Show full image within the square, slightly scaled down so nothing is cut off
     imageClassName: 'object-contain scale-90',
     bgColor: 'from-beige-light to-white',
+    bannerImages: [
+      { src: '/nymarknadsforing.png', position: 'top-right' },
+      { src: '/kampanj.png', position: 'left-middle' },
+      { src: '/2800.png', position: 'left-bottom' },
+    ],
   },
   {
     number: '03',
@@ -199,6 +204,37 @@ export function WhatWeDo() {
                             </p>
                             <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
                           </div>
+                        )}
+
+                        {/* Banner images overlay */}
+                        {service.bannerImages && (
+                          <>
+                            {service.bannerImages.map((banner, bannerIndex) => {
+                              let positionClasses = '';
+                              if (banner.position === 'top-right') {
+                                positionClasses = 'top-2 right-2 md:top-4 md:right-4';
+                              } else if (banner.position === 'left-middle') {
+                                positionClasses = 'left-2 top-1/2 -translate-y-1/2 md:left-4';
+                              } else if (banner.position === 'left-bottom') {
+                                positionClasses = 'left-2 bottom-2 translate-x-4 md:left-4 md:bottom-4 md:translate-x-8';
+                              }
+
+                              return (
+                                <div
+                                  key={bannerIndex}
+                                  className={`absolute ${positionClasses} z-10 w-24 h-auto md:w-32 lg:w-40`}
+                                >
+                                  <Image
+                                    src={banner.src}
+                                    alt=""
+                                    width={160}
+                                    height={80}
+                                    className="w-full h-auto rounded-lg shadow-lg"
+                                  />
+                                </div>
+                              );
+                            })}
+                          </>
                         )}
 
                         {/* Hover overlay */}
