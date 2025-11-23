@@ -2,6 +2,8 @@
 
 import { Container } from '@/components/ui/Container';
 import { ContactForm } from '@/components/forms/ContactForm';
+
+export default function ContactPage() {
   const faqs = [
     {
       question: 'Hur lång tid tar det?',
