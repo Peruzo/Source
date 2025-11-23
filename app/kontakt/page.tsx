@@ -1,13 +1,7 @@
-import { Metadata } from 'next';
+'use client';
+
 import { Container } from '@/components/ui/Container';
 import { ContactForm } from '@/components/forms/ContactForm';
-
-export const metadata: Metadata = {
-  title: 'Kontakt - Vi svarar inom 24 timmar',
-  description: 'Har du frågor om Source? Kontakta oss via formulär, e-post eller telefon. Vi svarar inom 24 timmar. Boka även en kostnadsfri demo.',
-};
-
-export default function ContactPage() {
   const faqs = [
     {
       question: 'Hur lång tid tar det?',

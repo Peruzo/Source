@@ -46,19 +46,30 @@ export default function HelpCenterPage() {
 
   return (
     <>
-      {/* Hero with Search - Minimalist White */}
-      <section className="py-12 md:py-16 bg-white">
+      {/* Top Header Section - Black and Green */}
+      <section className="pt-24 md:pt-28 pb-12 md:pb-16 bg-black relative overflow-hidden">
+        {/* Green accent gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#00BFA6]/30 via-transparent to-[#00BFA6]/10" />
+        <div className="relative z-10">
+          <Container>
+            <div className="max-w-3xl mx-auto text-center">
+              <FadeIn>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white">
+                  Behöver du hjälp?
+                </h1>
+                <p className="text-base md:text-lg text-white/80 mb-8">
+                  Ställ din fråga nedan för att få svar
+                </p>
+              </FadeIn>
+            </div>
+          </Container>
+        </div>
+      </section>
+
+      {/* Search Section - White Background */}
+      <section className="py-8 md:py-12 bg-white">
         <Container>
           <div className="max-w-3xl mx-auto">
-            <FadeIn className="text-center mb-10">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-black">
-                Behöver du hjälp?
-              </h1>
-              <p className="text-base md:text-lg text-gray-600 mb-8">
-                Ställ din fråga nedan för att få svar
-              </p>
-            </FadeIn>
-
             {/* Search Bar - Minimalist Style */}
             <div className="relative" ref={searchRef}>
               <div className="relative">

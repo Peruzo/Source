@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { AIAssistantProvider } from "@/components/ui/AIAssistantProvider";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -43,6 +44,7 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
+        <AIAssistantProvider />
       </body>
     </html>
   );
