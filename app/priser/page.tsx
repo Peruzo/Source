@@ -8,40 +8,40 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const pricingPlans = [
   {
-    name: 'Starter',
-    price: '2 995',
+    name: 'Bas',
+    price: '399',
     description: 'Perfekt för att komma igång med din online-närvaro',
     features: [
       'Responsiv design',
       'Upp till 5 sidor',
-      'Hosting & SSL',
-      'SEO-grundoptimering',
-      'E-postsupport',
-      'Månatliga uppdateringar',
+      'Betalningar, faktuering, prenumerationer',
+      'Support',
+      'Rapporter för försäljning',
     ],
-    limitations: [
-      'Ingen e-handel',
-      'Ingen AI-analys',
-      'Ingen prioritetssupport',
-    ],
+    limitations: undefined,
     cta: 'Kom igång',
     href: '/kontakt',
     featured: false,
   },
   {
     name: 'Growth',
-    price: '5 995',
+    price: '799',
     badge: 'Mest valda',
     description: 'Komplett lösning för att växa din verksamhet online',
     features: [
-      'Allt i Starter, plus:',
-      'E-handelsplattform',
-      'Obegränsat antal sidor',
-      'Stripe-integration',
-      'Inventory management',
-      'AI-analys (basic)',
-      'Chatt-support',
-      'Veckovisa rapporter',
+      'Allt i Bas, plus:',
+      'Obegränsat antal sidor och design.',
+      'Rapporter',
+      'Kontaktformulär på hemsida till kundportal',
+      'AI agent för din hemsida',
+      'Marknadsföring',
+      'Betalningslänk',
+      'Kampanjer',
+      'Logistik',
+      'Integrationer',
+      'Bokningssytem för alla bransher',
+      'Produkthantering',
+      'Max 5 användare',
     ],
     cta: 'Boka demo',
     href: '/kontakt',
@@ -49,18 +49,16 @@ const pricingPlans = [
   },
   {
     name: 'Enterprise',
-    price: 'Från 9 995',
+    price: 'Pris på förfrågan',
     description: 'För företag som behöver avancerade lösningar',
     features: [
       'Allt i Growth, plus:',
-      'AI-analys (advanced)',
-      'Custom funktioner',
-      'Prioritetssupport 24/7',
-      'Dedikerad kontaktperson',
-      'Video-möten (månadsvis)',
-      'White-label lösningar',
-      'API-tillgång',
-      'SLA-garanti',
+      'AI insikter',
+      'Inventarier hantering',
+      '24/7 support',
+      'Avancerad Statisk och analys för tillväxtmöjligheter',
+      'Bokföring verktyg',
+      'Max 10 användare',
     ],
     cta: 'Kontakta oss',
     href: '/kontakt',
@@ -129,7 +127,7 @@ export default function PricingPage() {
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="text-6xl md:text-7xl lg:text-8xl font-bold text-teal"
               >
-                Från 2 995 kr
+                Från 399 kr
               </motion.p>
               <p className="text-xl text-gray-400 mt-4">per månad</p>
             </FadeIn>
@@ -168,17 +166,24 @@ export default function PricingPage() {
                 <h2 className="text-3xl font-bold text-black mb-3">{plan.name}</h2>
                 <div className="mb-6">
                   <p className="text-5xl md:text-6xl font-bold text-teal">
-                    {plan.price.includes('Från') ? (
+                    {plan.price.includes('Pris på förfrågan') ? (
+                      <span className="text-2xl md:text-3xl">{plan.price}</span>
+                    ) : plan.price.includes('Från') ? (
                       <>
                         <span className="text-2xl">Från </span>
                         {plan.price.replace('Från ', '')}
+                        <span className="text-xl text-gray-500"> kr</span>
                       </>
                     ) : (
-                      plan.price
+                      <>
+                        {plan.price}
+                        <span className="text-xl text-gray-500"> kr</span>
+                      </>
                     )}
-                    <span className="text-xl text-gray-500"> kr</span>
                   </p>
-                  <p className="text-gray-600 text-sm mt-1">/månad</p>
+                  {!plan.price.includes('Pris på förfrågan') && (
+                    <p className="text-gray-600 text-sm mt-1">/månad</p>
+                  )}
                 </div>
                 <p className="text-gray-700 mb-8 min-h-[3rem]">{plan.description}</p>
 
@@ -215,24 +220,6 @@ export default function PricingPage() {
                   </ul>
                 </div>
 
-                {plan.limitations && (
-                  <div className="mb-8 pb-8 border-b border-gray-200">
-                    <h3 className="font-semibold text-black mb-3 text-sm uppercase tracking-wide">
-                      Begränsningar:
-                    </h3>
-                    <ul className="space-y-2">
-                      {plan.limitations.map((limitation) => (
-                        <li
-                          key={limitation}
-                          className="flex items-start gap-2 text-gray-500 text-sm italic"
-                        >
-                          <span>•</span>
-                          <span>{limitation}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
 
                 <AnimatedButton
                   href={plan.href}

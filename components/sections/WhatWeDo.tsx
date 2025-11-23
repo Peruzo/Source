@@ -75,14 +75,13 @@ const services = [
 ];
 
 export function WhatWeDo() {
-  // Define timeline nodes for each service
+  // Define service sections for horizontal underscores
   // Positions are calculated to align with the center of each service section
-  // Now relative to services section only (header excluded)
-  const timelineNodes = [
-    { id: '1', position: 0.2, label: 'Design & E-handel' },
-    { id: '2', position: 0.45, label: 'Marknadsföring & Tillväxt' },
-    { id: '3', position: 0.7, label: 'Ekonomi & Logistik' },
-    { id: '4', position: 0.95, label: 'Support & Utveckling' },
+  const serviceSections = [
+    { id: '1', title: 'Design & E-handel', position: 0.2 },
+    { id: '2', title: 'Marknadsföring & Tillväxt', position: 0.45 },
+    { id: '3', title: 'Ekonomi & Logistik', position: 0.7 },
+    { id: '4', title: 'Support & Utveckling', position: 0.95 },
   ];
 
   return (
@@ -108,9 +107,10 @@ export function WhatWeDo() {
       {/* Service sections with timeline - Timeline starts here */}
       <ScrollTimeline
         className=""
-        nodes={timelineNodes}
+        nodes={[]}
         color="#00BFA6"
         lightColor="rgba(0, 191, 166, 0.1)"
+        serviceSections={serviceSections}
       >
         <div className="space-y-0">
         {services.map((service, index) => {

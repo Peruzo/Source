@@ -105,28 +105,40 @@ export default function AIAssistentPage() {
                 { src: '/betalningsagent.png', label: 'Betalningar' },
                 { src: '/analyseragent.png', label: 'Analyser' },
                 { src: '/betalningslankagent.png', label: 'Betalningslänk' },
-                { src: '/dashboardagent.png', label: 'Dashboard' },
-                { src: '/inventarieragent.png', label: 'Inventarier' },
-                { src: '/kampanjeragent.png', label: 'Kampanjer' },
-                { src: '/kunderagent.png', label: 'Kunder' },
-                { src: '/logistikagent.png', label: 'Logistik' },
+                { src: '/dashboardagent.png', label: 'Dashboard', needsCentering: true },
+                { src: '/inventarieragent.png', label: 'Inventarier', needsCentering: true },
+                { src: '/kampanjeragent.png', label: 'Kampanjer', needsCentering: true, needsHigherPosition: true },
+                { src: '/kunderagent.png', label: 'Kunder', needsCentering: true },
+                { src: '/logistikagent.png', label: 'Logistik', needsCentering: true, needsHigherPosition: true },
                 { src: '/marknadsforingagent.png', label: 'Marknadsföring' },
-                { src: '/rapporteragent.png', label: 'Rapporter' },
-                { src: '/statistikagent.png', label: 'Statistik' },
+                { src: '/rapporteragent.png', label: 'Rapporter', needsCentering: true },
+                { src: '/statistikagent.png', label: 'Statistik', needsCentering: true, needsHigherPosition: true },
                 { src: '/fakturoragent.png', label: 'Fakturor' },
-              ].map((agent) => (
-                <div key={agent.src} className="flex flex-col items-center text-center gap-3">
-                  <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border border-white/10 bg-gray-900">
-                    <Image
-                      src={agent.src}
-                      alt={agent.label}
-                      fill
-                      className="object-cover"
-                    />
+              ].map((agent) => {
+                let objectPosition = 'center';
+                if (agent.needsHigherPosition) {
+                  objectPosition = 'center top';
+                } else if (agent.needsCentering) {
+                  objectPosition = 'center top';
+                }
+                
+                return (
+                  <div key={agent.src} className="flex flex-col items-center text-center gap-3">
+                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden border border-white/10 bg-gray-900">
+                      <div className={`absolute inset-0 ${agent.needsHigherPosition ? 'scale-[1.5]' : agent.needsCentering ? 'scale-[1.4]' : ''}`}>
+                        <Image
+                          src={agent.src}
+                          alt={agent.label}
+                          fill
+                          className="object-cover"
+                          style={{ objectPosition }}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-sm font-medium text-gray-100">{agent.label}</p>
                   </div>
-                  <p className="text-sm font-medium text-gray-100">{agent.label}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

@@ -155,3 +155,4 @@ Button Text
 7. **Lifestyle Imagery:** Natural, relatable photography
 8. **Product Demo:** Card shows actual product interface
 
+
