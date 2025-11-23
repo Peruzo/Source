@@ -852,42 +852,23 @@ export default function ServicesPage() {
           );
         }
 
-        const bgColor = service.featured
-          ? 'bg-black'
-          : index % 2 === 0
-          ? 'bg-white'
-          : 'bg-beige-light';
-        const textColor = service.featured ? 'text-white' : 'text-black';
-        const subtextColor = service.featured ? 'text-gray-300' : 'text-gray-700';
+        const bgColor = index % 2 === 0 ? 'bg-white' : 'bg-beige-light';
+        const textColor = 'text-black';
+        const subtextColor = 'text-gray-700';
 
         return (
           <section
             key={service.id}
             id={service.id}
-            className={`py-20 md:py-32 ${bgColor} ${
-              service.featured ? 'relative overflow-hidden' : ''
-            }`}
+            className={`py-20 md:py-32 ${bgColor}`}
           >
-            {service.featured && (
-              <>
-                <div className="absolute inset-0 noise-overlay"></div>
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal/10 rounded-full blur-3xl"></div>
-              </>
-            )}
-            
             <Container>
-              <div
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
-                  service.featured ? 'lg:grid-cols-1 max-w-5xl mx-auto text-center' : ''
-                }`}
-              >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                 {/* Text Content */}
-                <div className={service.featured ? '' : 'relative'}>
-                  {!service.featured && (
-                    <div className="absolute -top-8 -left-4 lg:-left-8 text-service-number text-black/5">
-                      {service.number}
-                    </div>
-                  )}
+                <div className="relative">
+                  <div className="absolute -top-8 -left-4 lg:-left-8 text-service-number text-black/5">
+                    {service.number}
+                  </div>
                   
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -900,29 +881,12 @@ export default function ServicesPage() {
                       {service.title}
                     </h2>
 
-                    {service.subtitle && (
-                      <p className="text-xl text-teal mb-6">{service.subtitle}</p>
-                    )}
-
-                    {service.featured && (
-                      <div className="mb-10 py-8">
-                        <p className="text-2xl md:text-3xl text-gray-400 mb-4">
-                          "Du har 100 besökare"
-                        </p>
-                        <p className="text-lg text-gray-500 mb-4">vs</p>
-                        <p className="text-2xl md:text-3xl text-teal font-semibold">
-                          "Baserat på din bransch bör du fokusera på X för att nå 500
-                          besökare inom 3 månader"
-                        </p>
-                      </div>
-                    )}
-
                     <p className={`text-lg md:text-xl ${subtextColor} leading-relaxed mb-8`}>
                       {service.intro}
                     </p>
 
                     <h3 className={`text-xl font-semibold ${textColor} mb-6`}>
-                      {service.featured ? 'Mikroanalys inkluderar:' : 'Vad ingår:'}
+                      Vad ingår:
                     </h3>
                     <ul className={`space-y-4 mb-8 ${subtextColor}`}>
                       {service.included.map((item, i) => (
@@ -940,52 +904,27 @@ export default function ServicesPage() {
                       ))}
                     </ul>
 
-                    {service.featured && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.5, duration: 0.6 }}
-                        className="glass rounded-2xl p-6 md:p-8 border-l-4 border-teal text-left max-w-3xl mx-auto"
-                      >
-                        <p className="text-sm font-semibold text-teal mb-3 uppercase tracking-wide">
-                          Exempel
-                        </p>
-                        <p className="text-base md:text-lg text-gray-300 leading-relaxed">
-                          "Användare lämnar checkout vid steg 2. Förslag: Minska
-                          formulärfält från 8 till 4. Förväntat resultat: +25%
-                          konvertering"
-                        </p>
-                      </motion.div>
-                    )}
-
-                    <p
-                      className={`mt-8 text-base md:text-lg ${
-                        service.featured ? 'text-gray-400' : 'text-gray-600'
-                      } italic`}
-                    >
+                    <p className={`mt-8 text-base md:text-lg text-gray-600 italic`}>
                       {service.result}
                     </p>
                   </motion.div>
                 </div>
 
                 {/* Visual Placeholder */}
-                {!service.featured && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2, duration: 0.8 }}
-                    className="flex items-center justify-center"
-                  >
-                    <div className="glass rounded-3xl aspect-square w-full max-w-md p-12 border border-gray-200 flex items-center justify-center">
-                      <div className="text-center">
-                        <p className="text-8xl font-bold text-black/5 mb-4">{service.number}</p>
-                        <p className="text-gray-400 text-sm">{service.title}</p>
-                      </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
+                  className="flex items-center justify-center"
+                >
+                  <div className="glass rounded-3xl aspect-square w-full max-w-md p-12 border border-gray-200 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-8xl font-bold text-black/5 mb-4">{service.number}</p>
+                      <p className="text-gray-400 text-sm">{service.title}</p>
                     </div>
-                  </motion.div>
-                )}
+                  </div>
+                </motion.div>
               </div>
             </Container>
           </section>
