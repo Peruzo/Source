@@ -9,7 +9,8 @@ export function ValueProposition() {
   return (
     <section
       id="value-proposition"
-      className="relative bg-white pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible"
+      className="relative bg-white -mt-1 pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible z-[2]"
+      style={{ transform: 'translateZ(0)', willChange: 'transform' }}
     >
 
       {/* Content scales in slightly from a smaller size, to feel like it grows

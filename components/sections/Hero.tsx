@@ -27,62 +27,128 @@ export function Hero() {
   // BACKGROUND TRANSFORM
   // Växla till vit bakgrund medan bilden fortfarande är synlig, men något senare,
   // så övergången till sektion 2 känns mjuk men inte blixtsnabb.
-  const darkBgOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const whiteBgOpacity = useTransform(scrollYProgress, [0.15, 0.35, 1], [0, 1, 1]);
+  // Made white background appear earlier and more smoothly to prevent gaps on Windows
+  const darkBgOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  // White background div is now redundant since section has bg-white, but kept for smooth transition
+  const whiteBgOpacity = useTransform(scrollYProgress, [0, 0.25], [0, 1]);
 
   // OVERLAY CONTENT (text) – keep it readable on top of the image.
   const overlayGradientOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.85]);
 
   // Fullpage-like scroll locking between section 1 (Hero) and section 2
-  // so the user only ever settles on full views of these two sections.
+  // Optimized for Windows performance with throttling and requestAnimationFrame
   useEffect(() => {
+    let isScrolling = false;
+    let rafId: number | null = null;
+    let lastScrollTime = 0;
+    const scrollThrottle = 100; // Throttle scroll events to max once per 100ms
+
     const handleWheel = (event: WheelEvent) => {
+      const now = Date.now();
+      
+      // Throttle scroll events to prevent lag
+      if (now - lastScrollTime < scrollThrottle) {
+        event.preventDefault();
+        return;
+      }
+      lastScrollTime = now;
+
+      // Prevent handling if already scrolling to avoid lag
+      if (isScrolling) {
+        event.preventDefault();
+        return;
+      }
+
       const hero = sectionRef.current;
       const valueSection = document.getElementById('value-proposition');
       if (!hero || !valueSection) return;
 
+      const scrollY = window.scrollY || window.pageYOffset;
       const section2Top = valueSection.offsetTop;
-      const scrollY = window.scrollY;
+      const tolerance = 5; // Small tolerance to prevent jitter
 
-      // Only intercept scroll while we're between top of page and start of section 2
-      if (scrollY < section2Top && scrollY >= 0) {
+      // Only intercept scroll while we're in the hero section range (before section 2)
+      // This ensures users only see full sections: either Hero (at top) or ValueProposition (at section2Top)
+      if (scrollY < section2Top - tolerance && scrollY >= -tolerance) {
         event.preventDefault();
 
-        // Scroll direction: down → snap to section 2, up → snap to top of page
-        if (event.deltaY > 0) {
-          window.scrollTo({ top: section2Top, behavior: 'smooth' });
-        } else if (event.deltaY < 0) {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Cancel any pending scroll animation
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
         }
+
+        // Use requestAnimationFrame for smooth, performant scrolling
+        rafId = requestAnimationFrame(() => {
+          isScrolling = true;
+
+          // Scroll direction: down → snap to section 2, up → snap to top of page
+          if (event.deltaY > 0) {
+            window.scrollTo({ top: section2Top, behavior: 'smooth' });
+          } else if (event.deltaY < 0) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+
+          // Reset scrolling flag after animation completes
+          setTimeout(() => {
+            isScrolling = false;
+          }, 1000);
+        });
       }
     };
 
+    // Add wheel event listener with passive: false for preventDefault
     window.addEventListener('wheel', handleWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleWheel as any);
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
 
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-screen overflow-hidden bg-black-secondary"
+      className="relative min-h-screen overflow-hidden bg-white"
     >
       {/* Dark gradient mesh at the very top, fades away as we move into the white 2nd section */}
       <motion.div
-        style={{ opacity: darkBgOpacity }}
-        className="absolute inset-0 gradient-mesh noise-overlay"
+        style={{ 
+          opacity: darkBgOpacity,
+          willChange: 'opacity',
+          transform: 'translateZ(0)',
+        }}
+        className="absolute inset-0 gradient-mesh z-0"
       />
-      {/* White background that takes over as the image shrinks into a box */}
+      {/* Noise overlay - separated for better performance, can be disabled on low-end devices */}
       <motion.div
-        style={{ opacity: whiteBgOpacity }}
-        className="absolute inset-0 bg-white"
+        style={{ 
+          opacity: darkBgOpacity,
+          willChange: 'opacity',
+        }}
+        className="absolute inset-0 noise-overlay z-0"
+      />
+      {/* White background that takes over as the image shrinks into a box - Always visible, just becomes opaque */}
+      <motion.div
+        style={{ 
+          opacity: whiteBgOpacity,
+          willChange: 'opacity',
+          transform: 'translateZ(0)',
+        }}
+        className="absolute inset-0 bg-white z-[1]"
       />
 
       {/* Wrapper that adds padding as we scroll so the full-bleed image
           gradually gets more air around it, reading as a smaller box that
           moves down towards section 2. */}
       <motion.div
-        style={{ paddingTop: framePadding }}
-        className="relative z-10 w-full h-screen flex items-end justify-center pb-10 md:pb-16"
+        style={{ 
+          paddingTop: framePadding,
+          willChange: 'transform',
+          transform: 'translateZ(0)',
+        }}
+        className="relative z-[2] w-full h-screen flex items-end justify-center pb-10 md:pb-16"
       >
         {/* Picture that transitions from full-page to small box */}
         <motion.div
@@ -91,6 +157,8 @@ export function Hero() {
             y: imageY,
             borderRadius: imageRadius,
             opacity: imageOpacity,
+            willChange: 'transform, opacity',
+            transform: 'translateZ(0)',
           }}
           className="relative w-full h-full overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.8)] bg-black"
         >
