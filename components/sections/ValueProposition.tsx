@@ -9,19 +9,21 @@ export function ValueProposition() {
   return (
     <section
       id="value-proposition"
-      className="relative bg-white -mt-1 pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible z-[2]"
-      style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+      className="relative bg-white pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible"
+      style={{ minHeight: '100vh' }}
     >
 
       {/* Content scales in slightly from a smaller size, to feel like it grows
-          out of the small hero box, but it now sits directly on the white page. */}
-      <motion.div
-        initial={{ y: 220, scale: 0.7, opacity: 0 }}
-        whileInView={{ y: 0, scale: 1, opacity: 1 }}
-        viewport={{ once: true, amount: 0.75 }}
-        transition={{ duration: 0.7, ease: [0.22, 0.61, 0.36, 1] }}
-        className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20"
-      >
+          out of the small hero box, but it now sits directly on the white page.
+          Made visible by default for Windows browser compatibility */}
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 opacity-100">
+        <motion.div
+          initial={{ y: 0, scale: 1, opacity: 1 }}
+          whileInView={{ y: 0, scale: 1, opacity: 1 }}
+          viewport={{ once: false, amount: 0.1, margin: '-200px' }}
+          transition={{ duration: 0.7, ease: [0.22, 0.61, 0.36, 1] }}
+          // Content is visible by default - animation only enhances
+        >
         {/* Layout wrapper – simple vertical spacing on white background */}
         <div className="relative bg-transparent pt-12 md:pt-16 lg:pt-20 pb-16 md:pb-20 lg:pb-24">
 
@@ -169,7 +171,8 @@ export function ValueProposition() {
             </FadeIn>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </section>
   );
 }
