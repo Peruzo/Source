@@ -27,7 +27,7 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'E-handel & varumärke',
       slug: 'glow-example',
-      image: '/GLOW.png',
+      image: '/glowanotherone.png',
       hoverImage: '/glowkundcase.png',
       link: 'https://glow-test.onrender.com/',
       external: true,
