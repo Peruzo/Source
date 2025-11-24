@@ -34,15 +34,11 @@ const services = [
       'Realtidsinsikter & rapporter',
     ],
     imagePlaceholder: 'Analytics Dashboard',
-    imageSrc: '/newdesign.png',
+    imageSrc: '/marketingone.png',
     // Show full image within the square, slightly scaled down so nothing is cut off
-    imageClassName: 'object-contain scale-90',
+    imageFit: 'object-contain',
+    imageClassName: 'scale-90',
     bgColor: 'from-beige-light to-white',
-    bannerImages: [
-      { src: '/nymarknadsforing.png', position: 'top-right' },
-      { src: '/kampanj.png', position: 'left-middle' },
-      { src: '/2800.png', position: 'left-bottom' },
-    ],
   },
   {
     number: '03',
@@ -209,7 +205,7 @@ export function WhatWeDo() {
                               src={service.imageSrc}
                               alt={service.title}
                               fill
-                              className={`object-cover ${service.imageClassName ?? ''}`}
+                              className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''}`}
                               sizes="(min-width: 1024px) 480px, 100vw"
                               priority={index === 0}
                             />
