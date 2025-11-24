@@ -3,6 +3,7 @@
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function PortfolioTeaser() {
   const projects = [
@@ -59,31 +60,41 @@ export function PortfolioTeaser() {
             transition={{ duration: 0.8 }}
             className="lg:col-span-7 lg:row-span-2 group"
           >
-            <Link href={`/portfolio/${projects[0].slug}`}>
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] lg:aspect-auto lg:h-full border border-gray-200">
-                {/* Image placeholder - replace with actual */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-6xl font-bold text-white/10 mb-2">01</p>
-                    <p className="text-sm text-white/40">{projects[0].title}</p>
-                  </div>
+            <a 
+              href="https://peran.onrender.com/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] lg:aspect-auto lg:h-full border border-gray-200 cursor-pointer">
+                {/* Main image - forthewebsitesource.png */}
+                <div className="absolute inset-0">
+                  <Image
+                    src="/forthewebsitesource.png"
+                    alt={projects[0].title}
+                    fill
+                    className="object-cover transition-opacity duration-500 group-hover:opacity-0"
+                    sizes="(min-width: 1024px) 66vw, 100vw"
+                    priority
+                  />
                 </div>
 
-                {/* Hover overlay */}
+                {/* Hover image - forthebetterse.png */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <Image
+                    src="/forthebetterse.png"
+                    alt={projects[0].title}
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 66vw, 100vw"
+                  />
+                </div>
+
+                {/* Hover overlay with "Se mer" text */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
-                  <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-teal mb-2 block">
-                      {projects[0].category}
-                    </span>
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                      {projects[0].title}
-                    </h3>
-                    <p className="text-teal font-medium mb-4">{projects[0].metric}</p>
-                    <span className="inline-flex items-center gap-2 text-white text-sm font-medium">
-                      Visa projekt
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl md:text-3xl font-bold text-white">
+                      Se mer
                     </span>
                   </div>
                 </div>
@@ -91,7 +102,7 @@ export function PortfolioTeaser() {
                 {/* Border glow on hover */}
                 <div className="absolute inset-0 border-2 border-teal/0 group-hover:border-teal/50 rounded-3xl transition-all duration-500"></div>
               </div>
-            </Link>
+            </a>
           </motion.article>
 
           {/* Project 2 - Medium */}
