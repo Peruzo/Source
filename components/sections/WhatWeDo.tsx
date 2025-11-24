@@ -19,7 +19,9 @@ const services = [
       'SEO-optimering',
     ],
     imagePlaceholder: 'E-commerce UI',
-    imageSrc: '/Namnlös design (1).png',
+    imageSrc: '/tillvarhemsida.png',
+    imageFit: 'object-contain',
+    imageClassName: 'scale-90',
     bgColor: 'from-white to-beige-light',
   },
   {
@@ -52,6 +54,9 @@ const services = [
       'PostNord, DHL & Fortnox-integrationer',
     ],
     imagePlaceholder: 'Payment Systems',
+    imageSrc: '/logositske.png',
+    imageFit: 'object-contain',
+    imageClassName: 'scale-90',
     bgColor: 'from-white to-gray-50',
   },
   {
@@ -66,6 +71,9 @@ const services = [
       'Dedikerad kontakt',
     ],
     imagePlaceholder: 'Support Portal',
+    imageSrc: '/supportfordem.png',
+    imageFit: 'object-contain',
+    imageClassName: 'scale-90',
     bgColor: 'from-gray-50 to-white',
   },
 ];
