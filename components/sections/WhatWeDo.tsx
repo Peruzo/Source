@@ -6,7 +6,23 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const services = [
+type Service = {
+  number: string;
+  title: string;
+  description: string;
+  details: string[];
+  imagePlaceholder: string;
+  imageSrc: string;
+  imageFit: string;
+  imageClassName: string;
+  bgColor: string;
+  bannerImages?: {
+    src: string;
+    position: 'top-right' | 'left-middle' | 'left-bottom';
+  }[];
+};
+
+const services: Service[] = [
   {
     number: '01',
     title: 'Design & E-handel',
@@ -225,37 +241,6 @@ export function WhatWeDo() {
                             </p>
                             <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
                           </div>
-                        )}
-
-                        {/* Banner images overlay */}
-                        {service.bannerImages && (
-                          <>
-                            {service.bannerImages.map((banner, bannerIndex) => {
-                              let positionClasses = '';
-                              if (banner.position === 'top-right') {
-                                positionClasses = 'top-2 right-2 md:top-4 md:right-4';
-                              } else if (banner.position === 'left-middle') {
-                                positionClasses = 'left-2 top-1/2 -translate-y-1/2 md:left-4';
-                              } else if (banner.position === 'left-bottom') {
-                                positionClasses = 'left-2 bottom-2 translate-x-4 md:left-4 md:bottom-4 md:translate-x-8';
-                              }
-
-                              return (
-                                <div
-                                  key={bannerIndex}
-                                  className={`absolute ${positionClasses} z-10 w-24 h-auto md:w-32 lg:w-40`}
-                                >
-                                  <Image
-                                    src={banner.src}
-                                    alt=""
-                                    width={160}
-                                    height={80}
-                                    className="w-full h-auto rounded-lg shadow-lg"
-                                  />
-                                </div>
-                              );
-                            })}
-                          </>
                         )}
 
                         {/* Hover overlay */}
