@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FadeIn } from '@/components/animations/FadeIn';
+import { usePathname } from 'next/navigation';
 
 export function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
   const navLinks = [
@@ -14,6 +16,10 @@ export function Footer() {
     { href: '/priser', label: 'Priser' },
     { href: '/kontakt', label: 'Kontakt' },
   ];
+
+  if (pathname.startsWith('/onboarding')) {
+    return null;
+  }
 
   return (
     <footer className="bg-black-secondary text-gray-300 relative overflow-hidden">

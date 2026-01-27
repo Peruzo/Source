@@ -20,7 +20,7 @@ const pricingPlans = [
     ],
     limitations: undefined,
     cta: 'Kom igång',
-    href: '/kontakt',
+    href: '/onboarding/login',
     featured: false,
   },
   {

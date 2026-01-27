@@ -43,6 +43,16 @@ export function PortfolioTeaser() {
       external: true,
     },
     {
+      title: 'Vattentrygg',
+      category: 'Exempel',
+      metric: 'Översvämningsskydd & fastighetsskydd',
+      slug: 'vattentrygg-example',
+      image: '/Vattentrygg-logo-p-500.png',
+      hoverImage: '/vattentrygghovering.png',
+      link: '#',
+      external: true,
+    },
+    {
       title: 'Support & Service',
       category: 'Exempel',
       metric: 'Prognos: +80% kundnöjdhet',
