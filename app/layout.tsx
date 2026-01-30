@@ -44,7 +44,7 @@ export default function RootLayout({
   }
   return (
     <html lang="sv" className={inter.variable}>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <HydrationErrorBoundary>
           <ScrollProgress />
           <Header />
