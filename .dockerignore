@@ -1,0 +1,13 @@
+# Repo root: exkludera så att bara appen skickas till Docker
+.git
+.gitmodules
+Source
+node_modules
+.next
+out
+.env*
+.vercel
+*.log
+REVOLUT-HELP-CENTER-ANALYSIS.md
+revolut-hero.png
+revolut_section.png

@@ -1,5 +1,5 @@
 # Cloud Build: auto-deploy till Cloud Run vid push till main
-# Submodul Source/ klonar samma repo → appen hamnar i Source/Source/
+# Appen ligger i repo-roten (Dockerfile, package.json, app/, etc.)
 
 substitutions:
   _REGION: europe-north1
@@ -10,14 +10,6 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # Fyll i Source/ (submodul) så att Dockerfile och appkod finns
-  - id: submodule
-    name: gcr.io/cloud-builders/git
-    entrypoint: bash
-    args:
-      - -c
-      - git submodule update --init --recursive
-
   # Konfigurera Docker för Artifact Registry (europe-north1)
   - id: configure-docker
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -28,7 +20,7 @@ steps:
       - ${_REGION}-docker.pkg.dev
       - --quiet
 
-  # Bygg Docker-image (Source/ = klonat repo, appen i Source/Source/)
+  # Bygg Docker-image (Dockerfile och app i repo-roten)
   - id: build
     name: gcr.io/cloud-builders/docker
     args:
@@ -36,9 +28,9 @@ steps:
       - -t
       - ${_IMAGE}
       - -f
-      - Source/Source/Dockerfile
-      - Source/Source
-    waitFor: ["submodule", "configure-docker"]
+      - Dockerfile
+      - .
+    waitFor: ["configure-docker"]
 
   # Pusha image till Artifact Registry
   - id: push

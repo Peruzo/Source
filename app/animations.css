@@ -1,0 +1,412 @@
+/* Animation System - Source Design System */
+
+/* Gradient Mesh Backgrounds */
+.gradient-mesh {
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(0, 191, 166, 0.15) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(0, 191, 166, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 20%,
+      rgba(255, 255, 255, 0.05) 0%,
+      transparent 50%
+    );
+  background-color: #121212;
+}
+
+.gradient-mesh-light {
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(0, 191, 166, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(0, 191, 166, 0.05) 0%,
+      transparent 50%
+    );
+  background-color: #ffffff;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Glow Effects */
+.glow-teal {
+  box-shadow: 0 0 60px rgba(0, 191, 166, 0.3);
+}
+
+.glow-teal-soft {
+  box-shadow: 0 0 40px rgba(0, 191, 166, 0.15);
+}
+
+/* Noise Texture Overlay */
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Scroll Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Magnetic Button Effect */
+@keyframes magneticPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 191, 166, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 191, 166, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 191, 166, 0);
+  }
+}
+
+/* Utility Classes */
+.animate-on-scroll {
+  opacity: 0;
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.animate-on-scroll.is-visible {
+  opacity: 1;
+}
+
+/* Smooth Transitions */
+.transition-smooth {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-smooth-slow {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-spring {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover Transforms */
+.hover-lift {
+  transition: transform 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Stagger Delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Water Droplet Effects */
+.water-droplet {
+  will-change: transform;
+  filter: drop-shadow(0 4px 8px rgba(0, 191, 166, 0.3));
+}
+
+.water-trail {
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, rgba(0, 191, 166, 0.6) 0%, rgba(0, 191, 166, 0.2) 50%, transparent 100%);
+  border-radius: 50%;
+  will-change: opacity, transform;
+}
+
+.water-highlight-ring {
+  border: 2px solid rgba(0, 191, 166, 0.8);
+  border-radius: 12px;
+  background: rgba(0, 191, 166, 0.05);
+  backdrop-filter: blur(10px) saturate(180%);
+  will-change: transform, opacity;
+  box-shadow: 
+    0 0 20px rgba(0, 191, 166, 0.4),
+    inset 0 0 20px rgba(0, 191, 166, 0.1);
+}
+
+/* Water droplet animations */
+@keyframes droplet-formation {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(0.8) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes droplet-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(2deg);
+  }
+}
+
+@keyframes water-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(0, 191, 166, 0.4),
+      inset 0 0 20px rgba(0, 191, 166, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 40px rgba(0, 191, 166, 0.6),
+      inset 0 0 40px rgba(0, 191, 166, 0.2);
+  }
+}
+
+/* Apply animations */
+.water-droplet {
+  animation: droplet-float 3s ease-in-out infinite;
+}
+
+.water-highlight-ring {
+  animation: highlight-pulse 2s ease-in-out infinite;
+}
+
+/* AI Assistant Bubbles - Floating Conversation Effect */
+@keyframes ai-bubble-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(4px, -8px, 0) scale(1.02);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0) scale(1.03);
+  }
+  75% {
+    transform: translate3d(-4px, -8px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.ai-bubble {
+  will-change: transform, opacity;
+  animation-name: ai-bubble-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.ai-bubble-1 {
+  animation-duration: 6s;
+  animation-delay: 0s;
+}
+
+.ai-bubble-2 {
+  animation-duration: 7s;
+  animation-delay: 0.8s;
+}
+
+.ai-bubble-3 {
+  animation-duration: 5.5s;
+  animation-delay: 1.6s;
+}
+
+/* Typing / loading dots effect for three bubbles in a row */
+@keyframes ai-bubble-typing {
+  0%, 80%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.55;
+  }
+  40% {
+    transform: translateY(-6px) scale(1.08);
+    opacity: 1;
+  }
+}
+
+.ai-bubble-loading {
+  will-change: transform, opacity;
+  animation-name: ai-bubble-typing;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: 1s;
+}
+
+.ai-bubble-loading-1 {
+  animation-delay: 0s;
+}
+
+.ai-bubble-loading-2 {
+  animation-delay: 0.15s;
+}
+
+.ai-bubble-loading-3 {
+  animation-delay: 0.3s;
+}
+
+/* Underline draw effect for highlighted words in headings */
+.underline-draw {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.15em;
+}
+
+.underline-draw::after {
+  content: '';
+  position: absolute;
+  left: -4%;
+  bottom: 0;
+  width: 108%;
+  height: 2px;
+  border-radius: 9999px;
+  border-bottom: 2px solid var(--color-cta-bg);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: underline-draw 0.7s ease-out forwards;
+  /* Slight glow to keep it visible on dark backgrounds */
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.underline-draw::before {
+  content: '';
+  position: absolute;
+  left: 8%;
+  bottom: 0.18em;
+  width: 80%;
+  height: 1px;
+  border-radius: 9999px;
+  border-bottom: 1px solid var(--color-cta-bg);
+  opacity: 0.9;
+  transform-origin: left center;
+  transform: scaleX(0) rotate(-1.5deg);
+  animation: underline-draw 0.6s ease-out forwards;
+  animation-delay: 0.05s;
+}
+
+@keyframes underline-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline-draw::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-bubble,
+  .ai-bubble-1,
+  .ai-bubble-2,
+  .ai-bubble-3,
+  .ai-bubble-loading,
+  .ai-bubble-loading-1,
+  .ai-bubble-loading-2,
+  .ai-bubble-loading-3 {
+    animation: none !important;
+  }
+}
