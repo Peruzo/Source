@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
@@ -221,13 +222,16 @@ export default function PricingPage() {
                 </div>
 
 
-                <AnimatedButton
+                <Link
                   href="/onboarding/login"
-                  variant={plan.featured ? 'primary' : 'secondary'}
-                  className="w-full"
+                  className={`block w-full text-center font-semibold transition-all duration-300 px-8 py-4 text-base rounded-xl ${
+                    plan.featured
+                      ? 'bg-teal text-white hover:bg-teal-hover'
+                      : 'bg-transparent text-teal border-2 border-teal hover:bg-teal hover:text-white'
+                  }`}
                 >
                   {plan.cta}
-                </AnimatedButton>
+                </Link>
               </motion.div>
             ))}
           </div>

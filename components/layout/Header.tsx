@@ -14,7 +14,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  if (pathname.startsWith('/onboarding')) {
+  if (pathname != null && pathname.startsWith('/onboarding')) {
     return null;
   }
 
