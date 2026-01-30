@@ -222,7 +222,7 @@ export default function PricingPage() {
 
 
                 <AnimatedButton
-                  href={plan.href}
+                  href="/onboarding/login"
                   variant={plan.featured ? 'primary' : 'secondary'}
                   className="w-full"
                 >
