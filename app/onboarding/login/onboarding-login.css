@@ -49,21 +49,50 @@
   }
 }
 
-.onboarding-login-page .left,
+/* Vänster: formuläret hela vägen på vänstra sidan */
+.onboarding-login-page .left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 24px 40px 48px;
+  z-index: 1;
+  background: transparent;
+}
+
+.onboarding-login-page .left .login-box {
+  margin-right: auto;
+}
+
+/* Höger: logotyp i full bredd (behållare), mindre och tydlig rendering */
 .onboarding-login-page .right {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 40px 48px 40px 24px;
   z-index: 1;
   background: transparent;
 }
 
+.onboarding-login-page .right .logo-wrapper {
+  width: 100%;
+  max-width: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .onboarding-login-page .logo {
-  width: 260px;
-  max-width: 90%;
-  filter: drop-shadow(0 0 10px rgba(0, 209, 178, 0.3));
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: high-quality;
+  filter: drop-shadow(0 0 8px rgba(0, 209, 178, 0.2));
 }
 
 .onboarding-login-page .login-box {
@@ -202,14 +231,29 @@
     flex-direction: column;
   }
 
-  .onboarding-login-page .left,
-  .onboarding-login-page .right {
+  .onboarding-login-page .left {
     width: 100%;
     height: auto;
     padding: 30px 20px;
+    justify-content: center;
+  }
+
+  .onboarding-login-page .left .login-box {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .onboarding-login-page .right {
+    width: 100%;
+    height: auto;
+    padding: 24px 20px;
+  }
+
+  .onboarding-login-page .right .logo-wrapper {
+    max-width: 200px;
   }
 
   .onboarding-login-page .logo {
-    width: 180px;
+    max-width: 160px;
   }
 }

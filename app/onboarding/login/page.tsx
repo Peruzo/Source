@@ -71,9 +71,6 @@ export default function OnboardingLoginPage() {
     <div className="onboarding-login-page">
       <div className="container">
         <div className="left">
-          <img src="/source-logo.png" alt="Source logga" className="logo" />
-        </div>
-        <div className="right">
           <div className="login-box">
             <h1>Skapa konto</h1>
             <form onSubmit={handleCreateAccount}>
@@ -148,6 +145,11 @@ export default function OnboardingLoginPage() {
                 Fortsätt med Apple
               </button>
             </div>
+          </div>
+        </div>
+        <div className="right">
+          <div className="logo-wrapper">
+            <img src="/source-logo.png" alt="Source logga" className="logo" />
           </div>
         </div>
       </div>
