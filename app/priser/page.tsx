@@ -44,7 +44,7 @@ const pricingPlans = [
       'Max 5 användare',
     ],
     cta: 'Boka demo',
-    href: '/kontakt',
+    href: '/onboarding/login',
     featured: true,
   },
   {
@@ -61,7 +61,7 @@ const pricingPlans = [
       'Max 10 användare',
     ],
     cta: 'Kontakta oss',
-    href: '/kontakt',
+    href: '/onboarding/login',
     featured: false,
   },
 ];
