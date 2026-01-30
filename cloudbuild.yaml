@@ -10,6 +10,14 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
+  # Fyll i Source/ (submodul) så att Dockerfile och appkod finns
+  - id: submodule
+    name: gcr.io/cloud-builders/git
+    entrypoint: bash
+    args:
+      - -c
+      - git submodule update --init --recursive
+
   # Konfigurera Docker för Artifact Registry (europe-north1)
   - id: configure-docker
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -30,7 +38,7 @@ steps:
       - -f
       - Source/Dockerfile
       - Source
-    waitFor: ["configure-docker"]
+    waitFor: ["submodule", "configure-docker"]
 
   # Pusha image till Artifact Registry
   - id: push
