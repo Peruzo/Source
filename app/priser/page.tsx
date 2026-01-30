@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
@@ -95,8 +96,17 @@ const faqs = [
   },
 ];
 
+const ONBOARDING_URL = '/onboarding/login';
+
 export default function PricingPage() {
+  const router = useRouter();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+
+  const goToOnboarding = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(ONBOARDING_URL);
+  };
 
   return (
     <>
@@ -222,8 +232,9 @@ export default function PricingPage() {
                 </div>
 
 
-                <Link
-                  href="/onboarding/login"
+                <button
+                  type="button"
+                  onClick={goToOnboarding}
                   className={`block w-full text-center font-semibold transition-all duration-300 px-8 py-4 text-base rounded-xl ${
                     plan.featured
                       ? 'bg-teal text-white hover:bg-teal-hover'
@@ -231,7 +242,7 @@ export default function PricingPage() {
                   }`}
                 >
                   {plan.cta}
-                </Link>
+                </button>
               </motion.div>
             ))}
           </div>

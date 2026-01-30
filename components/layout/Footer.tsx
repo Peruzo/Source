@@ -17,7 +17,7 @@ export function Footer() {
     { href: '/kontakt', label: 'Kontakt' },
   ];
 
-  if (pathname.startsWith('/onboarding')) {
+  if (pathname != null && pathname.startsWith('/onboarding')) {
     return null;
   }
 
@@ -151,7 +151,7 @@ export function Footer() {
           className="mt-12 pt-8 border-t border-gray-800"
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm" suppressHydrationWarning>
               © {currentYear} Source. Alla rättigheter förbehållna.
             </p>
             <div className="flex gap-6 text-sm">
