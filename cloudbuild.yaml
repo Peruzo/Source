@@ -1,5 +1,5 @@
 # Cloud Build: auto-deploy till Cloud Run vid push till main
-# Dockerfile ligger i Source/ → build-kontext och -f sätts därefter
+# Submodul Source/ klonar samma repo → appen hamnar i Source/Source/
 
 substitutions:
   _REGION: europe-north1
@@ -28,7 +28,7 @@ steps:
       - ${_REGION}-docker.pkg.dev
       - --quiet
 
-  # Bygg Docker-image (Dockerfile och kontext i Source/)
+  # Bygg Docker-image (Source/ = klonat repo, appen i Source/Source/)
   - id: build
     name: gcr.io/cloud-builders/docker
     args:
@@ -36,8 +36,8 @@ steps:
       - -t
       - ${_IMAGE}
       - -f
-      - Source/Dockerfile
-      - Source
+      - Source/Source/Dockerfile
+      - Source/Source
     waitFor: ["submodule", "configure-docker"]
 
   # Pusha image till Artifact Registry
