@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { AIAssistantProvider } from "@/components/ui/AIAssistantProvider";
+import { HydrationErrorBoundary } from "@/components/HydrationErrorBoundary";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -37,14 +38,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const serverYear = new Date().getFullYear();
+  if (process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEBUG_HYDRATION === '1') {
+    console.log('[Layout SSR] serverYear=', serverYear);
+  }
   return (
     <html lang="sv" className={inter.variable}>
       <body className="font-sans antialiased">
-        <ScrollProgress />
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <AIAssistantProvider />
+        <HydrationErrorBoundary>
+          <ScrollProgress />
+          <Header />
+          <main>{children}</main>
+          <Footer serverYear={serverYear} />
+          <AIAssistantProvider />
+        </HydrationErrorBoundary>
       </body>
     </html>
   );

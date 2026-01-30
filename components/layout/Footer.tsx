@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { usePathname } from 'next/navigation';
 
-export function Footer() {
+type FooterProps = { serverYear?: number };
+
+export function Footer({ serverYear }: FooterProps) {
   const pathname = usePathname();
-  const currentYear = new Date().getFullYear();
+  const currentYear = serverYear ?? new Date().getFullYear();
 
   const navLinks = [
     { href: '/tjanster', label: 'Tjänster' },
@@ -151,7 +153,7 @@ export function Footer() {
           className="mt-12 pt-8 border-t border-gray-800"
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm" suppressHydrationWarning>
+            <p className="text-gray-500 text-sm">
               © {currentYear} Source. Alla rättigheter förbehållna.
             </p>
             <div className="flex gap-6 text-sm">
