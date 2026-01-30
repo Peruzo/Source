@@ -3,8 +3,9 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Installera dependencies + serve som global server
+# --legacy-peer-deps: @auth0/nextjs-auth0 kräver next ~15.5.9, vi har 15.5.5
 COPY package*.json ./
-RUN npm install && npm install -g serve
+RUN npm install --legacy-peer-deps && npm install -g serve
 
 # Kopiera in resten av projektet
 COPY . .
