@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@auth0/nextjs-auth0';
+import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 
 const statusMap: Record<string, string> = {
@@ -12,7 +12,7 @@ const statusMap: Record<string, string> = {
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
+    const session = await auth0.getSession();
     if (!session?.user) {
       return NextResponse.json({ success: false }, { status: 401 });
     }

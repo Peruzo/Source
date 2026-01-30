@@ -8,7 +8,7 @@ if (!stripeSecretKey) {
 }
 
 const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' })
+  ? new Stripe(stripeSecretKey, { apiVersion: '2025-12-15.clover' })
   : null;
 
 export async function GET(request: Request) {

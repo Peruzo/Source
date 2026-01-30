@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@auth0/nextjs-auth0';
+import { auth0 } from '@/lib/auth0';
 import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 
@@ -10,7 +10,7 @@ if (!stripeSecretKey) {
 }
 
 const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' })
+  ? new Stripe(stripeSecretKey, { apiVersion: '2025-12-15.clover' })
   : null;
 
 export async function POST(request: Request) {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
 
-    const session = await getSession();
+    const session = await auth0.getSession();
     if (!session?.user) {
       return NextResponse.json({ success: false }, { status: 401 });
     }
