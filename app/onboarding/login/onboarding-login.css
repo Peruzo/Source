@@ -1,0 +1,215 @@
+/* Customer portal design – exakt enligt design-spec */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+.onboarding-login-page {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  font-family: 'Inter', sans-serif;
+  background-color: #0f1117;
+}
+
+.onboarding-login-page * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+.onboarding-login-page .container {
+  position: relative;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  z-index: 1;
+}
+
+.onboarding-login-page .container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle at 40% 50%, rgba(0, 209, 178, 0.08), transparent 70%);
+  animation: onboardingLoginPulse 15s ease-in-out infinite;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+@keyframes onboardingLoginPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.onboarding-login-page .left,
+.onboarding-login-page .right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  z-index: 1;
+  background: transparent;
+}
+
+.onboarding-login-page .logo {
+  width: 260px;
+  max-width: 90%;
+  filter: drop-shadow(0 0 10px rgba(0, 209, 178, 0.3));
+}
+
+.onboarding-login-page .login-box {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 40px 30px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.onboarding-login-page .login-box h1 {
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 30px;
+}
+
+.onboarding-login-page .login-box input {
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #1a1d25;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.onboarding-login-page .login-box input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.onboarding-login-page .login-box input:focus {
+  outline: none;
+  border-color: #00d1b2;
+  box-shadow: 0 0 8px #00d1b2;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.onboarding-login-page .login-box button {
+  width: 100%;
+  padding: 16px;
+  background: #00d1b2;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #0f1117;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.onboarding-login-page .login-box button:hover {
+  background: #00e5c0;
+  transform: translateY(-2px);
+}
+
+.onboarding-login-page .form-error {
+  margin: -8px 0 12px;
+  font-size: 0.9em;
+  color: #ff6b6b;
+  text-align: left;
+}
+
+.onboarding-login-page .password-container {
+  position: relative;
+}
+
+.onboarding-login-page .password-container input {
+  padding-right: 45px;
+}
+
+.onboarding-login-page .toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%) translateY(-8px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-login-page .toggle-password svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  overflow: visible;
+  stroke: rgba(255, 255, 255, 0.6);
+  transition: stroke 0.3s ease;
+}
+
+.onboarding-login-page .toggle-password:hover svg {
+  stroke: #ffffff;
+}
+
+.onboarding-login-page input:-webkit-autofill,
+.onboarding-login-page input:-webkit-autofill:hover,
+.onboarding-login-page input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1a1d25 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #1a1d25 !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.onboarding-login-page input:-webkit-autofill:focus {
+  border-color: #00d1b2 !important;
+  box-shadow: 0 0 8px #00d1b2, 0 0 0 1000px #1a1d25 inset !important;
+}
+
+.onboarding-login-page .oauth-buttons {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.onboarding-login-page .oauth-buttons button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.onboarding-login-page .oauth-buttons button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #00d1b2;
+  color: #00d1b2;
+}
+
+@media (max-width: 900px) {
+  .onboarding-login-page .container {
+    flex-direction: column;
+  }
+
+  .onboarding-login-page .left,
+  .onboarding-login-page .right {
+    width: 100%;
+    height: auto;
+    padding: 30px 20px;
+  }
+
+  .onboarding-login-page .logo {
+    width: 180px;
+  }
+}

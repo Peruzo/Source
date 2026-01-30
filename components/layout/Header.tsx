@@ -14,10 +14,6 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
-  if (pathname != null && pathname.startsWith('/onboarding')) {
-    return null;
-  }
-
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -72,6 +68,10 @@ export function Header() {
   const handleMenuToggle = useCallback(() => {
     setIsMenuOpen(!isMenuOpen);
   }, [isMenuOpen]);
+
+  if (pathname != null && pathname.startsWith('/onboarding')) {
+    return null;
+  }
 
   return (
     <header

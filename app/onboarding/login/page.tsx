@@ -2,14 +2,16 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import './onboarding-login.css';
 
+/* Öga-ikon enligt customer portal design-spec (stroke #ffffffaa) */
 const showIcon = `
-  <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffffaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
     <circle cx="12" cy="12" r="3"/>
   </svg>`;
 const hideIcon = `
-  <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffffaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
     <circle cx="12" cy="12" r="3"/>
     <line x1="3" y1="3" x2="21" y2="21"/>
@@ -20,15 +22,11 @@ const AUTH_RETURN = '/onboarding/questions';
 export default function OnboardingLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-
-  const authBase = useMemo(() => {
-    const params = new URLSearchParams({
-      returnTo: AUTH_RETURN,
-      login_hint: email || '',
-    });
-    return `/api/auth/login?${params.toString()}`;
-  }, [email]);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   const signupUrl = useMemo(() => {
     const params = new URLSearchParams({
@@ -39,9 +37,18 @@ export default function OnboardingLoginPage() {
     return `/api/auth/login?${params.toString()}`;
   }, [email]);
 
-  const handleLogin = (event: React.FormEvent) => {
+  const handleCreateAccount = (event: React.FormEvent) => {
     event.preventDefault();
-    router.push(authBase);
+    setPasswordError('');
+    if (password !== confirmPassword) {
+      setPasswordError('Lösenorden matchar inte');
+      return;
+    }
+    if (password.length < 8) {
+      setPasswordError('Lösenordet måste vara minst 8 tecken');
+      return;
+    }
+    router.push(signupUrl);
   };
 
   const handleOAuth = (connection: string) => {
@@ -56,45 +63,81 @@ export default function OnboardingLoginPage() {
     setPasswordVisible((current) => !current);
   };
 
+  const toggleConfirmVisibility = () => {
+    setConfirmVisible((current) => !current);
+  };
+
   return (
-    <div className="container">
+    <div className="onboarding-login-page">
+      <div className="container">
         <div className="left">
-          <img src="/source-logo.png" alt="Source" className="logo" />
+          <img src="/source-logo.png" alt="Source logga" className="logo" />
         </div>
         <div className="right">
           <div className="login-box">
-            <h1>Logga in</h1>
-            <form onSubmit={handleLogin}>
+            <h1>Skapa konto</h1>
+            <form onSubmit={handleCreateAccount}>
               <input
                 type="email"
+                name="email"
                 placeholder="E-post"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <div className="password-container">
                 <input
                   type={passwordVisible ? 'text' : 'password'}
+                  name="password"
+                  id="password"
                   placeholder="Lösenord"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
                   required
                 />
                 <span
                   className="toggle-password"
                   onClick={togglePasswordVisibility}
                   aria-label="Visa/dölj lösenord"
+                  role="button"
                   dangerouslySetInnerHTML={{
                     __html: passwordVisible ? hideIcon : showIcon,
                   }}
                 />
               </div>
-              <button type="submit">Logga in</button>
+              <div className="password-container">
+                <input
+                  type={confirmVisible ? 'text' : 'password'}
+                  name="confirmPassword"
+                  id="confirmPassword"
+                  placeholder="Lösenord igen"
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setPasswordError('');
+                  }}
+                  minLength={8}
+                  required
+                />
+                <span
+                  className="toggle-password"
+                  onClick={toggleConfirmVisibility}
+                  aria-label="Visa/dölj lösenord"
+                  role="button"
+                  dangerouslySetInnerHTML={{
+                    __html: confirmVisible ? hideIcon : showIcon,
+                  }}
+                />
+              </div>
+              {passwordError && (
+                <p className="form-error" role="alert">
+                  {passwordError}
+                </p>
+              )}
+              <button type="submit">Skapa konto</button>
             </form>
-
-            <div className="register-link">
-              Har du inget konto? <a href={signupUrl}>Skapa konto</a>
-            </div>
-
-            <div style={{ marginTop: 16, display: 'grid', gap: 12 }}>
+            <div className="oauth-buttons">
               <button type="button" onClick={() => handleOAuth('google-oauth2')}>
                 Fortsätt med Google
               </button>
@@ -108,5 +151,6 @@ export default function OnboardingLoginPage() {
           </div>
         </div>
       </div>
+    </div>
   );
 }
