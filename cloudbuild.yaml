@@ -1,5 +1,6 @@
 # Cloud Build: auto-deploy till Cloud Run vid push till main
 # Appen ligger i repo-roten (Dockerfile, package.json, app/, etc.)
+# Trigger-test: push till main ska starta build
 
 substitutions:
   _REGION: europe-north1
