@@ -1,0 +1,61 @@
+# Cloud Build: auto-deploy till Cloud Run vid push till main
+# Dockerfile ligger i Source/ → build-kontext och -f sätts därefter
+
+substitutions:
+  _REGION: europe-north1
+  _SERVICE_NAME: source
+  _IMAGE: europe-north1-docker.pkg.dev/sigma-future-479409-h9/source-services/source:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # Konfigurera Docker för Artifact Registry (europe-north1)
+  - id: configure-docker
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - auth
+      - configure-docker
+      - ${_REGION}-docker.pkg.dev
+      - --quiet
+
+  # Bygg Docker-image (Dockerfile och kontext i Source/)
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_IMAGE}
+      - -f
+      - Source/Dockerfile
+      - Source
+    waitFor: ["configure-docker"]
+
+  # Pusha image till Artifact Registry
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_IMAGE}
+    waitFor: ["build"]
+
+  # Deploy till Cloud Run
+  # Vid behov av secrets: lägg till --update-secrets=ENV_NAME=secret:version
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image=${_IMAGE}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com
+      - --logging=CLOUD_LOGGING_ONLY
+    waitFor: ["push"]
+
+images:
+  - ${_IMAGE}
