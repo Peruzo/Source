@@ -55,7 +55,6 @@ steps:
       - --platform=managed
       - --allow-unauthenticated
       - --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com
-      - --logging=CLOUD_LOGGING_ONLY
     waitFor: ["push"]
 
 images:
