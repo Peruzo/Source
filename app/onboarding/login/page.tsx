@@ -1,6 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import {
+  getPlan,
+  getStoredPlanId,
+  setStoredPlanId,
+  type SelectedPlan,
+} from '@/lib/onboarding/selected-plan';
 import './onboarding-login.css';
 
 /* Öga-ikon enligt customer portal design-spec (stroke #ffffffaa) */
@@ -19,12 +27,21 @@ const hideIcon = `
 const AUTH_RETURN = '/onboarding/questions';
 
 export default function OnboardingLoginPage() {
+  const searchParams = useSearchParams();
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+
+  useEffect(() => {
+    const planIdFromUrl = searchParams.get('plan');
+    const planId = planIdFromUrl ?? getStoredPlanId();
+    if (planIdFromUrl) setStoredPlanId(planIdFromUrl);
+    setSelectedPlan(getPlan(planId));
+  }, [searchParams]);
 
   const signupUrl = useMemo(() => {
     const params = new URLSearchParams({
@@ -72,6 +89,25 @@ export default function OnboardingLoginPage() {
       <div className="container">
         <div className="left">
           <div className="login-box">
+            {selectedPlan && (
+              <div className="valt-paket">
+                <h2 className="valt-paket-title">Valt paket</h2>
+                <p className="valt-paket-name">{selectedPlan.name}</p>
+                <p className="valt-paket-price">
+                  {selectedPlan.price === 'Pris på förfrågan'
+                    ? selectedPlan.price
+                    : `${selectedPlan.price} ${selectedPlan.currency}/${selectedPlan.interval}`}
+                </p>
+                <ul className="valt-paket-features">
+                  {selectedPlan.features.slice(0, 4).map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                <Link href="/priser" className="valt-paket-change">
+                  Ändra paket
+                </Link>
+              </div>
+            )}
             <h1>Skapa konto</h1>
             <form onSubmit={handleCreateAccount}>
               <input

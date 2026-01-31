@@ -107,6 +107,69 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
+.onboarding-login-page .valt-paket {
+  text-align: left;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(0, 209, 178, 0.08);
+  border: 1px solid rgba(0, 209, 178, 0.2);
+  border-radius: 12px;
+}
+
+.onboarding-login-page .valt-paket-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.onboarding-login-page .valt-paket-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.onboarding-login-page .valt-paket-price {
+  font-size: 0.95rem;
+  color: #00d1b2;
+  margin-bottom: 8px;
+}
+
+.onboarding-login-page .valt-paket-features {
+  list-style: none;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 12px;
+  padding-left: 0;
+}
+
+.onboarding-login-page .valt-paket-features li {
+  padding: 2px 0;
+}
+
+.onboarding-login-page .valt-paket-features li::before {
+  content: "✓ ";
+  color: #00d1b2;
+  font-weight: 600;
+}
+
+.onboarding-login-page .valt-paket-change {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: #a889ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.onboarding-login-page .valt-paket-change:hover {
+  color: #c4a8ff;
+  text-decoration: underline;
+}
+
 .onboarding-login-page .login-box h1 {
   font-size: 2.4rem;
   font-weight: 600;

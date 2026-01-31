@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const pricingPlans = [
   {
+    planId: 'bas',
     name: 'Bas',
     price: '399',
     description: 'Perfekt för att komma igång med din online-närvaro',
@@ -26,6 +27,7 @@ const pricingPlans = [
     featured: false,
   },
   {
+    planId: 'growth',
     name: 'Growth',
     price: '799',
     badge: 'Mest valda',
@@ -50,6 +52,7 @@ const pricingPlans = [
     featured: true,
   },
   {
+    planId: 'enterprise',
     name: 'Enterprise',
     price: 'Pris på förfrågan',
     description: 'För företag som behöver avancerade lösningar',
@@ -96,16 +99,17 @@ const faqs = [
   },
 ];
 
-const ONBOARDING_URL = '/onboarding/login';
+import { setStoredPlanId } from '@/lib/onboarding/selected-plan';
 
 export default function PricingPage() {
   const router = useRouter();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
-  const goToOnboarding = (e: React.MouseEvent) => {
+  const goToOnboarding = (e: React.MouseEvent, planId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(ONBOARDING_URL);
+    setStoredPlanId(planId);
+    router.push(`/onboarding/login?plan=${encodeURIComponent(planId)}`);
   };
 
   return (
@@ -234,7 +238,7 @@ export default function PricingPage() {
 
                 <button
                   type="button"
-                  onClick={goToOnboarding}
+                  onClick={(e) => goToOnboarding(e, plan.planId)}
                   className={`block w-full text-center font-semibold transition-all duration-300 px-8 py-4 text-base rounded-xl ${
                     plan.featured
                       ? 'bg-teal text-white hover:bg-teal-hover'
