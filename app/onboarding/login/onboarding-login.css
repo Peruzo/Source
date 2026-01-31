@@ -272,9 +272,9 @@
 }
 
 .onboarding-login-page .oauth-buttons {
-  margin-top: 24px;
+  margin-top: 20px;
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .onboarding-login-page .oauth-btn {
@@ -282,20 +282,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 18px 16px;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 
 .onboarding-login-page .oauth-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -303,18 +303,20 @@
   filter: brightness(0) invert(1);
 }
 
+/* Google: vit bakgrund, mörk text, subtil border */
 .onboarding-login-page .oauth-btn-google {
   background: #ffffff;
-  color: #3c4043;
-  border-color: #dadce0;
+  color: #1f1f1f;
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
 .onboarding-login-page .oauth-btn-google:hover {
   background: #f8f9fa;
-  border-color: #d2d3d4;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
+/* GitHub: svart bakgrund, vit text */
 .onboarding-login-page .oauth-btn-github {
   background: #000000;
   color: #ffffff;
@@ -323,9 +325,10 @@
 
 .onboarding-login-page .oauth-btn-github:hover {
   background: #1a1a1a;
-  border-color: #333333;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Apple: svart bakgrund, vit text */
 .onboarding-login-page .oauth-btn-apple {
   background: #000000;
   color: #ffffff;
@@ -334,7 +337,7 @@
 
 .onboarding-login-page .oauth-btn-apple:hover {
   background: #1a1a1a;
-  border-color: #333333;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 900px) {
