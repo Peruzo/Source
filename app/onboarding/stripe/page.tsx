@@ -9,5 +9,5 @@ export default async function StripePage() {
     redirect('/onboarding/login');
   }
 
-  return <StripeStart />;
+  return <StripeStart userSub={session.user.sub ?? ''} />;
 }

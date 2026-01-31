@@ -29,7 +29,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+    if (sessionId !== session.user.sub) {
+      return NextResponse.json(
+        { success: false, message: 'Onboarding session does not match current user' },
+        { status: 403 }
+      );
+    }
+
+    // Samma base URL som Auth0 – ingen localhost/dev-fallback i prod
+    const baseUrl =
+      process.env.APP_BASE_URL ||
+      process.env.AUTH0_BASE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      new URL(request.url).origin;
 
     const account = await stripe.accounts.create({
       type: 'express',
@@ -47,7 +59,7 @@ export async function POST(request: Request) {
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: `${baseUrl}/onboarding/stripe?sessionId=${sessionId}`,
-      return_url: `${baseUrl}/onboarding/success?sessionId=${sessionId}&account=${account.id}`,
+      return_url: `${baseUrl}/onboarding/success?account=${account.id}&sessionId=${sessionId}`,
       type: 'account_onboarding',
     });
 

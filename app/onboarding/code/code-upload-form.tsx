@@ -8,7 +8,7 @@ import {
   saveOnboardingData,
 } from '@/lib/onboarding/storage';
 
-export function CodeUploadForm() {
+export function CodeUploadForm({ userSub }: { userSub: string }) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState('');
   const [repoLink, setRepoLink] = useState('');
@@ -18,16 +18,16 @@ export function CodeUploadForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const stored = loadOnboardingData();
+    if (!userSub) return;
+    const stored = loadOnboardingData(userSub);
     if (stored.questions?.hasExistingSite !== 'Ja') {
       router.replace('/onboarding/questions');
       return;
     }
-
-    setSessionId(getOrCreateSessionId());
+    setSessionId(getOrCreateSessionId(userSub));
     setRepoLink(stored.code?.repoLink || '');
     setCodeText(stored.code?.codeText || '');
-  }, [router]);
+  }, [userSub, router]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -59,7 +59,7 @@ export function CodeUploadForm() {
       return;
     }
 
-    saveOnboardingData({
+    saveOnboardingData(userSub, {
       code: {
         repoLink,
         codeText,

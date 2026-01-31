@@ -24,6 +24,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing data' }, { status: 400 });
     }
 
+    if (sessionId !== session.user.sub) {
+      return NextResponse.json(
+        { success: false, message: 'Onboarding session does not match current user' },
+        { status: 403 }
+      );
+    }
+
     const payload = {
       idempotencyKey: `onboarding-${sessionId}-${step}`,
       sessionId,

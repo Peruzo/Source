@@ -9,5 +9,10 @@ export default async function QuestionsPage() {
     redirect('/onboarding/login');
   }
 
-  return <QuestionsForm userEmail={session.user.email || ''} />;
+  return (
+    <QuestionsForm
+      userEmail={session.user.email || ''}
+      userSub={session.user.sub ?? ''}
+    />
+  );
 }

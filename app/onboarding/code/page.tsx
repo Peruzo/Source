@@ -9,5 +9,5 @@ export default async function CodePage() {
     redirect('/onboarding/login');
   }
 
-  return <CodeUploadForm />;
+  return <CodeUploadForm userSub={session.user.sub ?? ''} />;
 }

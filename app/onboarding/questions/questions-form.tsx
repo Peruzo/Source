@@ -22,7 +22,13 @@ const defaultData: QuestionsData = {
   customerCount: '',
 };
 
-export function QuestionsForm({ userEmail }: { userEmail: string }) {
+export function QuestionsForm({
+  userEmail,
+  userSub,
+}: {
+  userEmail: string;
+  userSub: string;
+}) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState('');
   const [formData, setFormData] = useState<QuestionsData>(defaultData);
@@ -30,10 +36,11 @@ export function QuestionsForm({ userEmail }: { userEmail: string }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const stored = loadOnboardingData();
+    if (!userSub) return;
+    const stored = loadOnboardingData(userSub);
     setFormData({ ...defaultData, ...stored.questions });
-    setSessionId(getOrCreateSessionId());
-  }, []);
+    setSessionId(getOrCreateSessionId(userSub));
+  }, [userSub]);
 
   const updateField = (field: keyof QuestionsData, value: QuestionsData[keyof QuestionsData]) => {
     setFormData((current) => ({ ...current, [field]: value }));
@@ -73,7 +80,7 @@ export function QuestionsForm({ userEmail }: { userEmail: string }) {
       return;
     }
 
-    saveOnboardingData({
+    saveOnboardingData(userSub, {
       questions: formData,
     });
 

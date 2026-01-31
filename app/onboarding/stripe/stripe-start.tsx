@@ -4,21 +4,21 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateSessionId, loadOnboardingData } from '@/lib/onboarding/storage';
 
-export function StripeStart() {
+export function StripeStart({ userSub }: { userSub: string }) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const stored = loadOnboardingData();
+    if (!userSub) return;
+    const stored = loadOnboardingData(userSub);
     if (!stored.questions) {
       router.replace('/onboarding/questions');
       return;
     }
-
-    setSessionId(getOrCreateSessionId());
-  }, [router]);
+    setSessionId(getOrCreateSessionId(userSub));
+  }, [userSub, router]);
 
   const startStripe = async () => {
     setLoading(true);
