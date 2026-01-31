@@ -200,7 +200,8 @@
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-.onboarding-login-page .login-box button {
+/* Endast primära CTA (Skapa konto) – OAuth-knappar ska inte få teal-stil */
+.onboarding-login-page .login-box button[type="submit"] {
   width: 100%;
   padding: 16px;
   background: #00d1b2;
@@ -213,7 +214,7 @@
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.onboarding-login-page .login-box button:hover {
+.onboarding-login-page .login-box button[type="submit"]:hover {
   background: #00e5c0;
   transform: translateY(-2px);
 }
