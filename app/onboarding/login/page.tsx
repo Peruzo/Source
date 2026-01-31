@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import './onboarding-login.css';
 
 /* Öga-ikon enligt customer portal design-spec (stroke #ffffffaa) */
@@ -20,7 +19,6 @@ const hideIcon = `
 const AUTH_RETURN = '/onboarding/questions';
 
 export default function OnboardingLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -48,7 +46,8 @@ export default function OnboardingLoginPage() {
       setPasswordError('Lösenordet måste vara minst 8 tecken');
       return;
     }
-    router.push(signupUrl);
+    // Full browser redirect – OAuth måste triggas via redirect, inte fetch/router
+    window.location.href = signupUrl;
   };
 
   const handleOAuth = (connection: string) => {
@@ -56,7 +55,8 @@ export default function OnboardingLoginPage() {
       returnTo: AUTH_RETURN,
       connection,
     });
-    router.push(`/api/auth/login?${params.toString()}`);
+    // Full browser redirect – undvik CORS/RSC; Auth0 /authorize kräver riktig redirect
+    window.location.href = `/api/auth/login?${params.toString()}`;
   };
 
   const togglePasswordVisibility = () => {
