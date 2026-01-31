@@ -272,21 +272,69 @@
 }
 
 .onboarding-login-page .oauth-buttons {
-  margin-top: 16px;
+  margin-top: 24px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
-.onboarding-login-page .oauth-buttons button {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.onboarding-login-page .oauth-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 18px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
-.onboarding-login-page .oauth-buttons button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: #00d1b2;
-  color: #00d1b2;
+.onboarding-login-page .oauth-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.onboarding-login-page .oauth-icon-invert {
+  filter: brightness(0) invert(1);
+}
+
+.onboarding-login-page .oauth-btn-google {
+  background: #ffffff;
+  color: #3c4043;
+  border-color: #dadce0;
+}
+
+.onboarding-login-page .oauth-btn-google:hover {
+  background: #f8f9fa;
+  border-color: #d2d3d4;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.onboarding-login-page .oauth-btn-github {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.onboarding-login-page .oauth-btn-github:hover {
+  background: #1a1a1a;
+  border-color: #333333;
+}
+
+.onboarding-login-page .oauth-btn-apple {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.onboarding-login-page .oauth-btn-apple:hover {
+  background: #1a1a1a;
+  border-color: #333333;
 }
 
 @media (max-width: 900px) {

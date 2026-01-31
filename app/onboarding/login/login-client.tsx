@@ -169,14 +169,17 @@ export function LoginClient() {
               <button type="submit">Skapa konto</button>
             </form>
             <div className="oauth-buttons">
-              <button type="button" onClick={() => handleOAuth('google-oauth2')}>
-                Fortsätt med Google
+              <button type="button" onClick={() => handleOAuth('google-oauth2')} className="oauth-btn oauth-btn-google">
+                <img src="/Images/google-icon-logo-svgrepo-com.svg" alt="" className="oauth-icon" />
+                <span>Fortsätt med Google</span>
               </button>
-              <button type="button" onClick={() => handleOAuth('github')}>
-                Fortsätt med GitHub
+              <button type="button" onClick={() => handleOAuth('github')} className="oauth-btn oauth-btn-github">
+                <img src="/Images/github-142-svgrepo-com.svg" alt="" className="oauth-icon oauth-icon-invert" />
+                <span>Fortsätt med GitHub</span>
               </button>
-              <button type="button" onClick={() => handleOAuth('apple')}>
-                Fortsätt med Apple
+              <button type="button" onClick={() => handleOAuth('apple')} className="oauth-btn oauth-btn-apple">
+                <img src="/Images/apple-black-logo-svgrepo-com.svg" alt="" className="oauth-icon oauth-icon-invert" />
+                <span>Fortsätt med Apple</span>
               </button>
             </div>
           </div>
