@@ -177,6 +177,17 @@
   margin-bottom: 30px;
 }
 
+.onboarding-login-page .login-box .name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.onboarding-login-page .login-box .name-row input {
+  margin-bottom: 0;
+}
+
 .onboarding-login-page .login-box input {
   width: 100%;
   padding: 16px;
@@ -339,6 +350,16 @@
 .onboarding-login-page .oauth-btn-apple:hover {
   background: #1a1a1a;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 480px) {
+  .onboarding-login-page .login-box .name-row {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-login-page .login-box .name-row input:first-child {
+    margin-bottom: 20px;
+  }
 }
 
 @media (max-width: 900px) {

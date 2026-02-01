@@ -29,12 +29,16 @@ const AUTH_RETURN = '/onboarding/questions';
 export function LoginClient() {
   const searchParams = useSearchParams();
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const planIdFromUrl = searchParams.get('plan');
@@ -43,18 +47,10 @@ export function LoginClient() {
     setSelectedPlan(getPlan(planId));
   }, [searchParams]);
 
-  const signupUrl = useMemo(() => {
-    const params = new URLSearchParams({
-      returnTo: AUTH_RETURN,
-      screen_hint: 'signup',
-      login_hint: email || '',
-    });
-    return `/api/auth/login?${params.toString()}`;
-  }, [email]);
-
-  const handleCreateAccount = (event: React.FormEvent) => {
+  const handleCreateAccount = async (event: React.FormEvent) => {
     event.preventDefault();
     setPasswordError('');
+    setSubmitError('');
     if (password !== confirmPassword) {
       setPasswordError('Lösenorden matchar inte');
       return;
@@ -63,7 +59,36 @@ export function LoginClient() {
       setPasswordError('Lösenordet måste vara minst 8 tecken');
       return;
     }
-    window.location.href = signupUrl;
+    const trimmedFirst = firstName.trim();
+    const trimmedLast = lastName.trim();
+    if (!trimmedFirst || !trimmedLast) {
+      setSubmitError('Fyll i både förnamn och efternamn');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: trimmedFirst,
+          lastName: trimmedLast,
+          email: email.trim(),
+          password,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubmitError(data.error || data.message || 'Kunde inte skapa konto');
+        setIsSubmitting(false);
+        return;
+      }
+      const loginUrl = data.loginUrl ?? `/api/auth/login?${new URLSearchParams({ returnTo: AUTH_RETURN }).toString()}`;
+      window.location.href = loginUrl;
+    } catch {
+      setSubmitError('Något gick fel. Försök igen.');
+      setIsSubmitting(false);
+    }
   };
 
   const handleOAuth = (connection: string) => {
@@ -108,6 +133,26 @@ export function LoginClient() {
             )}
             <h1>Skapa konto</h1>
             <form onSubmit={handleCreateAccount}>
+              <div className="name-row">
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="Förnamn"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  autoComplete="given-name"
+                />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Efternamn"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  autoComplete="family-name"
+                />
+              </div>
               <input
                 type="email"
                 name="email"
@@ -166,7 +211,14 @@ export function LoginClient() {
                   {passwordError}
                 </p>
               )}
-              <button type="submit">Skapa konto</button>
+              {submitError && (
+                <p className="form-error" role="alert">
+                  {submitError}
+                </p>
+              )}
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Skapar...' : 'Skapa konto'}
+              </button>
             </form>
             <div className="oauth-buttons">
               <button type="button" onClick={() => handleOAuth('google-oauth2')} className="oauth-btn oauth-btn-google">
