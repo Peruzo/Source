@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
+import { checkRepoAccess } from '@/lib/github/repo-utils';
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const sessionId = String(formData.get('sessionId') || '');
-    const repoLink = String(formData.get('repoLink') || '');
+    const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '');
     const file = formData.get('file') as File | null;
 
@@ -24,6 +25,19 @@ export async function POST(request: Request) {
         { success: false, message: 'Onboarding session does not match current user' },
         { status: 403 }
       );
+    }
+
+    // Only repo link, no file/codeText: verify GitHub repo; if private, return flags for GitHub OAuth
+    if (repoLink && !file && !codeText.trim()) {
+      const access = await checkRepoAccess(repoLink);
+      if (access.repoSlug && (access.private || !access.ok)) {
+        return NextResponse.json({
+          success: false,
+          repoPrivate: true,
+          requiresGithubAccess: true,
+          repoSlug: access.repoSlug,
+        });
+      }
     }
 
     let filePayload: null | {

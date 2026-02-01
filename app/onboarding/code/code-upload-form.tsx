@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   getOrCreateSessionId,
   loadOnboardingData,
@@ -10,12 +10,15 @@ import {
 
 export function CodeUploadForm({ userSub }: { userSub: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [sessionId, setSessionId] = useState('');
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [privateRepoPrompt, setPrivateRepoPrompt] = useState<{ repoSlug: string } | null>(null);
+  const [githubCallbackError, setGithubCallbackError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userSub) return;
@@ -28,6 +31,13 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
     setRepoLink(stored.code?.repoLink || '');
     setCodeText(stored.code?.codeText || '');
   }, [userSub, router]);
+
+  useEffect(() => {
+    const gh = searchParams.get('github');
+    if (gh === 'denied') setGithubCallbackError('GitHub-kopplingen avbröts.');
+    else if (gh === 'error' || gh === 'access_denied' || gh === 'download_failed')
+      setGithubCallbackError('Kunde inte koppla eller hämta repot. Försök igen.');
+  }, [searchParams]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -53,8 +63,16 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
       body: formData,
     });
 
+    const data = await response.json().catch(() => ({}));
+
+    if (data.repoPrivate === true && data.requiresGithubAccess === true && data.repoSlug) {
+      setPrivateRepoPrompt({ repoSlug: data.repoSlug });
+      setSubmitting(false);
+      return;
+    }
+
     if (!response.ok) {
-      setError('Ett fel uppstod. Försök igen.');
+      setError(data.message || 'Ett fel uppstod. Försök igen.');
       setSubmitting(false);
       return;
     }
@@ -92,7 +110,10 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
           <input
             type="url"
             value={repoLink}
-            onChange={(event) => setRepoLink(event.target.value)}
+            onChange={(event) => {
+              setRepoLink(event.target.value);
+              setPrivateRepoPrompt(null);
+            }}
             className="w-full border border-gray-300 rounded-md p-3"
             placeholder="https://github.com/..."
           />
@@ -109,6 +130,26 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         </div>
 
         {error && <p className="text-red-600">{error}</p>}
+        {githubCallbackError && (
+          <p className="rounded-md bg-amber-50 p-3 text-amber-800" role="alert">
+            {githubCallbackError}
+          </p>
+        )}
+
+        {privateRepoPrompt && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+            <p className="font-medium">🔒 Det här är ett privat repo</p>
+            <p className="mt-1 text-sm">
+              För att vi ska kunna granska koden behöver du ge tillfällig läsåtkomst.
+            </p>
+            <a
+              href={`/api/github/connect?repo=${encodeURIComponent(privateRepoPrompt.repoSlug)}`}
+              className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              Koppla GitHub-konto
+            </a>
+          </div>
+        )}
 
         <button
           type="submit"
