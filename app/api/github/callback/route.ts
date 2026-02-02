@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
-import { createGitHubJob, processGitHubJob } from '@/lib/storage/github-jobs';
+import { createGitHubJob } from '@/lib/storage/github-jobs';
 
 /**
  * GET /api/github/callback?code=...&state=...
@@ -109,8 +109,8 @@ export async function GET(request: NextRequest) {
       heapTotal: Math.round(memoryBefore.heapTotal / 1024 / 1024),
     });
 
-    // Skapa async jobb för att förhindra OOM
-    // Jobbet kommer att processas i bakgrunden
+    // NIVÅ 2: Skapa jobb och spara token (ingen repo-download här)
+    // Jobbet kommer att processas av worker-endpoint utanför request-livscykeln
     const jobId = await createGitHubJob({
       onboardingId: activeOnboardingId,
       userSub: session.user.sub,
@@ -118,17 +118,24 @@ export async function GET(request: NextRequest) {
       owner,
       repoName,
       repoUrl,
+      githubToken: token, // Spara token temporärt i jobbet
     });
 
-    console.log(`[GitHub Callback] Created job ${jobId}, redirecting immediately`);
+    console.log(`[GitHub Callback] Created job ${jobId}, triggering worker`);
 
-    // Processa jobbet async (non-blocking)
-    // Detta kommer att köras i bakgrunden och inte blockera redirect
-    processGitHubJob(jobId, token).catch((error) => {
-      console.error(`[GitHub Callback] Background job processing failed for ${jobId}:`, error);
+    // Trigga worker-endpoint async (non-blocking)
+    // Worker kommer att köra utanför request-livscykeln
+    const baseUrl = getBaseUrl();
+    fetch(`${baseUrl}/api/github/worker`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobId }),
+    }).catch((error) => {
+      console.error(`[GitHub Callback] Failed to trigger worker for ${jobId}:`, error);
+      // Jobbet kan fortfarande processas senare via polling eller retry
     });
 
-    // Redirecta omedelbart - jobbet processas async
+    // Redirecta omedelbart - ingen repo-data laddas här
     return NextResponse.redirect(buildUrl(`/onboarding/code?github=processing&jobId=${jobId}`));
   } finally {
     // Token is not stored; it goes out of scope here. No DB or session persistence.

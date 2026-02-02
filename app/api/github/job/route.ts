@@ -29,7 +29,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    return NextResponse.json({ job });
+    // Rensa känslig data från response (token ska aldrig exponeras)
+    const { githubToken, ...safeJob } = job;
+
+    return NextResponse.json({ 
+      job: safeJob,
+      // Progress information för UI
+      progress: job.progress,
+      status: job.status,
+    });
   } catch (error) {
     console.error('[GitHub Job] Error:', error);
     return NextResponse.json({ error: 'Failed to get job status' }, { status: 500 });

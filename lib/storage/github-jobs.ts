@@ -1,12 +1,10 @@
 import { Storage } from '@google-cloud/storage';
-import { uploadCodePackageZip } from './code-packages';
-import { appendOnboardingEvent } from './onboarding-events';
-import { sendToAdminPortal } from '@/lib/api/admin-portal';
+import { processGitHubJobStreaming } from './github-worker';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
 
-export type GitHubJobStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type GitHubJobStatus = 'queued' | 'running' | 'completed' | 'failed';
 
 export type GitHubJob = {
   jobId: string;
@@ -19,17 +17,28 @@ export type GitHubJob = {
   status: GitHubJobStatus;
   createdAt: string;
   updatedAt: string;
+  startedAt?: string;
+  completedAt?: string;
   error?: string;
+  progress?: {
+    stage: 'fetching' | 'uploading' | 'finalizing';
+    message?: string;
+  };
   uploadResult?: {
     objectUrl: string;
     sizeBytes: number;
     fileName: string;
   };
+  // GitHub token sparas temporärt i jobbet för worker-processering
+  // Token rensas när jobbet är klart eller misslyckat
+  githubToken?: string;
 };
 
 /**
  * Skapar ett nytt GitHub import-jobb.
  * Jobbet kommer att processas async för att förhindra OOM.
+ * 
+ * @param githubToken - GitHub OAuth token (sparas temporärt i jobbet för worker)
  */
 export async function createGitHubJob(params: {
   onboardingId: string;
@@ -38,6 +47,7 @@ export async function createGitHubJob(params: {
   owner: string;
   repoName: string;
   repoUrl: string;
+  githubToken: string;
 }): Promise<string> {
   if (!BUCKET) {
     throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set');
@@ -48,8 +58,14 @@ export async function createGitHubJob(params: {
   
   const job: GitHubJob = {
     jobId,
-    ...params,
-    status: 'pending',
+    onboardingId: params.onboardingId,
+    userSub: params.userSub,
+    repo: params.repo,
+    owner: params.owner,
+    repoName: params.repoName,
+    repoUrl: params.repoUrl,
+    githubToken: params.githubToken, // Spara temporärt för worker
+    status: 'queued',
     createdAt: now,
     updatedAt: now,
   };
@@ -93,135 +109,21 @@ export async function getGitHubJob(jobId: string): Promise<GitHubJob | null> {
 }
 
 /**
- * Processar ett GitHub-jobb async.
- * Hämtar repo som ZIP, streamar direkt till GCS, och uppdaterar onboarding-state.
+ * DEPRECATED: Använd processGitHubJobStreaming istället.
+ * Denna funktion behålls för backwards compatibility men använder buffer (kan orsaka OOM).
  */
 export async function processGitHubJob(
   jobId: string,
   githubToken: string
 ): Promise<void> {
-  const job = await getGitHubJob(jobId);
-  if (!job) {
-    throw new Error(`Job ${jobId} not found`);
-  }
-
-  if (job.status !== 'pending') {
-    console.log(`[GitHub Jobs] Job ${jobId} already processed (status: ${job.status})`);
-    return;
-  }
-
-  // Uppdatera status till processing
-  await updateJobStatus(jobId, 'processing');
-
-  try {
-    const memoryBefore = process.memoryUsage();
-    console.log(`[GitHub Jobs] Processing job ${jobId}, memory before:`, {
-      heapUsed: Math.round(memoryBefore.heapUsed / 1024 / 1024),
-      heapTotal: Math.round(memoryBefore.heapTotal / 1024 / 1024),
-    });
-
-    // Fetch repo as ZIP
-    const zipRes = await fetch(
-      `https://api.github.com/repos/${job.owner}/${job.repoName}/zipball/HEAD`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${githubToken}`,
-        },
-        redirect: 'follow',
-      }
-    );
-
-    if (!zipRes.ok) {
-      throw new Error(`Failed to fetch ZIP: ${zipRes.status} ${zipRes.statusText}`);
-    }
-
-    // Stream direkt till GCS (förhindrar OOM)
-    const zipBuffer = Buffer.from(await zipRes.arrayBuffer());
-    const memoryAfter = process.memoryUsage();
-    console.log(`[GitHub Jobs] ZIP downloaded, memory after:`, {
-      heapUsed: Math.round(memoryAfter.heapUsed / 1024 / 1024),
-      heapTotal: Math.round(memoryAfter.heapTotal / 1024 / 1024),
-      zipSizeMB: Math.round(zipBuffer.length / 1024 / 1024),
-    });
-
-    const uploadResult = await uploadCodePackageZip({
-      buffer: zipBuffer,
-      userSub: job.userSub,
-      repo: job.repo,
-      contentType: 'application/zip',
-      fileName: `${job.repoName}.zip`,
-    });
-
-    // Rensa zipBuffer från minnet så snart som möjligt
-    // zipBuffer går ut ur scope här
-
-    const retrievedAt = new Date().toISOString();
-
-    // Append event till event-logg
-    await appendOnboardingEvent(job.onboardingId, {
-      type: 'code_submitted',
-      payload: {
-        repoLink: job.repoUrl,
-        fileName: uploadResult.fileName,
-      },
-    });
-
-    // Skicka till admin-portalen
-    const payload = {
-      idempotencyKey: `onboarding-${job.onboardingId}-code-github-${job.repo}`,
-      onboardingId: job.onboardingId,
-      sessionId: job.userSub,
-      step: 'code',
-      onboardingStatus: 'påbörjad',
-      user: {
-        sub: job.userSub,
-      },
-      codePackage: {
-        type: 'github',
-        source: 'public_onboarding',
-        status: 'received',
-        github: {
-          repoUrl: job.repoUrl,
-          isPrivate: true,
-          accessStatus: 'granted',
-          retrievedVia: 'oauth',
-          retrievedAt,
-        },
-        zip: {
-          fileName: uploadResult.fileName,
-          sizeBytes: uploadResult.sizeBytes,
-          storage: {
-            type: 'gcs',
-            objectUrl: uploadResult.objectUrl,
-          },
-        },
-      },
-      submittedAt: retrievedAt,
-      source: 'public_onboarding',
-    };
-
-    await sendToAdminPortal('onboarding', payload);
-
-    // Uppdatera jobb med resultat
-    await updateJobStatus(jobId, 'completed', { uploadResult });
-
-    const memoryFinal = process.memoryUsage();
-    console.log(`[GitHub Jobs] Job ${jobId} completed, memory final:`, {
-      heapUsed: Math.round(memoryFinal.heapUsed / 1024 / 1024),
-      heapTotal: Math.round(memoryFinal.heapTotal / 1024 / 1024),
-    });
-  } catch (error) {
-    console.error(`[GitHub Jobs] Error processing job ${jobId}:`, error);
-    await updateJobStatus(jobId, 'failed', { error: error instanceof Error ? error.message : String(error) });
-    throw error;
-  }
+  // Delegera till streaming-versionen
+  return processGitHubJobStreaming(jobId, githubToken);
 }
 
-async function updateJobStatus(
+export async function updateJobStatus(
   jobId: string,
   status: GitHubJobStatus,
-  updates?: { uploadResult?: GitHubJob['uploadResult']; error?: string }
+  updates?: Partial<Pick<GitHubJob, 'uploadResult' | 'error' | 'startedAt' | 'completedAt' | 'progress' | 'githubToken'>>
 ): Promise<void> {
   if (!BUCKET) return;
 
