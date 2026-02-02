@@ -5,15 +5,9 @@ import { Metadata } from 'next';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { ComingSoonCarousel } from '@/components/sections/ComingSoonCarousel';
 
 const projects = [
-  {
-    slug: 'fashion-store',
-    title: 'Fashion E-commerce Store',
-    category: 'E-handel',
-    metric: '+200% trafik på 3 månader',
-    services: 'Design • E-handel • AI-analys',
-  },
   {
     slug: 'saas-platform',
     title: 'Tech Startup Platform',
@@ -91,6 +85,12 @@ export default function PortfolioPage() {
       {/* Portfolio Grid */}
       <section className="py-16 md:py-24 bg-[#F4F7F6]">
         <Container>
+          {/* Coming Soon Carousel Section */}
+          <div className="mb-16">
+            <ComingSoonCarousel />
+          </div>
+
+          {/* Portfolio Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project) => (
               <article
@@ -126,19 +126,6 @@ export default function PortfolioPage() {
                 </div>
               </article>
             ))}
-
-            {/* Coming Soon Card */}
-            <article className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-12 flex items-center justify-center">
-              <div className="text-center">
-                <h3 className="text-xl font-bold text-gray-700 mb-2">
-                  Mer projekt kommer
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Vi bygger just nu åt riktiga kunder.<br />
-                  Portfolio uppdateras löpande.
-                </p>
-              </div>
-            </article>
           </div>
         </Container>
       </section>
