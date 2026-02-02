@@ -35,6 +35,12 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
   useEffect(() => {
     const gh = searchParams.get('github');
     if (gh === 'denied') setGithubCallbackError('GitHub-kopplingen avbröts.');
+    else if (gh === 'upload_failed')
+      setGithubCallbackError('Uppladdning till lagring misslyckades. Försök igen.');
+    else if (gh === 'payload_too_large')
+      setGithubCallbackError('Payload för stor. Kontakta support om problemet kvarstår.');
+    else if (gh === 'payload_error')
+      setGithubCallbackError('Fel i payload. Kontakta support om problemet kvarstår.');
     else if (gh === 'error' || gh === 'access_denied' || gh === 'download_failed')
       setGithubCallbackError('Kunde inte koppla eller hämta repot. Försök igen.');
   }, [searchParams]);
