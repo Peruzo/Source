@@ -80,12 +80,19 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
   useEffect(() => {
     if (!githubJobId || githubJobStatus !== 'processing' || !onboardingId) return;
 
+    // Guard: säkerställ att githubJobId är string (TypeScript narrowing)
+    const jobId = githubJobId;
+    if (!jobId) return;
+
     let cancelled = false;
     let pollInterval: NodeJS.Timeout;
 
     async function pollJobStatus() {
+      // Ytterligare guard för runtime-säkerhet
+      if (!jobId) return;
+
       try {
-        const res = await fetch(`/api/github/job?jobId=${encodeURIComponent(githubJobId)}`);
+        const res = await fetch(`/api/github/job?jobId=${encodeURIComponent(jobId)}`);
         if (!res.ok) {
           throw new Error(`Failed to get job status: ${res.status}`);
         }
