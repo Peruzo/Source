@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
+import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
 
 type QuestionsData = {
@@ -28,16 +29,26 @@ export function QuestionsForm({
   userSub: string;
 }) {
   const router = useRouter();
-  const { state, loading } = useOnboardingState(userSub);
+  const { onboardingId, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId(userSub);
+  const { state, loading: stateLoading } = useOnboardingState(userSub, onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [formData, setFormData] = useState<QuestionsData>(defaultData);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const loading = onboardingIdLoading || stateLoading;
+
   useEffect(() => {
     if (!userSub) return;
     setSessionId(getOrCreateSessionId(userSub));
   }, [userSub]);
+
+  // Visa fel om onboardingId saknas
+  useEffect(() => {
+    if (onboardingIdError) {
+      setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
+    }
+  }, [onboardingIdError]);
 
   // Ladda data från backend när state är tillgänglig
   useEffect(() => {
@@ -57,6 +68,11 @@ export function QuestionsForm({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    if (!onboardingId) {
+      setError('Onboarding är inte initierat. Ladda om sidan.');
+      return;
+    }
+
     if (!isComplete) {
       setError('Svara på alla frågor för att fortsätta.');
       return;
@@ -67,6 +83,7 @@ export function QuestionsForm({
 
     const payload = {
       sessionId,
+      onboardingId,
       step: 'questions',
       data: {
         ...formData,

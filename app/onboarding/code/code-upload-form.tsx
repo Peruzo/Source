@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
+import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
 
 export function CodeUploadForm({ userSub }: { userSub: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { state, loading } = useOnboardingState(userSub);
+  const { onboardingId, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId(userSub);
+  const { state, loading: stateLoading } = useOnboardingState(userSub, onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
@@ -18,11 +20,22 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
   const [error, setError] = useState('');
   const [privateRepoPrompt, setPrivateRepoPrompt] = useState<{ repoSlug: string } | null>(null);
   const [githubCallbackError, setGithubCallbackError] = useState<string | null>(null);
+  const [githubJobId, setGithubJobId] = useState<string | null>(null);
+  const [githubJobStatus, setGithubJobStatus] = useState<'processing' | 'completed' | 'failed' | null>(null);
+
+  const loading = onboardingIdLoading || stateLoading;
 
   useEffect(() => {
     if (!userSub) return;
     setSessionId(getOrCreateSessionId(userSub));
   }, [userSub]);
+
+  // Visa fel om onboardingId saknas
+  useEffect(() => {
+    if (onboardingIdError) {
+      setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
+    }
+  }, [onboardingIdError]);
 
   // Ladda data från backend när state är tillgänglig
   useEffect(() => {
@@ -39,20 +52,84 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
 
   useEffect(() => {
     const gh = searchParams.get('github');
-    if (gh === 'denied') setGithubCallbackError('GitHub-kopplingen avbröts.');
-    else if (gh === 'upload_failed')
+    const jobId = searchParams.get('jobId');
+    
+    if (gh === 'processing' && jobId) {
+      setGithubJobId(jobId);
+      setGithubJobStatus('processing');
+      setGithubCallbackError(null);
+    } else if (gh === 'denied') {
+      setGithubCallbackError('GitHub-kopplingen avbröts.');
+      setGithubJobStatus(null);
+    } else if (gh === 'upload_failed') {
       setGithubCallbackError('Uppladdning till lagring misslyckades. Försök igen.');
-    else if (gh === 'payload_too_large')
+      setGithubJobStatus(null);
+    } else if (gh === 'payload_too_large') {
       setGithubCallbackError('Payload för stor. Kontakta support om problemet kvarstår.');
-    else if (gh === 'payload_error')
+      setGithubJobStatus(null);
+    } else if (gh === 'payload_error') {
       setGithubCallbackError('Fel i payload. Kontakta support om problemet kvarstår.');
-    else if (gh === 'error' || gh === 'access_denied' || gh === 'download_failed')
+      setGithubJobStatus(null);
+    } else if (gh === 'error' || gh === 'access_denied' || gh === 'download_failed') {
       setGithubCallbackError('Kunde inte koppla eller hämta repot. Försök igen.');
+      setGithubJobStatus(null);
+    }
   }, [searchParams]);
+
+  // Poll GitHub jobb-status när processing
+  useEffect(() => {
+    if (!githubJobId || githubJobStatus !== 'processing' || !onboardingId) return;
+
+    let cancelled = false;
+    let pollInterval: NodeJS.Timeout;
+
+    async function pollJobStatus() {
+      try {
+        const res = await fetch(`/api/github/job?jobId=${encodeURIComponent(githubJobId)}`);
+        if (!res.ok) {
+          throw new Error(`Failed to get job status: ${res.status}`);
+        }
+        const data = await res.json();
+        const job = data.job;
+
+        if (cancelled) return;
+
+        if (job.status === 'completed') {
+          setGithubJobStatus('completed');
+          setGithubCallbackError(null);
+          // Reload onboarding state för att få uppdaterad code-data
+          window.location.reload();
+        } else if (job.status === 'failed') {
+          setGithubJobStatus('failed');
+          setGithubCallbackError(job.error || 'GitHub import misslyckades.');
+        } else if (job.status === 'processing' || job.status === 'pending') {
+          // Fortsätt polla
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('[Code Upload] Error polling job status:', err);
+        }
+      }
+    }
+
+    // Polla var 2:e sekund
+    pollInterval = setInterval(pollJobStatus, 2000);
+    pollJobStatus(); // Kör direkt också
+
+    return () => {
+      cancelled = true;
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [githubJobId, githubJobStatus, onboardingId]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
+
+    if (!onboardingId) {
+      setError('Onboarding är inte initierat. Ladda om sidan.');
+      return;
+    }
 
     if (!repoLink && !codeText && !file) {
       setError('Lägg till ZIP eller klistra in kod/repo-länk.');
@@ -63,6 +140,7 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
 
     const formData = new FormData();
     formData.append('sessionId', sessionId);
+    formData.append('onboardingId', onboardingId);
     formData.append('repoLink', repoLink);
     formData.append('codeText', codeText);
     if (file) {
@@ -142,14 +220,21 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
           </p>
         )}
 
-        {privateRepoPrompt && (
+        {githubJobStatus === 'processing' && (
+          <div className="rounded-md bg-blue-50 p-3 text-blue-800" role="alert">
+            <p className="font-medium">⏳ Processing repository...</p>
+            <p className="mt-1 text-sm">Vi hämtar och laddar upp repot. Detta kan ta några sekunder.</p>
+          </div>
+        )}
+
+        {privateRepoPrompt && onboardingId && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
             <p className="font-medium">🔒 Det här är ett privat repo</p>
             <p className="mt-1 text-sm">
               För att vi ska kunna granska koden behöver du ge tillfällig läsåtkomst.
             </p>
             <a
-              href={`/api/github/connect?repo=${encodeURIComponent(privateRepoPrompt.repoSlug)}`}
+              href={`/api/github/connect?repo=${encodeURIComponent(privateRepoPrompt.repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`}
               className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
             >
               Koppla GitHub-konto
@@ -160,9 +245,9 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         <button
           type="submit"
           className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          disabled={submitting}
+          disabled={submitting || githubJobStatus === 'processing' || !onboardingId}
         >
-          {submitting ? 'Sparar...' : 'Fortsätt till Stripe'}
+          {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : 'Fortsätt till Stripe'}
         </button>
       </form>
     </section>

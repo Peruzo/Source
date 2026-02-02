@@ -3,6 +3,7 @@ import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const sessionId = String(formData.get('sessionId') || '');
+    const providedOnboardingId = formData.get('onboardingId')?.toString();
 
     if (!sessionId) {
       return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
@@ -35,6 +37,10 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
+
+    // Hämta eller skapa aktiv onboardingId
+    const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(userSub);
+    console.log('[Onboarding Code] Using onboardingId:', onboardingId);
 
     const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '');
@@ -71,9 +77,9 @@ export async function POST(request: Request) {
     }
 
     // Append event till event-logg (append-only, ingen read-modify-write)
-    // userSub är redan verifierat ovan
+    // onboardingId är redan hämtat/skapat ovan
     try {
-      await appendOnboardingEvent(userSub, {
+      await appendOnboardingEvent(onboardingId, {
         type: 'code_submitted',
         payload: {
           repoLink,
@@ -87,7 +93,8 @@ export async function POST(request: Request) {
     }
 
     const payload = {
-      idempotencyKey: `onboarding-${sessionId}-code`,
+      idempotencyKey: `onboarding-${onboardingId}-code`,
+      onboardingId,
       sessionId,
       step: 'code',
       onboardingStatus: 'påbörjad',

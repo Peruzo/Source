@@ -1,15 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 /**
- * GET /api/onboarding
+ * GET /api/onboarding?onboardingId=...
  * Hämtar onboarding-state för autentiserad användare.
  * State rekonstrueras från append-only event-logg via reducer.
  * Om inga events finns, returneras tom state (skapar inget event).
+ * Om onboardingId saknas, hämtas/skapas aktiv onboardingId.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth0.getSession();
     
@@ -20,19 +22,28 @@ export async function GET() {
     }
 
     const userSub = session.user.sub;
-    console.log('[Onboarding GET] userSub =', userSub);
+    const searchParams = request.nextUrl.searchParams;
+    let onboardingId = searchParams.get('onboardingId');
     
-    const events = await listOnboardingEvents(userSub);
+    // Om onboardingId saknas, hämta/skapa aktiv onboardingId
+    if (!onboardingId) {
+      onboardingId = await getOrCreateActiveOnboardingId(userSub);
+    }
+    
+    console.log('[Onboarding GET] userSub =', userSub, 'onboardingId =', onboardingId);
+    
+    const events = await listOnboardingEvents(onboardingId);
     
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
-    const state = reduceOnboarding(events, userSub);
+    const state = reduceOnboarding(events, onboardingId, userSub);
     
     if (events.length === 0) {
-      console.log('[Onboarding GET] No events found for userSub, returning empty state');
+      console.log('[Onboarding GET] No events found for onboardingId, returning empty state');
     }
 
     return NextResponse.json({
       state,
+      onboardingId,
       eventsCount: events.length,
     });
   } catch (error) {

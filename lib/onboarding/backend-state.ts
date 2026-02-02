@@ -7,8 +7,11 @@ export type { OnboardingState };
 /**
  * Hook för att hämta onboarding-state från backend.
  * Backend är enda källan till sanning; localStorage används endast för UI/draft.
+ * 
+ * @param userSub - Auth0 user.sub (måste vara autentiserad)
+ * @param onboardingId - OnboardingId för att hämta specifik onboarding-session
  */
-export function useOnboardingState(userSub: string) {
+export function useOnboardingState(userSub: string, onboardingId?: string | null) {
   const [state, setState] = useState<OnboardingState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,11 +22,20 @@ export function useOnboardingState(userSub: string) {
       return;
     }
 
+    // Om onboardingId saknas, vänta tills den är tillgänglig
+    if (onboardingId === undefined || onboardingId === null) {
+      setLoading(true);
+      return;
+    }
+
     let cancelled = false;
 
     async function fetchState() {
       try {
-        const res = await fetch('/api/onboarding');
+        const url = onboardingId 
+          ? `/api/onboarding?onboardingId=${encodeURIComponent(onboardingId)}`
+          : '/api/onboarding';
+        const res = await fetch(url);
         if (!res.ok) {
           throw new Error(`Failed to load onboarding: ${res.status}`);
         }
@@ -49,7 +61,7 @@ export function useOnboardingState(userSub: string) {
     return () => {
       cancelled = true;
     };
-  }, [userSub]);
+  }, [userSub, onboardingId]);
 
   return { state, loading, error };
 }

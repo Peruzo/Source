@@ -4,30 +4,46 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
+import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
 
 export function StripeStart({ userSub }: { userSub: string }) {
   const router = useRouter();
-  const { state, loading: stateLoading } = useOnboardingState(userSub);
+  const { onboardingId, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId(userSub);
+  const { state, loading: stateLoading } = useOnboardingState(userSub, onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const loadingState = onboardingIdLoading || stateLoading;
 
   useEffect(() => {
     if (!userSub) return;
     setSessionId(getOrCreateSessionId(userSub));
   }, [userSub]);
 
+  // Visa fel om onboardingId saknas
+  useEffect(() => {
+    if (onboardingIdError) {
+      setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
+    }
+  }, [onboardingIdError]);
+
   // Verifiera att questions finns i backend-state
   useEffect(() => {
-    if (stateLoading) return;
+    if (loadingState) return;
     if (!state?.questions) {
       router.replace('/onboarding/questions');
       return;
     }
-  }, [state, stateLoading, router]);
+  }, [state, loadingState, router]);
 
   const startStripe = async () => {
+    if (!onboardingId) {
+      setError('Onboarding är inte initierat. Ladda om sidan.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -35,7 +51,7 @@ export function StripeStart({ userSub }: { userSub: string }) {
       const response = await fetch('/api/onboarding/stripe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId, onboardingId }),
       });
 
       if (!response.ok) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
+import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/github/connect?repo=owner/repo
@@ -14,12 +15,17 @@ export async function GET(request: NextRequest) {
   }
 
   const repo = request.nextUrl.searchParams.get('repo');
+  const providedOnboardingId = request.nextUrl.searchParams.get('onboardingId');
+  
   if (!repo || !/^[^/]+\/[^/]+$/.test(repo)) {
     return NextResponse.json(
       { error: 'Ogiltig repo. Använd formatet owner/repo.' },
       { status: 400 }
     );
   }
+
+  // Hämta eller skapa aktiv onboardingId
+  const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(session.user.sub);
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) {
@@ -34,7 +40,7 @@ export async function GET(request: NextRequest) {
   const baseUrl = getBaseUrl();
   const redirectUri = `${baseUrl}/api/github/callback`;
   const state = Buffer.from(
-    JSON.stringify({ repo, sessionId: session.user.sub })
+    JSON.stringify({ repo, sessionId: session.user.sub, onboardingId })
   ).toString('base64url');
 
   const authUrl = new URL('https://github.com/login/oauth/authorize');

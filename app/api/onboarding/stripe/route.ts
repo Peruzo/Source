@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 import { getBaseUrl } from '@/lib/utils/base-url';
+import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
     const userSub = session.user.sub;
     console.log('[Onboarding Stripe] userSub =', userSub);
 
-    const { sessionId } = await request.json();
+    const { sessionId, onboardingId: providedOnboardingId } = await request.json();
     if (!sessionId) {
       return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
     }
@@ -48,6 +49,10 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
+
+    // Hämta eller skapa aktiv onboardingId
+    const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(userSub);
+    console.log('[Onboarding Stripe] Using onboardingId:', onboardingId);
 
     // Använd canonical base URL (throwar error om den saknas, ingen fallback till localhost)
     const baseUrl = getBaseUrl();
@@ -74,9 +79,9 @@ export async function POST(request: Request) {
     });
 
     // Append event till event-logg (append-only, ingen read-modify-write)
-    // userSub är redan verifierat ovan
+    // onboardingId är redan hämtat/skapat ovan
     try {
-      await appendOnboardingEvent(userSub, {
+      await appendOnboardingEvent(onboardingId, {
         type: 'stripe_started',
         payload: { accountId: account.id },
       });
@@ -86,7 +91,8 @@ export async function POST(request: Request) {
     }
 
     await sendToAdminPortal('onboarding', {
-      idempotencyKey: `onboarding-${sessionId}-stripe-start`,
+      idempotencyKey: `onboarding-${onboardingId}-stripe-start`,
+      onboardingId,
       sessionId,
       step: 'stripe_started',
       onboardingStatus: 'påbörjad',

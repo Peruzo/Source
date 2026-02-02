@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 /**
  * POST /api/onboarding/stripe/complete
@@ -25,16 +26,20 @@ export async function POST(request: Request) {
     console.log('[Onboarding Stripe Complete] userSub =', userSub);
 
     const body = await request.json();
-    const { accountId } = body || {};
+    const { accountId, onboardingId: providedOnboardingId } = body || {};
 
     if (!accountId) {
       return NextResponse.json({ success: false, message: 'Missing accountId' }, { status: 400 });
     }
 
+    // Hämta eller skapa aktiv onboardingId
+    const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(userSub);
+    console.log('[Onboarding Stripe Complete] Using onboardingId:', onboardingId);
+
     // Append event till event-logg (append-only, ingen read-modify-write)
-    // userSub är redan deklarerat ovan
+    // onboardingId är redan hämtat/skapat ovan
     try {
-      await appendOnboardingEvent(userSub, {
+      await appendOnboardingEvent(onboardingId, {
         type: 'stripe_completed',
         payload: { accountId },
       });
@@ -45,7 +50,8 @@ export async function POST(request: Request) {
 
     // Skicka till admin-portalen
     await sendToAdminPortal('onboarding', {
-      idempotencyKey: `onboarding-${userSub}-stripe-complete`,
+      idempotencyKey: `onboarding-${onboardingId}-stripe-complete`,
+      onboardingId,
       sessionId: userSub,
       step: 'stripe_completed',
       onboardingStatus: 'redo',

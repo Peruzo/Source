@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     console.log('[Onboarding Step] userSub =', userSub);
 
     const body = await request.json();
-    const { sessionId, step, data } = body || {};
+    const { sessionId, step, data, onboardingId: providedOnboardingId } = body || {};
 
     if (!sessionId || !step) {
       return NextResponse.json({ success: false, message: 'Missing data' }, { status: 400 });
@@ -48,15 +49,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Hämta eller skapa aktiv onboardingId
+    const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(userSub);
+    console.log('[Onboarding Step] Using onboardingId:', onboardingId);
+
     // Append event till event-logg (append-only, ingen read-modify-write)
     try {
       if (step === 'questions') {
-        await appendOnboardingEvent(userSub, {
+        await appendOnboardingEvent(onboardingId, {
           type: 'questions_submitted',
           payload: data,
         });
       } else if (step === 'code') {
-        await appendOnboardingEvent(userSub, {
+        await appendOnboardingEvent(onboardingId, {
           type: 'code_submitted',
           payload: {
             repoLink: data.repoLink,
@@ -65,12 +70,12 @@ export async function POST(request: Request) {
           },
         });
       } else if (step === 'stripe_started') {
-        await appendOnboardingEvent(userSub, {
+        await appendOnboardingEvent(onboardingId, {
           type: 'stripe_started',
           payload: { accountId: data.accountId },
         });
       } else if (step === 'stripe_completed') {
-        await appendOnboardingEvent(userSub, {
+        await appendOnboardingEvent(onboardingId, {
           type: 'stripe_completed',
           payload: { accountId: data.accountId },
         });
@@ -82,7 +87,8 @@ export async function POST(request: Request) {
 
     // Skicka till admin-portalen (befintlig logik)
     const payload = {
-      idempotencyKey: `onboarding-${sessionId}-${step}`,
+      idempotencyKey: `onboarding-${onboardingId}-${step}`,
+      onboardingId,
       sessionId,
       step,
       onboardingStatus: statusMap[step] || 'påbörjad',

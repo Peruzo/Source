@@ -28,13 +28,14 @@ export type OnboardingEvent =
  * Append-only event storage för onboarding.
  * Varje event sparas som egen fil i GCS.
  * Ingen read-modify-write; endast append.
+ * Events är isolerade per onboardingId för att förhindra leak mellan onboarding-sessioner.
  */
 export async function appendOnboardingEvent<T extends OnboardingEventInput>(
-  userSub: string,
+  onboardingId: string,
   event: T
 ): Promise<void> {
-  if (!BUCKET || !userSub) {
-    throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set');
+  if (!BUCKET || !onboardingId) {
+    throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set, and onboardingId is required');
   }
 
   const storage = new Storage(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
@@ -42,7 +43,7 @@ export async function appendOnboardingEvent<T extends OnboardingEventInput>(
 
   const now = new Date().toISOString();
   const timestamp = now.replace(/[:.]/g, '-').replace('T', '_').slice(0, -5); // ISO utan specialtecken
-  const fileName = `onboarding-events/${userSub}/${timestamp}_${event.type}.json`;
+  const fileName = `onboarding-events/${onboardingId}/${timestamp}_${event.type}.json`;
 
   // Bygg fullEvent explicit så TypeScript kan verifiera att type och payload matchar
   const fullEvent: OnboardingEvent = (() => {
@@ -74,16 +75,17 @@ export async function appendOnboardingEvent<T extends OnboardingEventInput>(
 }
 
 /**
- * Listar alla onboarding-events för en användare.
+ * Listar alla onboarding-events för en onboardingId.
  * Sorterar på timestamp (från filnamn).
+ * Events är isolerade per onboardingId för att förhindra leak mellan onboarding-sessioner.
  */
-export async function listOnboardingEvents(userSub: string): Promise<OnboardingEvent[]> {
-  if (!BUCKET || !userSub) return [];
+export async function listOnboardingEvents(onboardingId: string): Promise<OnboardingEvent[]> {
+  if (!BUCKET || !onboardingId) return [];
 
   try {
     const storage = new Storage(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
     const bucket = storage.bucket(BUCKET);
-    const prefix = `onboarding-events/${userSub}/`;
+    const prefix = `onboarding-events/${onboardingId}/`;
 
     const [files] = await bucket.getFiles({ prefix });
 

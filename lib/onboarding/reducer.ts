@@ -1,6 +1,7 @@
 import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
 
 export type OnboardingState = {
+  onboardingId: string;
   userSub: string;
   questions: Record<string, any> | null;
   code: {
@@ -28,11 +29,13 @@ export type OnboardingState = {
  */
 export function reduceOnboarding(
   events: OnboardingEvent[],
+  onboardingId: string,
   userSub: string
 ): OnboardingState {
   // Om inga events finns, returnera helt tom state
   if (events.length === 0) {
     return {
+      onboardingId,
       userSub,
       questions: null,
       code: null,
@@ -44,6 +47,7 @@ export function reduceOnboarding(
   }
 
   const state: OnboardingState = {
+    onboardingId,
     userSub,
     questions: null,
     code: null,
