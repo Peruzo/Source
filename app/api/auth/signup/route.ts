@@ -4,8 +4,12 @@ const AUTH_RETURN = '/onboarding/questions';
 
 /**
  * POST /api/auth/signup
- * Skapar användare i Auth0 (database connection) med förnamn och efternamn i user_metadata.
+ * Skapar användare i Auth0 (database connection).
  * Efter lyckad signup returneras loginUrl så klienten kan redirecta till inloggning.
+ * 
+ * Note: firstName/lastName samlas in i UI men skickas inte till Auth0 vid signup.
+ * TODO: After first login, persist given_name / family_name to Auth0 Management API.
+ * This will be done during onboarding, not signup.
  */
 export async function POST(request: NextRequest) {
   const domain = process.env.AUTH0_DOMAIN;
@@ -30,17 +34,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
-  const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
+  // firstName/lastName samlas in i UI men används inte här (sparas senare i onboarding)
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const password = typeof body.password === 'string' ? body.password : '';
 
-  if (!firstName || !lastName) {
-    return NextResponse.json(
-      { error: 'Förnamn och efternamn krävs' },
-      { status: 400 }
-    );
-  }
   if (!email) {
     return NextResponse.json(
       { error: 'E-post krävs' },
@@ -69,17 +66,13 @@ export async function POST(request: NextRequest) {
       connection,
       email,
       password,
-      name: `${firstName} ${lastName}`.trim(),
-      user_metadata: {
-        given_name: firstName,
-        family_name: lastName,
-      },
     }),
   });
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    console.error('[Auth0 Signup Error]', data);
     const message =
       data.code === 'invalid_signup'
         ? data.description || 'E-postadressen används redan eller ogiltiga uppgifter'
