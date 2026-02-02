@@ -1,35 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Metadata } from 'next';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
 import { ComingSoonCarousel } from '@/components/sections/ComingSoonCarousel';
-
-const projects = [
-  {
-    slug: 'saas-platform',
-    title: 'Tech Startup Platform',
-    category: 'SaaS',
-    metric: 'Lanserat på 4 veckor',
-    services: 'Design • Hosting • Support',
-  },
-  {
-    slug: 'restaurant',
-    title: 'Restaurant Website',
-    category: 'Lokal Business',
-    metric: '+150% bokningar',
-    services: 'Design • Booking • AI-insights',
-  },
-  {
-    slug: 'nonprofit',
-    title: 'Non-Profit Organization',
-    category: 'Organisation',
-    metric: '+150% donationer online',
-    services: 'Design • Betalningar',
-  },
-];
 
 export default function PortfolioPage() {
   const [filter, setFilter] = useState('all');
@@ -41,8 +15,6 @@ export default function PortfolioPage() {
     { id: 'local', label: 'Lokal Business' },
     { id: 'other', label: 'Övrigt' },
   ];
-
-  const filteredProjects = filter === 'all' ? projects : projects; // Simplified for now
 
   return (
     <>
@@ -86,46 +58,8 @@ export default function PortfolioPage() {
       <section className="py-16 md:py-24 bg-[#F4F7F6]">
         <Container>
           {/* Coming Soon Carousel Section */}
-          <div className="mb-16">
+          <div>
             <ComingSoonCarousel />
-          </div>
-
-          {/* Portfolio Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project) => (
-              <article
-                key={project.slug}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-200"
-              >
-                {/* Image Placeholder */}
-                <div className="aspect-video bg-gray-200 flex items-center justify-center">
-                  <p className="text-gray-500 text-sm">{project.title}</p>
-                </div>
-                
-                {/* Content */}
-                <div className="p-6">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    {project.category}
-                  </span>
-                  <h2 className="text-2xl font-bold text-black mt-2 mb-3">
-                    {project.title}
-                  </h2>
-                  <p className="text-teal font-semibold mb-3">
-                    {project.metric}
-                  </p>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {project.services}
-                  </p>
-                  <Link
-                    href={`/portfolio/${project.slug}`}
-                    className="text-teal hover:text-teal-hover font-medium inline-flex items-center gap-1"
-                  >
-                    Visa projekt
-                    <span>→</span>
-                  </Link>
-                </div>
-              </article>
-            ))}
           </div>
         </Container>
       </section>
