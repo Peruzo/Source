@@ -31,9 +31,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing accountId' }, { status: 400 });
     }
 
-    const userSub = session.user.sub;
-
     // Append event till event-logg (append-only, ingen read-modify-write)
+    // userSub är redan deklarerat ovan
     try {
       await appendOnboardingEvent(userSub, {
         type: 'stripe_completed',
