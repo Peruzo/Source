@@ -58,9 +58,7 @@ export default function PortfolioPage() {
       <section className="py-16 md:py-24 bg-[#F4F7F6]">
         <Container>
           {/* Coming Soon Carousel Section */}
-          <div>
-            <ComingSoonCarousel />
-          </div>
+          <ComingSoonCarousel />
         </Container>
       </section>
 
