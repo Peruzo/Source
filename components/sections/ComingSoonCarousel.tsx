@@ -180,11 +180,11 @@ export function ComingSoonCarousel() {
         </div>
       </div>
 
-      {/* Full-width Carousel Container - Horizontal scroll without grid constraints */}
+      {/* Full-width Carousel Container - Revolut-style: horizontal scroll, rounded corners, center scale */}
       <div className="relative -mx-6 md:-mx-10 lg:-mx-20 px-6 md:px-10 lg:px-20">
         <div
           ref={carouselRef}
-          className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth scrollbar-hide"
+          className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -198,13 +198,15 @@ export function ComingSoonCarousel() {
             return (
               <div
                 key={card.id}
-                className="flex-shrink-0 w-[320px] md:w-[400px] lg:w-[450px] h-[400px] md:h-[480px] rounded-[20px] overflow-hidden shadow-lg cursor-pointer transition-all duration-500 hover:-translate-y-1 relative"
+                className="flex-shrink-0 w-[280px] md:w-[340px] lg:w-[380px] h-[390px] md:h-[470px] lg:h-[520px] rounded-[24px] overflow-hidden cursor-pointer relative hover:shadow-xl"
                 style={{
                   backgroundColor: card.backgroundColor,
-                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                  transform: isActive ? 'scale(1.08)' : 'scale(1)',
                   zIndex: isActive ? 10 : 1,
                   scrollSnapAlign: 'center',
                   scrollSnapStop: 'always',
+                  transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
+                  boxShadow: isActive ? '0 20px 40px -15px rgba(0,0,0,0.2)' : '0 4px 12px -2px rgba(0,0,0,0.08)',
                 }}
               >
               {/* Background Image */}
