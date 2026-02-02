@@ -71,7 +71,7 @@ export default function ContactPage() {
         <div className="flex-1 relative min-h-[280px] lg:min-h-full order-1 lg:order-2">
           <div className="absolute inset-0">
             <Image
-              src="/firstsectionpicture.png"
+              src="/youngwomensofa.png"
               alt="Kontakta oss"
               fill
               className="object-cover object-center"
