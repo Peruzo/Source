@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
+import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -10,10 +11,15 @@ const statusMap: Record<string, string> = {
   complete: 'klar',
 };
 
+/**
+ * POST /api/onboarding/step
+ * Uppdaterar onboarding-steg för autentiserad användare.
+ * Sparar state i backend (GCS) och skickar till admin-portalen.
+ */
 export async function POST(request: Request) {
   try {
     const session = await auth0.getSession();
-    if (!session?.user) {
+    if (!session?.user?.sub) {
       return NextResponse.json({ success: false }, { status: 401 });
     }
 
@@ -31,6 +37,41 @@ export async function POST(request: Request) {
       );
     }
 
+    const userSub = session.user.sub;
+
+    // Append event till event-logg (append-only, ingen read-modify-write)
+    try {
+      if (step === 'questions') {
+        await appendOnboardingEvent(userSub, {
+          type: 'questions_submitted',
+          payload: data,
+        });
+      } else if (step === 'code') {
+        await appendOnboardingEvent(userSub, {
+          type: 'code_submitted',
+          payload: {
+            repoLink: data.repoLink,
+            codeText: data.codeText,
+            fileName: data.fileName,
+          },
+        });
+      } else if (step === 'stripe_started') {
+        await appendOnboardingEvent(userSub, {
+          type: 'stripe_started',
+          payload: { accountId: data.accountId },
+        });
+      } else if (step === 'stripe_completed') {
+        await appendOnboardingEvent(userSub, {
+          type: 'stripe_completed',
+          payload: { accountId: data.accountId },
+        });
+      }
+    } catch (eventError) {
+      console.error('[Onboarding Step] Error appending event:', eventError);
+      // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
+    }
+
+    // Skicka till admin-portalen (befintlig logik)
     const payload = {
       idempotencyKey: `onboarding-${sessionId}-${step}`,
       sessionId,

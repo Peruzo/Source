@@ -2,11 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  getOrCreateSessionId,
-  loadOnboardingData,
-  saveOnboardingData,
-} from '@/lib/onboarding/storage';
+import { getOrCreateSessionId } from '@/lib/onboarding/storage';
+import { useOnboardingState } from '@/lib/onboarding/backend-state';
 
 type QuestionsData = {
   hasExistingSite: 'Ja' | 'Nej' | '';
@@ -30,6 +27,7 @@ export function QuestionsForm({
   userSub: string;
 }) {
   const router = useRouter();
+  const { state, loading } = useOnboardingState(userSub);
   const [sessionId, setSessionId] = useState('');
   const [formData, setFormData] = useState<QuestionsData>(defaultData);
   const [submitting, setSubmitting] = useState(false);
@@ -37,10 +35,17 @@ export function QuestionsForm({
 
   useEffect(() => {
     if (!userSub) return;
-    const stored = loadOnboardingData(userSub);
-    setFormData({ ...defaultData, ...stored.questions });
     setSessionId(getOrCreateSessionId(userSub));
   }, [userSub]);
+
+  // Ladda data från backend när state är tillgänglig
+  useEffect(() => {
+    if (state?.questions) {
+      setFormData({ ...defaultData, ...state.questions });
+    } else {
+      setFormData(defaultData);
+    }
+  }, [state]);
 
   const updateField = (field: keyof QuestionsData, value: QuestionsData[keyof QuestionsData]) => {
     setFormData((current) => ({ ...current, [field]: value }));
@@ -80,9 +85,8 @@ export function QuestionsForm({
       return;
     }
 
-    saveOnboardingData(userSub, {
-      questions: formData,
-    });
+    // State sparas automatiskt i backend via POST /api/onboarding/step
+    // Ingen localStorage-sparning behövs längre
 
     if (formData.hasExistingSite === 'Ja') {
       router.push('/onboarding/code');

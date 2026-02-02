@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
+import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 
 export async function POST(request: Request) {
   try {
@@ -55,6 +56,23 @@ export async function POST(request: Request) {
         size: file.size,
         base64: buffer.toString('base64'),
       };
+    }
+
+    const userSub = session.user.sub;
+
+    // Append event till event-logg (append-only, ingen read-modify-write)
+    try {
+      await appendOnboardingEvent(userSub, {
+        type: 'code_submitted',
+        payload: {
+          repoLink,
+          codeText,
+          fileName: file?.name,
+        },
+      });
+    } catch (eventError) {
+      console.error('[Onboarding Code] Error appending event:', eventError);
+      // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
     const payload = {

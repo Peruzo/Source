@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
+import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
 
@@ -62,6 +63,19 @@ export async function POST(request: Request) {
       return_url: `${baseUrl}/onboarding/success?account=${account.id}&sessionId=${sessionId}`,
       type: 'account_onboarding',
     });
+
+    const userSub = session.user.sub;
+
+    // Append event till event-logg (append-only, ingen read-modify-write)
+    try {
+      await appendOnboardingEvent(userSub, {
+        type: 'stripe_started',
+        payload: { accountId: account.id },
+      });
+    } catch (eventError) {
+      console.error('[Stripe] Error appending event:', eventError);
+      // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
+    }
 
     await sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${sessionId}-stripe-start`,

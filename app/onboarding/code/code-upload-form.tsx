@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  getOrCreateSessionId,
-  loadOnboardingData,
-  saveOnboardingData,
-} from '@/lib/onboarding/storage';
+import { getOrCreateSessionId } from '@/lib/onboarding/storage';
+import { useOnboardingState } from '@/lib/onboarding/backend-state';
 
 export function CodeUploadForm({ userSub }: { userSub: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { state, loading } = useOnboardingState(userSub);
   const [sessionId, setSessionId] = useState('');
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
@@ -22,15 +20,21 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
 
   useEffect(() => {
     if (!userSub) return;
-    const stored = loadOnboardingData(userSub);
-    if (stored.questions?.hasExistingSite !== 'Ja') {
+    setSessionId(getOrCreateSessionId(userSub));
+  }, [userSub]);
+
+  // Ladda data från backend när state är tillgänglig
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!state?.questions || state.questions.hasExistingSite !== 'Ja') {
       router.replace('/onboarding/questions');
       return;
     }
-    setSessionId(getOrCreateSessionId(userSub));
-    setRepoLink(stored.code?.repoLink || '');
-    setCodeText(stored.code?.codeText || '');
-  }, [userSub, router]);
+    
+    setRepoLink(state.code?.repoLink || '');
+    setCodeText(state.code?.codeText || '');
+  }, [state, loading, router]);
 
   useEffect(() => {
     const gh = searchParams.get('github');
@@ -83,13 +87,8 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
       return;
     }
 
-    saveOnboardingData(userSub, {
-      code: {
-        repoLink,
-        codeText,
-        fileName: file?.name,
-      },
-    });
+    // State sparas automatiskt i backend via POST /api/onboarding/code
+    // Ingen localStorage-sparning behövs längre
 
     router.push('/onboarding/stripe');
   };

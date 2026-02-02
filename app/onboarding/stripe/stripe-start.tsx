@@ -2,23 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getOrCreateSessionId, loadOnboardingData } from '@/lib/onboarding/storage';
+import { getOrCreateSessionId } from '@/lib/onboarding/storage';
+import { useOnboardingState } from '@/lib/onboarding/backend-state';
 
 export function StripeStart({ userSub }: { userSub: string }) {
   const router = useRouter();
+  const { state, loading: stateLoading } = useOnboardingState(userSub);
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!userSub) return;
-    const stored = loadOnboardingData(userSub);
-    if (!stored.questions) {
+    setSessionId(getOrCreateSessionId(userSub));
+  }, [userSub]);
+
+  // Verifiera att questions finns i backend-state
+  useEffect(() => {
+    if (stateLoading) return;
+    if (!state?.questions) {
       router.replace('/onboarding/questions');
       return;
     }
-    setSessionId(getOrCreateSessionId(userSub));
-  }, [userSub, router]);
+  }, [state, stateLoading, router]);
 
   const startStripe = async () => {
     setLoading(true);

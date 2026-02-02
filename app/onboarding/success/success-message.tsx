@@ -1,11 +1,25 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 export function SuccessMessage() {
   const searchParams = useSearchParams();
   const account = searchParams.get('account') ?? '';
   const sessionId = searchParams.get('sessionId') ?? '';
+
+  // Markera Stripe-onboarding som klar i backend när success-sidan laddas
+  useEffect(() => {
+    if (account && sessionId) {
+      fetch('/api/onboarding/stripe/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: account }),
+      }).catch((err) => {
+        console.error('[Success] Error marking Stripe complete:', err);
+      });
+    }
+  }, [account, sessionId]);
 
   return (
     <section className="max-w-2xl mx-auto px-6 py-20 text-center">
