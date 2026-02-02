@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
+import { normalizeError } from '@/lib/utils/normalize-error';
 
 export function StripeStart({ userSub }: { userSub: string }) {
   const router = useRouter();
@@ -30,20 +31,26 @@ export function StripeStart({ userSub }: { userSub: string }) {
     setLoading(true);
     setError('');
 
-    const response = await fetch('/api/onboarding/stripe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId }),
-    });
+    try {
+      const response = await fetch('/api/onboarding/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
 
-    if (!response.ok) {
-      setError('Ett fel uppstod. Försök igen.');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setError(normalizeError(data.error || data.message || 'Ett fel uppstod. Försök igen.'));
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+      window.location.href = data.url;
+    } catch (err) {
+      setError(normalizeError(err));
       setLoading(false);
-      return;
     }
-
-    const data = await response.json();
-    window.location.href = data.url;
   };
 
   return (
@@ -52,7 +59,7 @@ export function StripeStart({ userSub }: { userSub: string }) {
       <p className="text-gray-600 mb-8">
         För att aktivera betalningar behöver vi koppla Stripe. Det tar bara några minuter.
       </p>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {error && <p className="text-red-600 mb-4">{typeof error === 'string' ? error : normalizeError(error)}</p>}
       <button
         type="button"
         onClick={startStripe}

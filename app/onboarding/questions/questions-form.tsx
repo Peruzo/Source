@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
+import { normalizeError } from '@/lib/utils/normalize-error';
 
 type QuestionsData = {
   hasExistingSite: 'Ja' | 'Nej' | '';
@@ -73,14 +74,21 @@ export function QuestionsForm({
       },
     };
 
-    const response = await fetch('/api/onboarding/step', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch('/api/onboarding/step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      setError('Ett fel uppstod. Försök igen.');
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setError(normalizeError(data.error || data.message || 'Ett fel uppstod. Försök igen.'));
+        setSubmitting(false);
+        return;
+      }
+    } catch (err) {
+      setError(normalizeError(err));
       setSubmitting(false);
       return;
     }
@@ -190,7 +198,7 @@ export function QuestionsForm({
           </div>
         </div>
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-red-600">{typeof error === 'string' ? error : normalizeError(error)}</p>}
 
         <button
           type="submit"

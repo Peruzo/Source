@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
+import { normalizeError } from '@/lib/utils/normalize-error';
 
 export function CodeUploadForm({ userSub }: { userSub: string }) {
   const router = useRouter();
@@ -82,7 +83,7 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
     }
 
     if (!response.ok) {
-      setError(data.message || 'Ett fel uppstod. Försök igen.');
+      setError(normalizeError(data.message || data.error || 'Ett fel uppstod. Försök igen.'));
       setSubmitting(false);
       return;
     }
@@ -134,10 +135,10 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
           />
         </div>
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-red-600">{typeof error === 'string' ? error : normalizeError(error)}</p>}
         {githubCallbackError && (
           <p className="rounded-md bg-amber-50 p-3 text-amber-800" role="alert">
-            {githubCallbackError}
+            {typeof githubCallbackError === 'string' ? githubCallbackError : normalizeError(githubCallbackError)}
           </p>
         )}
 

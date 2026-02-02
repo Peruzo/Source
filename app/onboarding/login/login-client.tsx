@@ -9,6 +9,7 @@ import {
   setStoredPlanId,
   type SelectedPlan,
 } from '@/lib/onboarding/selected-plan';
+import { normalizeError } from '@/lib/utils/normalize-error';
 import './onboarding-login.css';
 
 /* Öga-ikon enligt customer portal design-spec (stroke #ffffffaa) */
@@ -79,14 +80,14 @@ export function LoginClient() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setSubmitError(data.error || data.message || 'Kunde inte skapa konto');
+        setSubmitError(normalizeError(data.error || data.message || 'Kunde inte skapa konto'));
         setIsSubmitting(false);
         return;
       }
       const loginUrl = data.loginUrl ?? `/api/auth/login?${new URLSearchParams({ returnTo: AUTH_RETURN }).toString()}`;
       window.location.href = loginUrl;
-    } catch {
-      setSubmitError('Något gick fel. Försök igen.');
+    } catch (err) {
+      setSubmitError(normalizeError(err));
       setIsSubmitting(false);
     }
   };
@@ -208,12 +209,12 @@ export function LoginClient() {
               </div>
               {passwordError && (
                 <p className="form-error" role="alert">
-                  {passwordError}
+                  {typeof passwordError === 'string' ? passwordError : normalizeError(passwordError)}
                 </p>
               )}
               {submitError && (
                 <p className="form-error" role="alert">
-                  {submitError}
+                  {typeof submitError === 'string' ? submitError : normalizeError(submitError)}
                 </p>
               )}
               <button type="submit" disabled={isSubmitting}>
