@@ -54,12 +54,83 @@ export function ComingSoonCarousel() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Detect which card is centered based on scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!carouselRef.current) return;
+
+      const container = carouselRef.current;
+      const scrollLeft = container.scrollLeft;
+      const containerWidth = container.clientWidth;
+      const centerX = scrollLeft + containerWidth / 2;
+
+      // Find which card is closest to center
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+
+      Array.from(container.children).forEach((child, index) => {
+        const card = child as HTMLElement;
+        const cardLeft = card.offsetLeft;
+        const cardWidth = card.offsetWidth;
+        const cardCenter = cardLeft + cardWidth / 2;
+        const distance = Math.abs(centerX - cardCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setCurrentIndex((prev) => {
+        if (closestIndex !== prev) {
+          return closestIndex;
+        }
+        return prev;
+      });
+    };
+
+    const container = carouselRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    container.addEventListener('scroll', throttledHandleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', throttledHandleScroll);
+  }, []);
+
   // Auto-scroll functionality
   useEffect(() => {
     if (isPaused) return;
 
     intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % carouselCards.length);
+      setCurrentIndex((prev) => {
+        const nextIndex = (prev + 1) % carouselCards.length;
+        // Scroll to next card
+        if (carouselRef.current) {
+          const card = carouselRef.current.children[nextIndex] as HTMLElement;
+          if (card) {
+            const cardLeft = card.offsetLeft;
+            const cardWidth = card.offsetWidth;
+            const containerWidth = carouselRef.current.clientWidth;
+            const scrollPosition = cardLeft - (containerWidth - cardWidth) / 2;
+
+            carouselRef.current.scrollTo({
+              left: scrollPosition,
+              behavior: 'smooth',
+            });
+          }
+        }
+        return nextIndex;
+      });
     }, 5000);
 
     return () => {
@@ -69,22 +140,24 @@ export function ComingSoonCarousel() {
     };
   }, [isPaused]);
 
-  // Scroll to current card
+  // Scroll to current card on index change
   useEffect(() => {
     if (!carouselRef.current) return;
 
     const card = carouselRef.current.children[currentIndex] as HTMLElement;
     if (!card) return;
 
+    const cardLeft = card.offsetLeft;
     const cardWidth = card.offsetWidth;
-    const gap = window.innerWidth >= 768 ? 24 : 16; // Responsive gap (gap-4 md:gap-6)
-    const scrollPosition = currentIndex * (cardWidth + gap);
+    const containerWidth = carouselRef.current.clientWidth;
+    const scrollPosition = cardLeft - (containerWidth - cardWidth) / 2;
 
     carouselRef.current.scrollTo({
       left: scrollPosition,
       behavior: 'smooth',
     });
   }, [currentIndex]);
+
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
@@ -107,7 +180,7 @@ export function ComingSoonCarousel() {
         </div>
       </div>
 
-      {/* Full-width Carousel Container - Matching Revolut's side-to-side coverage */}
+      {/* Full-width Carousel Container - Horizontal scroll without grid constraints */}
       <div className="relative -mx-6 md:-mx-10 lg:-mx-20 px-6 md:px-10 lg:px-20">
         <div
           ref={carouselRef}
@@ -115,18 +188,25 @@ export function ComingSoonCarousel() {
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
+            scrollSnapType: 'x mandatory',
           }}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {carouselCards.map((card) => (
-            <div
-              key={card.id}
-              className="flex-shrink-0 w-[320px] md:w-[400px] lg:w-[450px] h-[400px] md:h-[480px] rounded-[20px] overflow-hidden shadow-lg cursor-pointer transition-transform duration-300 hover:-translate-y-1 relative"
-              style={{
-                backgroundColor: card.backgroundColor,
-              }}
-            >
+          {carouselCards.map((card, index) => {
+            const isActive = index === currentIndex;
+            return (
+              <div
+                key={card.id}
+                className="flex-shrink-0 w-[320px] md:w-[400px] lg:w-[450px] h-[400px] md:h-[480px] rounded-[20px] overflow-hidden shadow-lg cursor-pointer transition-all duration-500 hover:-translate-y-1 relative"
+                style={{
+                  backgroundColor: card.backgroundColor,
+                  transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                  zIndex: isActive ? 10 : 1,
+                  scrollSnapAlign: 'center',
+                  scrollSnapStop: 'always',
+                }}
+              >
               {/* Background Image */}
               {card.image && (
                 <div className="absolute inset-0">
@@ -151,8 +231,9 @@ export function ComingSoonCarousel() {
                   {card.text}
                 </p>
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
         {/* Tab Indicators */}
