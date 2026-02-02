@@ -39,6 +39,7 @@ export function LoginClient() {
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const [passwordPolicy, setPasswordPolicy] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export function LoginClient() {
     event.preventDefault();
     setPasswordError('');
     setSubmitError('');
+    setPasswordPolicy(null);
     if (password !== confirmPassword) {
       setPasswordError('Lösenorden matchar inte');
       return;
@@ -80,7 +82,13 @@ export function LoginClient() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setSubmitError(normalizeError(data.error || data.message || 'Kunde inte skapa konto'));
+        // Hantera PASSWORD_WEAK med policy-visning
+        if (data.error === 'PASSWORD_WEAK' && data.policy) {
+          setPasswordPolicy(data.policy);
+          setSubmitError('Lösenordet är för svagt');
+        } else {
+          setSubmitError(normalizeError(data.error || data.message || 'Kunde inte skapa konto'));
+        }
         setIsSubmitting(false);
         return;
       }
@@ -211,6 +219,12 @@ export function LoginClient() {
                 <p className="form-error" role="alert">
                   {typeof passwordError === 'string' ? passwordError : normalizeError(passwordError)}
                 </p>
+              )}
+              {passwordPolicy && (
+                <div className="password-policy-error" role="alert">
+                  <strong>Lösenordet är för svagt</strong>
+                  <pre className="password-policy-text">{passwordPolicy}</pre>
+                </div>
               )}
               {submitError && (
                 <p className="form-error" role="alert">

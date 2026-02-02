@@ -73,6 +73,27 @@ export async function POST(request: NextRequest) {
 
   if (!res.ok) {
     console.error('[Auth0 Signup Error]', data);
+    
+    // Hantera invalid_password (PasswordStrengthError) med strukturerat svar
+    if (data.code === 'invalid_password') {
+      // Auth0 returnerar policy som string i description eller policy-fältet
+      const policy = typeof data.policy === 'string' 
+        ? data.policy 
+        : typeof data.description === 'string' 
+          ? data.description 
+          : null;
+      
+      return NextResponse.json(
+        {
+          error: 'PASSWORD_WEAK',
+          message: 'Lösenordet är för svagt',
+          policy: policy || 'Lösenordet uppfyller inte säkerhetskraven',
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Övriga fel
     const message =
       data.code === 'invalid_signup'
         ? data.description || 'E-postadressen används redan eller ogiltiga uppgifter'

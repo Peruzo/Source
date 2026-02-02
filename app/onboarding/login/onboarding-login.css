@@ -237,6 +237,33 @@
   text-align: left;
 }
 
+.onboarding-login-page .password-policy-error {
+  margin: -8px 0 12px;
+  padding: 12px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.onboarding-login-page .password-policy-error strong {
+  display: block;
+  font-size: 0.95em;
+  color: #ff6b6b;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.onboarding-login-page .password-policy-error .password-policy-text {
+  margin: 0;
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
 .onboarding-login-page .password-container {
   position: relative;
 }
