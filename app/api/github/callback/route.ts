@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { uploadCodePackageZip } from '@/lib/storage/code-packages';
-
-const baseUrl =
-  process.env.APP_BASE_URL ||
-  process.env.AUTH0_BASE_URL ||
-  process.env.NEXT_PUBLIC_SITE_URL;
+import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 
 /**
  * GET /api/github/callback?code=...&state=...
@@ -21,15 +17,11 @@ export async function GET(request: NextRequest) {
 
   if (errorParam) {
     console.warn('[GitHub Callback] OAuth error:', errorParam);
-    return NextResponse.redirect(
-      new URL('/onboarding/code?github=denied', request.url)
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=denied'));
   }
 
   if (!code || !stateRaw) {
-    return NextResponse.redirect(
-      new URL('/onboarding/code?github=error', request.url)
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
   let state: { repo: string; sessionId: string };
@@ -38,37 +30,31 @@ export async function GET(request: NextRequest) {
       Buffer.from(stateRaw, 'base64url').toString('utf8')
     ) as { repo: string; sessionId: string };
   } catch {
-    return NextResponse.redirect(
-      new URL('/onboarding/code?github=error', request.url)
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
   const { repo, sessionId } = state;
   const match = repo.match(/^([^/]+)\/([^/]+)$/);
   if (!match) {
-    return NextResponse.redirect(
-      new URL('/onboarding/code?github=error', request.url)
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
   const [, owner, repoName] = match;
 
   const session = await auth0.getSession();
   if (!session?.user || session.user.sub !== sessionId) {
-    return NextResponse.redirect(
-      new URL('/onboarding/login', request.url)
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/login'));
   }
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-  if (!clientId || !clientSecret || !baseUrl) {
-    console.error('[GitHub Callback] Missing GITHUB_* or APP_BASE_URL');
-    return NextResponse.redirect(
-      new URL('/onboarding/code?github=error', request.url)
-    );
+  if (!clientId || !clientSecret) {
+    console.error('[GitHub Callback] Missing GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET');
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
-  const redirectUri = `${baseUrl.replace(/\/$/, '')}/api/github/callback`;
+  // Använd canonical base URL (throwar error om den saknas)
+  const baseUrl = getBaseUrl();
+  const redirectUri = `${baseUrl}/api/github/callback`;
 
   // Exchange code for access token
   const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
@@ -93,9 +79,7 @@ export async function GET(request: NextRequest) {
 
   if (!tokenData.access_token) {
     console.warn('[GitHub Callback] No access_token:', tokenData.error, tokenData.error_description);
-    return NextResponse.redirect(
-      new URL('/onboarding/code?github=denied', request.url)
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=denied'));
   }
 
   const token = tokenData.access_token;
@@ -113,9 +97,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (!repoRes.ok) {
-      return NextResponse.redirect(
-        new URL('/onboarding/code?github=access_denied', request.url)
-      );
+      return NextResponse.redirect(buildUrl('/onboarding/code?github=access_denied'));
     }
 
     // Fetch repo as ZIP (302 redirect; follow with same auth)
@@ -131,9 +113,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (!zipRes.ok) {
-      return NextResponse.redirect(
-        new URL('/onboarding/code?github=download_failed', request.url)
-      );
+      return NextResponse.redirect(buildUrl('/onboarding/code?github=download_failed'));
     }
 
     const zipBuffer = Buffer.from(await zipRes.arrayBuffer());
@@ -151,9 +131,7 @@ export async function GET(request: NextRequest) {
       });
     } catch (uploadError) {
       console.error('[GitHub Callback] GCS upload failed:', uploadError);
-      return NextResponse.redirect(
-        new URL('/onboarding/code?github=upload_failed', request.url)
-      );
+      return NextResponse.redirect(buildUrl('/onboarding/code?github=upload_failed'));
     }
 
     // zipBuffer and zipRes are local variables in this scope and not included in payload
@@ -209,9 +187,7 @@ export async function GET(request: NextRequest) {
         `Payload keys: ${Object.keys(payload).join(', ')}. ` +
         `CodePackage keys: ${Object.keys(payload.codePackage).join(', ')}`
       );
-      return NextResponse.redirect(
-        new URL('/onboarding/code?github=payload_too_large', request.url)
-      );
+      return NextResponse.redirect(buildUrl('/onboarding/code?github=payload_too_large'));
     }
 
     // Verify no zip buffer or response objects leaked
@@ -231,9 +207,7 @@ export async function GET(request: NextRequest) {
         `Size: ${payloadSizeKB.toFixed(2)} KB. ` +
         `Payload preview (first 500 chars): ${payloadJson.slice(0, 500)}`
       );
-      return NextResponse.redirect(
-        new URL('/onboarding/code?github=payload_error', request.url)
-      );
+      return NextResponse.redirect(buildUrl('/onboarding/code?github=payload_error'));
     }
 
     await sendToAdminPortal('onboarding', payload);
@@ -241,7 +215,8 @@ export async function GET(request: NextRequest) {
     // Token is not stored; it goes out of scope here. No DB or session persistence.
   }
 
-  return NextResponse.redirect(
-    new URL('/onboarding/stripe', request.url)
-  );
+  // Använd canonical base URL för redirect (throwar error om den saknas)
+  const redirectUrl = buildUrl('/onboarding/stripe');
+  console.log(`[GitHub Callback] Redirecting to: ${redirectUrl}`);
+  return NextResponse.redirect(redirectUrl);
 }

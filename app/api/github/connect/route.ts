@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
+import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 
 /**
  * GET /api/github/connect?repo=owner/repo
@@ -9,7 +10,7 @@ import { auth0 } from '@/lib/auth0';
 export async function GET(request: NextRequest) {
   const session = await auth0.getSession();
   if (!session?.user) {
-    return NextResponse.redirect(new URL('/onboarding/login', request.url));
+    return NextResponse.redirect(buildUrl('/onboarding/login'));
   }
 
   const repo = request.nextUrl.searchParams.get('repo');
@@ -21,19 +22,17 @@ export async function GET(request: NextRequest) {
   }
 
   const clientId = process.env.GITHUB_CLIENT_ID;
-  const baseUrl =
-    process.env.APP_BASE_URL ||
-    process.env.AUTH0_BASE_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL;
-  if (!clientId || !baseUrl) {
-    console.error('[GitHub Connect] GITHUB_CLIENT_ID or APP_BASE_URL missing');
+  if (!clientId) {
+    console.error('[GitHub Connect] GITHUB_CLIENT_ID missing');
     return NextResponse.json(
       { error: 'GitHub OAuth är inte konfigurerad' },
       { status: 500 }
     );
   }
 
-  const redirectUri = `${baseUrl.replace(/\/$/, '')}/api/github/callback`;
+  // Använd canonical base URL (throwar error om den saknas)
+  const baseUrl = getBaseUrl();
+  const redirectUri = `${baseUrl}/api/github/callback`;
   const state = Buffer.from(
     JSON.stringify({ repo, sessionId: session.user.sub })
   ).toString('base64url');

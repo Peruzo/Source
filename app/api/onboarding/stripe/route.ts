@@ -3,6 +3,7 @@ import { auth0 } from '@/lib/auth0';
 import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { getBaseUrl } from '@/lib/utils/base-url';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
 
@@ -37,12 +38,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Samma base URL som Auth0 – ingen localhost/dev-fallback i prod
-    const baseUrl =
-      process.env.APP_BASE_URL ||
-      process.env.AUTH0_BASE_URL ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      new URL(request.url).origin;
+    // Använd canonical base URL (throwar error om den saknas, ingen fallback till localhost)
+    const baseUrl = getBaseUrl();
+    console.log(`[Stripe] Using base URL for redirects: ${baseUrl}`);
 
     const account = await stripe.accounts.create({
       type: 'express',
