@@ -77,7 +77,7 @@ export function ComingSoonCarousel() {
     if (!card) return;
 
     const cardWidth = card.offsetWidth;
-    const gap = window.innerWidth >= 768 ? 24 : 16; // Responsive gap
+    const gap = window.innerWidth >= 768 ? 24 : 16; // Responsive gap (gap-4 md:gap-6)
     const scrollPosition = currentIndex * (cardWidth + gap);
 
     carouselRef.current.scrollTo({
@@ -122,12 +122,12 @@ export function ComingSoonCarousel() {
           {carouselCards.map((card) => (
             <div
               key={card.id}
-              className="flex-shrink-0 w-[85vw] md:w-[70vw] lg:w-[60vw] xl:w-[800px] h-[500px] md:h-[650px] lg:h-[700px] rounded-[24px] overflow-hidden shadow-xl cursor-pointer transition-transform duration-300 hover:-translate-y-2 relative"
+              className="flex-shrink-0 w-[320px] md:w-[400px] lg:w-[450px] h-[400px] md:h-[480px] rounded-[20px] overflow-hidden shadow-lg cursor-pointer transition-transform duration-300 hover:-translate-y-1 relative"
               style={{
                 backgroundColor: card.backgroundColor,
               }}
             >
-              {/* Background Image - Larger and more prominent */}
+              {/* Background Image */}
               {card.image && (
                 <div className="absolute inset-0">
                   <img
@@ -136,14 +136,14 @@ export function ComingSoonCarousel() {
                     className="w-full h-full object-cover"
                   />
                   {/* Gradient Overlay for better text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 </div>
               )}
               
               {/* Card Content */}
-              <div className="h-full flex items-end p-8 md:p-10 relative z-10">
+              <div className="h-full flex items-end p-6 relative z-10">
                 <p
-                  className="text-xl md:text-2xl font-semibold leading-tight"
+                  className="text-lg md:text-xl font-semibold leading-tight"
                   style={{
                     color: card.textColor,
                   }}
