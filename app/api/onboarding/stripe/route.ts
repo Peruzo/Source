@@ -22,16 +22,27 @@ export async function POST(request: Request) {
     }
 
     const session = await auth0.getSession();
-    if (!session?.user) {
-      return NextResponse.json({ success: false }, { status: 401 });
+    
+    // Hard guard: kräv autentisering med user.sub
+    if (!session?.user?.sub) {
+      console.warn('[Onboarding Stripe] POST called without authentication');
+      return NextResponse.json(
+        { error: 'NOT_AUTHENTICATED', success: false },
+        { status: 401 }
+      );
     }
+    
+    const userSub = session.user.sub;
+    console.log('[Onboarding Stripe] userSub =', userSub);
 
     const { sessionId } = await request.json();
     if (!sessionId) {
       return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
     }
 
-    if (sessionId !== session.user.sub) {
+    // Verifiera att sessionId matchar user.sub
+    if (sessionId !== userSub) {
+      console.warn('[Onboarding Stripe] sessionId mismatch:', { sessionId, userSub });
       return NextResponse.json(
         { success: false, message: 'Onboarding session does not match current user' },
         { status: 403 }
@@ -47,7 +58,7 @@ export async function POST(request: Request) {
       email: session.user.email || undefined,
       metadata: {
         sessionId,
-        userSub: session.user.sub || '',
+        userSub,
       },
       capabilities: {
         card_payments: { requested: true },
@@ -62,9 +73,8 @@ export async function POST(request: Request) {
       type: 'account_onboarding',
     });
 
-    const userSub = session.user.sub;
-
     // Append event till event-logg (append-only, ingen read-modify-write)
+    // userSub är redan verifierat ovan
     try {
       await appendOnboardingEvent(userSub, {
         type: 'stripe_started',

@@ -7,26 +7,38 @@ import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 export async function POST(request: Request) {
   try {
     const session = await auth0.getSession();
-    if (!session?.user) {
-      return NextResponse.json({ success: false }, { status: 401 });
+    
+    // Hard guard: kräv autentisering med user.sub
+    if (!session?.user?.sub) {
+      console.warn('[Onboarding Code] POST called without authentication');
+      return NextResponse.json(
+        { error: 'NOT_AUTHENTICATED', success: false },
+        { status: 401 }
+      );
     }
+    
+    const userSub = session.user.sub;
+    console.log('[Onboarding Code] userSub =', userSub);
 
     const formData = await request.formData();
     const sessionId = String(formData.get('sessionId') || '');
-    const repoLink = String(formData.get('repoLink') || '').trim();
-    const codeText = String(formData.get('codeText') || '');
-    const file = formData.get('file') as File | null;
 
     if (!sessionId) {
       return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
     }
 
-    if (sessionId !== session.user.sub) {
+    // Verifiera att sessionId matchar user.sub
+    if (sessionId !== userSub) {
+      console.warn('[Onboarding Code] sessionId mismatch:', { sessionId, userSub });
       return NextResponse.json(
         { success: false, message: 'Onboarding session does not match current user' },
         { status: 403 }
       );
     }
+
+    const repoLink = String(formData.get('repoLink') || '').trim();
+    const codeText = String(formData.get('codeText') || '');
+    const file = formData.get('file') as File | null;
 
     // Only repo link, no file/codeText: verify GitHub repo; if private, return flags for GitHub OAuth
     if (repoLink && !file && !codeText.trim()) {
@@ -58,9 +70,8 @@ export async function POST(request: Request) {
       };
     }
 
-    const userSub = session.user.sub;
-
     // Append event till event-logg (append-only, ingen read-modify-write)
+    // userSub är redan verifierat ovan
     try {
       await appendOnboardingEvent(userSub, {
         type: 'code_submitted',

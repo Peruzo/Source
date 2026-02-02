@@ -12,13 +12,24 @@ import { reduceOnboarding } from '@/lib/onboarding/reducer';
 export async function GET() {
   try {
     const session = await auth0.getSession();
+    
+    // Hard guard: kräv autentisering med user.sub
     if (!session?.user?.sub) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.warn('[Onboarding GET] Called without authentication');
+      return NextResponse.json({ error: 'NOT_AUTHENTICATED' }, { status: 401 });
     }
 
     const userSub = session.user.sub;
+    console.log('[Onboarding GET] userSub =', userSub);
+    
     const events = await listOnboardingEvents(userSub);
+    
+    // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
     const state = reduceOnboarding(events, userSub);
+    
+    if (events.length === 0) {
+      console.log('[Onboarding GET] No events found for userSub, returning empty state');
+    }
 
     return NextResponse.json({
       state,

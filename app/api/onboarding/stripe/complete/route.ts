@@ -11,9 +11,18 @@ import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 export async function POST(request: Request) {
   try {
     const session = await auth0.getSession();
+    
+    // Hard guard: kräv autentisering med user.sub
     if (!session?.user?.sub) {
-      return NextResponse.json({ success: false }, { status: 401 });
+      console.warn('[Onboarding Stripe Complete] POST called without authentication');
+      return NextResponse.json(
+        { error: 'NOT_AUTHENTICATED', success: false },
+        { status: 401 }
+      );
     }
+    
+    const userSub = session.user.sub;
+    console.log('[Onboarding Stripe Complete] userSub =', userSub);
 
     const body = await request.json();
     const { accountId } = body || {};

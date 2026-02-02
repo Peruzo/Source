@@ -19,9 +19,18 @@ const statusMap: Record<string, string> = {
 export async function POST(request: Request) {
   try {
     const session = await auth0.getSession();
+    
+    // Hard guard: kräv autentisering med user.sub
     if (!session?.user?.sub) {
-      return NextResponse.json({ success: false }, { status: 401 });
+      console.warn('[Onboarding Step] POST called without authentication');
+      return NextResponse.json(
+        { error: 'NOT_AUTHENTICATED', success: false },
+        { status: 401 }
+      );
     }
+    
+    const userSub = session.user.sub;
+    console.log('[Onboarding Step] userSub =', userSub);
 
     const body = await request.json();
     const { sessionId, step, data } = body || {};
@@ -30,14 +39,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing data' }, { status: 400 });
     }
 
-    if (sessionId !== session.user.sub) {
+    // Verifiera att sessionId matchar user.sub
+    if (sessionId !== userSub) {
+      console.warn('[Onboarding Step] sessionId mismatch:', { sessionId, userSub });
       return NextResponse.json(
         { success: false, message: 'Onboarding session does not match current user' },
         { status: 403 }
       );
     }
-
-    const userSub = session.user.sub;
 
     // Append event till event-logg (append-only, ingen read-modify-write)
     try {

@@ -2,23 +2,23 @@ import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
 
 export type OnboardingState = {
   userSub: string;
-  questions?: Record<string, any>;
-  code?: {
+  questions: Record<string, any> | null;
+  code: {
     repoLink?: string;
     codeText?: string;
     fileName?: string;
-  };
-  stripe?: {
+  } | null;
+  stripe: {
     accountId?: string;
     status?: string;
-  };
-  selectedPlan?: {
+  } | null;
+  plan: {
     planId: string;
     name: string;
     price: string;
-  };
-  updatedAt: string;
-  createdAt: string;
+  } | null;
+  updatedAt: string | null;
+  createdAt: string | null;
 };
 
 /**
@@ -30,17 +30,34 @@ export function reduceOnboarding(
   events: OnboardingEvent[],
   userSub: string
 ): OnboardingState {
+  // Om inga events finns, returnera helt tom state
+  if (events.length === 0) {
+    return {
+      userSub,
+      questions: null,
+      code: null,
+      stripe: null,
+      plan: null,
+      updatedAt: null,
+      createdAt: null,
+    };
+  }
+
   const state: OnboardingState = {
     userSub,
-    updatedAt: '',
-    createdAt: '',
+    questions: null,
+    code: null,
+    stripe: null,
+    plan: null,
+    updatedAt: null,
+    createdAt: null,
   };
 
   // Sortera events på timestamp (at) för deterministisk ordning
   const sortedEvents = [...events].sort((a, b) => a.at.localeCompare(b.at));
 
-  let createdAt = '';
-  let updatedAt = '';
+  let createdAt: string | null = null;
+  let updatedAt: string | null = null;
 
   for (const event of sortedEvents) {
     updatedAt = event.at;
@@ -76,7 +93,7 @@ export function reduceOnboarding(
         break;
 
       case 'plan_selected':
-        state.selectedPlan = {
+        state.plan = {
           planId: event.payload.planId,
           name: event.payload.name,
           price: event.payload.price,
@@ -85,8 +102,8 @@ export function reduceOnboarding(
     }
   }
 
-  state.createdAt = createdAt || new Date().toISOString();
-  state.updatedAt = updatedAt || new Date().toISOString();
+  state.createdAt = createdAt;
+  state.updatedAt = updatedAt;
 
   return state;
 }
