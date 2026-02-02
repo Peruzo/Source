@@ -3,6 +3,20 @@ import { Storage } from '@google-cloud/storage';
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
 
+/**
+ * Input-kontrakt för onboarding-events (utan at-timestamp).
+ * at sätts endast av systemet när eventet sparas.
+ */
+export type OnboardingEventInput =
+  | { type: 'questions_submitted'; payload: Record<string, any> }
+  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string } }
+  | { type: 'stripe_started'; payload: { accountId: string } }
+  | { type: 'stripe_completed'; payload: { accountId: string } }
+  | { type: 'plan_selected'; payload: { planId: string; name: string; price: string } };
+
+/**
+ * Fullständigt onboarding-event med timestamp (sparat i GCS).
+ */
 export type OnboardingEvent =
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string }; at: string }
@@ -15,9 +29,9 @@ export type OnboardingEvent =
  * Varje event sparas som egen fil i GCS.
  * Ingen read-modify-write; endast append.
  */
-export async function appendOnboardingEvent(
+export async function appendOnboardingEvent<T extends OnboardingEventInput>(
   userSub: string,
-  event: Omit<OnboardingEvent, 'at'>
+  event: T
 ): Promise<void> {
   if (!BUCKET || !userSub) {
     throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set');
@@ -30,10 +44,25 @@ export async function appendOnboardingEvent(
   const timestamp = now.replace(/[:.]/g, '-').replace('T', '_').slice(0, -5); // ISO utan specialtecken
   const fileName = `onboarding-events/${userSub}/${timestamp}_${event.type}.json`;
 
-  const fullEvent: OnboardingEvent = {
-    ...event,
-    at: now,
-  };
+  // Bygg fullEvent explicit så TypeScript kan verifiera att type och payload matchar
+  const fullEvent: OnboardingEvent = (() => {
+    switch (event.type) {
+      case 'questions_submitted':
+        return { type: 'questions_submitted', payload: event.payload, at: now };
+      case 'code_submitted':
+        return { type: 'code_submitted', payload: event.payload, at: now };
+      case 'stripe_started':
+        return { type: 'stripe_started', payload: event.payload, at: now };
+      case 'stripe_completed':
+        return { type: 'stripe_completed', payload: event.payload, at: now };
+      case 'plan_selected':
+        return { type: 'plan_selected', payload: event.payload, at: now };
+      default: {
+        const _exhaustive: never = event;
+        throw new Error(`Unknown event type: ${(_exhaustive as any).type}`);
+      }
+    }
+  })();
 
   const file = bucket.file(fileName);
   await file.save(JSON.stringify(fullEvent, null, 2), {
