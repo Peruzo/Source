@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
@@ -22,8 +22,17 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
   const [githubCallbackError, setGithubCallbackError] = useState<string | null>(null);
   const [githubJobId, setGithubJobId] = useState<string | null>(null);
   const [githubJobStatus, setGithubJobStatus] = useState<'processing' | 'completed' | 'failed' | null>(null);
+  /** Sätt när GitHub-job completed (innan state har refetch:ats) så att vi aldrig POST:ar och knappen är klickbar. */
+  const [codePersistedByBackend, setCodePersistedByBackend] = useState(false);
+
+  /** När true: backend har redan code (GitHub/ZIP/tidigare POST). POST /api/onboarding/code får ALDRIG anropas. */
+  const codeAlreadyInBackendRef = useRef(false);
 
   const loading = onboardingIdLoading || stateLoading;
+
+  useEffect(() => {
+    if (state?.code) codeAlreadyInBackendRef.current = true;
+  }, [state?.code]);
 
   useEffect(() => {
     if (!userSub) return;
@@ -108,6 +117,8 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         if (cancelled) return;
 
         if (job.status === 'completed') {
+          codeAlreadyInBackendRef.current = true;
+          setCodePersistedByBackend(true);
           setGithubJobStatus('completed');
           setGithubCallbackError(null);
           // Backend har redan append:at code_submitted; hämta state så att formuläret visar repoLink
@@ -145,21 +156,21 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
     };
   }, [githubJobId, githubJobStatus, onboardingId]);
 
-  const codeFromBackend = Boolean(state?.code);
+  const codeFromBackend = Boolean(state?.code) || codePersistedByBackend;
   const isReadOnly = codeFromBackend;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
 
-    if (!onboardingId) {
-      setError('Onboarding är inte initierat. Ladda om sidan.');
+    // KRITISK: När backend redan har code (oavsett källa) – aldrig POST. Endast navigera.
+    if (state?.code || codeAlreadyInBackendRef.current) {
+      router.push('/onboarding/stripe');
       return;
     }
 
-    // Backend-driven: om kod redan finns i state (t.ex. GitHub completed) skicka inte POST
-    if (codeFromBackend) {
-      router.push('/onboarding/stripe');
+    if (!onboardingId) {
+      setError('Onboarding är inte initierat. Ladda om sidan.');
       return;
     }
 
