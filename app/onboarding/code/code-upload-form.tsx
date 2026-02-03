@@ -145,12 +145,21 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
     };
   }, [githubJobId, githubJobStatus, onboardingId]);
 
+  const codeFromBackend = Boolean(state?.code);
+  const isReadOnly = codeFromBackend;
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
 
     if (!onboardingId) {
       setError('Onboarding är inte initierat. Ladda om sidan.');
+      return;
+    }
+
+    // Backend-driven: om kod redan finns i state (t.ex. GitHub completed) skicka inte POST
+    if (codeFromBackend) {
+      router.push('/onboarding/stripe');
       return;
     }
 
@@ -189,9 +198,6 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
       return;
     }
 
-    // State sparas automatiskt i backend via POST /api/onboarding/code
-    // Ingen localStorage-sparning behövs längre
-
     router.push('/onboarding/stripe');
   };
 
@@ -203,12 +209,27 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         endast som tillfälligt onboarding-material.
       </p>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {codeFromBackend && (
+          <div className="rounded-md bg-emerald-50 p-3 text-emerald-800" role="status">
+            <p className="font-medium">
+              {state?.code?.codeSource === 'github' ? '✓ Kod kopplad via GitHub' : '✓ Kod sparad'}
+            </p>
+            {state?.code?.repoLink && (
+              <p className="mt-1 text-sm truncate" title={state.code.repoLink}>
+                {state.code.repoLink}
+              </p>
+            )}
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Ladda upp ZIP</label>
           <input
             type="file"
             accept=".zip"
             onChange={(event) => setFile(event.target.files?.[0] || null)}
+            disabled={isReadOnly}
+            className={isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
           />
         </div>
 
@@ -221,7 +242,8 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
               setRepoLink(event.target.value);
               setPrivateRepoPrompt(null);
             }}
-            className="w-full border border-gray-300 rounded-md p-3"
+            readOnly={isReadOnly}
+            className={`w-full border border-gray-300 rounded-md p-3 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             placeholder="https://github.com/..."
           />
         </div>
@@ -231,7 +253,8 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
           <textarea
             value={codeText}
             onChange={(event) => setCodeText(event.target.value)}
-            className="w-full border border-gray-300 rounded-md p-3 min-h-[180px]"
+            readOnly={isReadOnly}
+            className={`w-full border border-gray-300 rounded-md p-3 min-h-[180px] ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             placeholder="Klistra in kod här..."
           />
         </div>
@@ -268,7 +291,7 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         <button
           type="submit"
           className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          disabled={submitting || githubJobStatus === 'processing' || !onboardingId}
+          disabled={submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file)}
         >
           {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : 'Fortsätt till Stripe'}
         </button>

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
-import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 export async function POST(request: Request) {
   try {
@@ -47,6 +48,16 @@ export async function POST(request: Request) {
     
     const onboardingId = providedOnboardingId;
     console.log('[Onboarding Code] Using onboardingId:', onboardingId);
+
+    // Förhindra POST när kod redan är kopplad via GitHub (backend-driven)
+    const events = await listOnboardingEvents(onboardingId);
+    const currentState = reduceOnboarding(events, onboardingId, userSub);
+    if (currentState.code?.codeSource === 'github') {
+      return NextResponse.json(
+        { success: false, message: 'Code already linked via GitHub.' },
+        { status: 400 }
+      );
+    }
 
     const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '');

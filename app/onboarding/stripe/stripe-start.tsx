@@ -29,12 +29,15 @@ export function StripeStart({ userSub }: { userSub: string }) {
     }
   }, [onboardingIdError]);
 
-  // Verifiera att questions finns i backend-state
+  // Backend-driven: kräv questions och (om hasExistingSite) code i state
   useEffect(() => {
     if (loadingState) return;
     if (!state?.questions) {
       router.replace('/onboarding/questions');
       return;
+    }
+    if (state.questions.hasExistingSite === 'Ja' && !state?.code) {
+      router.replace('/onboarding/code');
     }
   }, [state, loadingState, router]);
 
