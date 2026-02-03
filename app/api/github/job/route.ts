@@ -85,14 +85,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Rensa känslig data från response (token ska aldrig exponeras)
-    const { githubToken, ...safeJob } = job;
+    // Null-guard efter GCS-kontroll (job kan ha uppdaterats)
+    if (!job) {
+      return NextResponse.json(
+        { error: 'Job not found' },
+        { status: 404 }
+      );
+    }
 
-    return NextResponse.json({ 
+    // Rensa känslig data från response (token ska aldrig exponeras)
+    const { githubToken: _githubToken, ...safeJob } = job;
+
+    return NextResponse.json({
       job: safeJob,
       // Progress information för UI
-      progress: job.progress,
-      status: job.status,
+      progress: safeJob.progress,
+      status: safeJob.status,
     });
   } catch (error) {
     console.error('[GitHub Job] Error:', error);
