@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
           if (exists) {
             // ZIP-filen finns - hämta metadata för size
             const [metadata] = await zipFile.getMetadata();
-            const sizeBytes = parseInt(metadata.size || '0', 10);
+            const sizeBytes = parseInt(String(metadata.size || '0'), 10);
             const sizeMB = Math.round((sizeBytes / 1024 / 1024) * 100) / 100;
             
             const gcsPath = `gs://${BUCKET}/${zipFileName}`;
