@@ -29,17 +29,35 @@ export function useOnboardingId(userSub: string): {
 
     async function fetchOnboardingId() {
       try {
+        // Försök hämta befintlig onboardingId
         const res = await fetch('/api/onboarding/id');
-        if (!res.ok) {
+        
+        if (res.status === 404) {
+          // Ingen onboarding finns - skapa ny explicit
+          const startRes = await fetch('/api/onboarding/start', { method: 'POST' });
+          if (!startRes.ok) {
+            throw new Error(`Failed to start onboarding: ${startRes.status}`);
+          }
+          const startData = await startRes.json();
+          if (!cancelled) {
+            if (startData.onboardingId) {
+              setOnboardingId(startData.onboardingId);
+              setError(null);
+            } else {
+              throw new Error('No onboardingId in start response');
+            }
+          }
+        } else if (!res.ok) {
           throw new Error(`Failed to get onboarding ID: ${res.status}`);
-        }
-        const data = await res.json();
-        if (!cancelled) {
-          if (data.onboardingId) {
-            setOnboardingId(data.onboardingId);
-            setError(null);
-          } else {
-            throw new Error('No onboardingId in response');
+        } else {
+          const data = await res.json();
+          if (!cancelled) {
+            if (data.onboardingId) {
+              setOnboardingId(data.onboardingId);
+              setError(null);
+            } else {
+              throw new Error('No onboardingId in response');
+            }
           }
         }
       } catch (err) {

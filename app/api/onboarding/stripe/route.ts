@@ -4,7 +4,6 @@ import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 import { getBaseUrl } from '@/lib/utils/base-url';
-import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
 
@@ -50,8 +49,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hämta eller skapa aktiv onboardingId
-    const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(userSub);
+    // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
+    if (!providedOnboardingId) {
+      return NextResponse.json(
+        { success: false, message: 'Missing onboardingId. Call POST /api/onboarding/start first.' },
+        { status: 400 }
+      );
+    }
+    
+    const onboardingId = providedOnboardingId;
     console.log('[Onboarding Stripe] Using onboardingId:', onboardingId);
 
     // Använd canonical base URL (throwar error om den saknas, ingen fallback till localhost)

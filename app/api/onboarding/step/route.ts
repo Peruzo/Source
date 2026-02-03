@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
-import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -49,8 +48,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hämta eller skapa aktiv onboardingId
-    const onboardingId = providedOnboardingId || await getOrCreateActiveOnboardingId(userSub);
+    // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
+    if (!providedOnboardingId) {
+      return NextResponse.json(
+        { success: false, message: 'Missing onboardingId. Call POST /api/onboarding/start first.' },
+        { status: 400 }
+      );
+    }
+    
+    const onboardingId = providedOnboardingId;
     console.log('[Onboarding Step] Using onboardingId:', onboardingId);
 
     // Append event till event-logg (append-only, ingen read-modify-write)
