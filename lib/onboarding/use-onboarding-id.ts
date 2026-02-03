@@ -29,12 +29,44 @@ export function useOnboardingId(userSub: string): {
 
     async function fetchOnboardingId() {
       try {
-        // Försök hämta befintlig onboardingId
+        const isCustomSignup =
+          typeof window !== 'undefined' &&
+          (window.location.search.includes('signup=true') || sessionStorage.getItem('customSignup') === 'true');
+
+        // KRITISK FIX (Alternativ B): Vid custom signup anrop ALLTID POST start med forceNew.
+        // GET /api/onboarding/id används INTE alls i signup-fallet – oberoende av session/onboarding.
+        if (isCustomSignup) {
+          const startRes = await fetch('/api/onboarding/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ forceNew: true }),
+          });
+          if (!startRes.ok) {
+            throw new Error(`Failed to start onboarding: ${startRes.status}`);
+          }
+          const startData = await startRes.json();
+          if (!cancelled) {
+            if (startData.onboardingId) {
+              setOnboardingId(startData.onboardingId);
+              setError(null);
+              sessionStorage.removeItem('customSignup');
+            } else {
+              throw new Error('No onboardingId in start response');
+            }
+          }
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
+        // Resume / vanligt flöde: GET id (read-only), vid 404 skapa explicit utan forceNew
         const res = await fetch('/api/onboarding/id');
-        
+
         if (res.status === 404) {
-          // Ingen onboarding finns - skapa ny explicit
-          const startRes = await fetch('/api/onboarding/start', { method: 'POST' });
+          const startRes = await fetch('/api/onboarding/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ forceNew: false }),
+          });
           if (!startRes.ok) {
             throw new Error(`Failed to start onboarding: ${startRes.status}`);
           }

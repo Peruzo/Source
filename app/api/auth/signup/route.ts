@@ -104,8 +104,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // KRITISK FIX: Lägg till signup-flagga i returnTo för att identifiera custom signup
+  const returnTo = `${AUTH_RETURN}?signup=true`;
   const loginUrl = `${appBaseUrl.replace(/\/$/, '')}/api/auth/login?${new URLSearchParams({
-    returnTo: AUTH_RETURN,
+    returnTo,
     login_hint: email,
   }).toString()}`;
 
