@@ -93,3 +93,14 @@ export function setStoredPlanId(planId: string): void {
     // ignore
   }
 }
+
+/**
+ * URL för nästa steg efter code (Stripe). Används av code- och questions-steg så att
+ * routing inte hårdkodas och plan (t.ex. från /onboarding/login?plan=...) bevaras.
+ */
+export function getStripeOnboardingUrl(planId: string | null | undefined): string {
+  if (planId && planId.trim()) {
+    return `/onboarding/stripe?plan=${encodeURIComponent(planId.trim())}`;
+  }
+  return '/onboarding/stripe';
+}

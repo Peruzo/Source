@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
+import { getStoredPlanId, getStripeOnboardingUrl } from '@/lib/onboarding/selected-plan';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
@@ -165,7 +166,8 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
 
     // KRITISK: När backend redan har code (oavsett källa) – aldrig POST. Endast navigera.
     if (state?.code || codeAlreadyInBackendRef.current) {
-      router.push('/onboarding/stripe');
+      const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
+      router.push(getStripeOnboardingUrl(planId));
       return;
     }
 
@@ -209,7 +211,8 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
       return;
     }
 
-    router.push('/onboarding/stripe');
+    const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
+    router.push(getStripeOnboardingUrl(planId));
   };
 
   return (

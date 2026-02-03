@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
+import { getStoredPlanId, getStripeOnboardingUrl } from '@/lib/onboarding/selected-plan';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
@@ -116,7 +117,8 @@ export function QuestionsForm({
     if (formData.hasExistingSite === 'Ja') {
       router.push('/onboarding/code');
     } else {
-      router.push('/onboarding/stripe');
+      const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
+      router.push(getStripeOnboardingUrl(planId));
     }
   };
 
