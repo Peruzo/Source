@@ -104,8 +104,12 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         if (job.status === 'completed') {
           setGithubJobStatus('completed');
           setGithubCallbackError(null);
-          // Reload onboarding state för att få uppdaterad code-data
-          window.location.reload();
+          // Rensa github=processing och jobId från URL så att livscykeln inte återställer processing
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete('github');
+          params.delete('jobId');
+          const q = params.toString();
+          router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
         } else if (job.status === 'failed') {
           setGithubJobStatus('failed');
           setGithubCallbackError(job.error || 'GitHub import misslyckades.');
