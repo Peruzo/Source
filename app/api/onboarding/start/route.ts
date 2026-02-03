@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { createNewOnboardingSession, getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
-import { patchAdminOnboarding } from '@/lib/api/admin-portal';
+import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
 
 /**
  * POST /api/onboarding/start
@@ -46,6 +46,12 @@ export async function POST(request: NextRequest) {
         email,
         primaryContact: { email, name },
       }).catch((err) => console.error('[Onboarding Start] Admin PATCH contact failed:', err));
+      sendToAdminPortal('onboarding', {
+        idempotencyKey: `onboarding-${onboardingId}-start`,
+        publicOnboardingId: onboardingId,
+        user: { email },
+        status: 'started',
+      }).catch((err) => console.error('[Onboarding Start] Ingest onboarding failed:', err));
       return NextResponse.json({ onboardingId, userSub });
     }
     
@@ -57,6 +63,12 @@ export async function POST(request: NextRequest) {
         email,
         primaryContact: { email, name },
       }).catch((err) => console.error('[Onboarding Start] Admin PATCH contact failed:', err));
+      sendToAdminPortal('onboarding', {
+        idempotencyKey: `onboarding-${existingOnboardingId}-start`,
+        publicOnboardingId: existingOnboardingId,
+        user: { email },
+        status: 'started',
+      }).catch((err) => console.error('[Onboarding Start] Ingest onboarding failed:', err));
       return NextResponse.json({ onboardingId: existingOnboardingId, userSub });
     }
     
@@ -67,6 +79,12 @@ export async function POST(request: NextRequest) {
       email,
       primaryContact: { email, name },
     }).catch((err) => console.error('[Onboarding Start] Admin PATCH contact failed:', err));
+    sendToAdminPortal('onboarding', {
+      idempotencyKey: `onboarding-${onboardingId}-start`,
+      publicOnboardingId: onboardingId,
+      user: { email },
+      status: 'started',
+    }).catch((err) => console.error('[Onboarding Start] Ingest onboarding failed:', err));
     return NextResponse.json({ onboardingId, userSub });
   } catch (error) {
     console.error('[Onboarding Start] Error:', error);
