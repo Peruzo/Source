@@ -14,12 +14,14 @@ if (!GITHUB_WORKER_URL) {
  * 
  * @param jobId - GitHub job ID (skapat via createGitHubJob)
  * @param repo - Repository slug (owner/repo)
+ * @param githubAccessToken - GitHub OAuth access token (transient, skickas endast till worker)
  * @returns Promise som resolvas när worker accepterat jobbet
  * @throws Error om worker URL saknas eller request misslyckas
  */
 export async function triggerExternalGitHubWorker(
   jobId: string,
-  repo: string
+  repo: string,
+  githubAccessToken: string
 ): Promise<void> {
   if (!GITHUB_WORKER_URL) {
     throw new Error('GITHUB_WORKER_URL environment variable is not set');
@@ -37,6 +39,7 @@ export async function triggerExternalGitHubWorker(
     body: JSON.stringify({
       jobId,
       repo,
+      githubAccessToken,
     }),
   });
 

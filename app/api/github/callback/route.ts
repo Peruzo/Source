@@ -133,7 +133,8 @@ export async function GET(request: NextRequest) {
 
     // Trigga extern GitHub-worker (non-blocking)
     // Worker hanterar all ZIP-hantering utanför public website
-    triggerExternalGitHubWorker(jobId, repo).catch(async (error) => {
+    // KRITISK FIX: Skicka OAuth-token transient till worker (används för privata repo)
+    triggerExternalGitHubWorker(jobId, repo, token).catch(async (error) => {
       console.error(`[GitHub Callback] Failed to trigger external worker for ${jobId}:`, error);
       // Markera jobbet som failed om worker inte kan triggas
       try {
