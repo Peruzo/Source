@@ -9,7 +9,7 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID;
  */
 export type OnboardingEventInput =
   | { type: 'questions_submitted'; payload: Record<string, any> }
-  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string } }
+  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string } }
   | { type: 'stripe_started'; payload: { accountId: string } }
   | { type: 'stripe_completed'; payload: { accountId: string } }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string } };
@@ -19,7 +19,7 @@ export type OnboardingEventInput =
  */
 export type OnboardingEvent =
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
-  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string }; at: string }
+  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string }; at: string }
   | { type: 'stripe_started'; payload: { accountId: string }; at: string }
   | { type: 'stripe_completed'; payload: { accountId: string }; at: string }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string }; at: string };

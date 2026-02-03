@@ -8,6 +8,8 @@ export type OnboardingState = {
     repoLink?: string;
     codeText?: string;
     fileName?: string;
+    codeSource?: 'github' | 'manual';
+    storageObjectUrl?: string;
   } | null;
   stripe: {
     accountId?: string;
@@ -79,6 +81,8 @@ export function reduceOnboarding(
           repoLink: event.payload.repoLink,
           codeText: event.payload.codeText,
           fileName: event.payload.fileName,
+          codeSource: event.payload.codeSource,
+          storageObjectUrl: event.payload.storageObjectUrl,
         };
         break;
 

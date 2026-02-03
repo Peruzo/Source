@@ -110,6 +110,18 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         if (job.status === 'completed') {
           setGithubJobStatus('completed');
           setGithubCallbackError(null);
+          // Backend har redan append:at code_submitted; hämta state så att formuläret visar repoLink
+          if (onboardingId) {
+            fetch(`/api/onboarding?onboardingId=${encodeURIComponent(onboardingId)}`)
+              .then((r) => r.ok ? r.json() : null)
+              .then((data) => {
+                if (!cancelled && data?.state?.code) {
+                  setRepoLink(data.state.code.repoLink ?? '');
+                  setCodeText(data.state.code.codeText ?? '');
+                }
+              })
+              .catch(() => {});
+          }
         } else if (job.status === 'failed') {
           setGithubJobStatus('failed');
           setGithubCallbackError(job.error || 'GitHub import misslyckades.');

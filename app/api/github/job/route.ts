@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { getGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
+import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 import { Storage } from '@google-cloud/storage';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
@@ -71,6 +72,22 @@ export async function GET(request: NextRequest) {
                 fileName: `${jobId}.zip`,
               },
             });
+
+            // Backend-driven: mutera onboarding-session så att kod räknas som kopplad
+            try {
+              await appendOnboardingEvent(job.onboardingId, {
+                type: 'code_submitted',
+                payload: {
+                  repoLink: job.repoUrl,
+                  fileName: `${jobId}.zip`,
+                  codeSource: 'github',
+                  storageObjectUrl: gcsPath,
+                },
+              });
+              console.log(`[GitHub Job] Onboarding ${job.onboardingId} updated with code_submitted (github)`);
+            } catch (eventErr) {
+              console.error('[GitHub Job] Failed to append code_submitted for onboarding:', eventErr);
+            }
             
             // Hämta uppdaterat jobb
             job = await getGitHubJob(jobId);
