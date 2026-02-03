@@ -86,11 +86,10 @@ export async function GET(request: NextRequest) {
 
   const token = tokenData.access_token;
 
-  // Hämta onboardingId om det saknas (backwards compatibility)
-  const activeOnboardingId = onboardingId || session.user.sub;
-
+  // PROBLEM 2 FIX: Repo kommer från OAuth state (rad 38), inte från onboarding state
+  // Validera repo-access INNAN createGitHubJob för att säkerställa att repo är korrekt och åtkomligt
   try {
-    // Verify user has read access to the repo
+    // Verify user has read access to the repo (repo kommer från OAuth state, inte från gammalt onboarding state)
     const repoRes = await fetch(
       `https://api.github.com/repos/${owner}/${repoName}`,
       {
@@ -102,8 +101,14 @@ export async function GET(request: NextRequest) {
     );
 
     if (!repoRes.ok) {
+      console.warn(`[GitHub Callback] Repo access denied or repo not found: ${repo} (${repoRes.status})`);
       return NextResponse.redirect(buildUrl('/onboarding/code?github=access_denied'));
     }
+
+    // PROBLEM 2 FIX: Hämta onboardingId från state eller skapa ny, INTE från session.user.sub som fallback
+    // Om onboardingId saknas i state, skapa ny onboarding-session
+    const { getOrCreateActiveOnboardingId } = await import('@/lib/storage/onboarding-sessions');
+    const activeOnboardingId = onboardingId || await getOrCreateActiveOnboardingId(session.user.sub);
 
     const repoUrl = `https://github.com/${owner}/${repoName}`;
     const memoryBefore = process.memoryUsage();

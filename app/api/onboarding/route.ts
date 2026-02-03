@@ -34,12 +34,24 @@ export async function GET(request: NextRequest) {
     
     const events = await listOnboardingEvents(onboardingId);
     
+    // PROBLEM 1 FIX: Om onboarding är tom (0 events), skapa alltid ny onboarding-session
+    // Detta förhindrar att gammal onboarding återanvänds vid custom signup
+    if (events.length === 0) {
+      console.log('[Onboarding GET] No events found for onboardingId, creating new onboarding session');
+      const { createNewOnboardingSession } = await import('@/lib/storage/onboarding-sessions');
+      onboardingId = await createNewOnboardingSession(userSub);
+      // Hämta events för den nya sessionen (kommer vara tom)
+      const newEvents = await listOnboardingEvents(onboardingId);
+      const state = reduceOnboarding(newEvents, onboardingId, userSub);
+      return NextResponse.json({
+        state,
+        onboardingId,
+        eventsCount: newEvents.length,
+      });
+    }
+    
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
     const state = reduceOnboarding(events, onboardingId, userSub);
-    
-    if (events.length === 0) {
-      console.log('[Onboarding GET] No events found for onboardingId, returning empty state');
-    }
 
     return NextResponse.json({
       state,
