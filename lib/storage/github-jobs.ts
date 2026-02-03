@@ -1,5 +1,4 @@
 import { Storage } from '@google-cloud/storage';
-import { processGitHubJobStreaming } from './github-worker';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
@@ -109,15 +108,19 @@ export async function getGitHubJob(jobId: string): Promise<GitHubJob | null> {
 }
 
 /**
- * DEPRECATED: Använd processGitHubJobStreaming istället.
- * Denna funktion behålls för backwards compatibility men använder buffer (kan orsaka OOM).
+ * DEPRECATED: Denna funktion är deprecated.
+ * 
+ * GitHub ZIP-hantering har flyttats till extern Cloud Run-worker.
+ * Public website triggar nu extern worker direkt från callback.
+ * 
+ * Denna funktion behålls för backwards compatibility men används inte längre.
  */
 export async function processGitHubJob(
   jobId: string,
   githubToken: string
 ): Promise<void> {
-  // Delegera till streaming-versionen
-  return processGitHubJobStreaming(jobId, githubToken);
+  console.warn(`[GitHub Jobs] processGitHubJob called but deprecated. Job ${jobId} should be handled by external worker.`);
+  throw new Error('This function is deprecated. GitHub import is handled by external worker.');
 }
 
 export async function updateJobStatus(

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
-import { createGitHubJob } from '@/lib/storage/github-jobs';
+import { createGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
+import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
 
 /**
  * GET /api/github/callback?code=...&state=...
- * GitHub OAuth callback: exchange code for token, verify repo access, fetch repo as ZIP,
- * build CodePackage (github), send to admin, redirect to /onboarding/stripe.
- * Token is never stored.
+ * GitHub OAuth callback: exchange code for token, verify repo access, create job,
+ * trigger external worker, redirect to /onboarding/code.
+ * 
+ * Public website orkestrerar endast - extern worker hanterar all ZIP-hantering.
+ * Token sparas temporärt i jobbet för worker-användning.
  */
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
@@ -121,21 +124,24 @@ export async function GET(request: NextRequest) {
       githubToken: token, // Spara token temporärt i jobbet
     });
 
-    console.log(`[GitHub Callback] Created job ${jobId}, triggering worker`);
+    console.log(`[GitHub Callback] Created job ${jobId}, triggering external worker`);
 
-    // Trigga worker-endpoint async (non-blocking)
-    // Worker kommer att köra utanför request-livscykeln
-    const baseUrl = getBaseUrl();
-    fetch(`${baseUrl}/api/github/worker`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobId }),
-    }).catch((error) => {
-      console.error(`[GitHub Callback] Failed to trigger worker for ${jobId}:`, error);
-      // Jobbet kan fortfarande processas senare via polling eller retry
+    // Trigga extern GitHub-worker (non-blocking)
+    // Worker hanterar all ZIP-hantering utanför public website
+    triggerExternalGitHubWorker(jobId, repo).catch(async (error) => {
+      console.error(`[GitHub Callback] Failed to trigger external worker for ${jobId}:`, error);
+      // Markera jobbet som failed om worker inte kan triggas
+      try {
+        await updateJobStatus(jobId, 'failed', {
+          error: `Failed to trigger worker: ${error instanceof Error ? error.message : String(error)}`,
+        });
+      } catch (updateError) {
+        console.error(`[GitHub Callback] Failed to update job status:`, updateError);
+      }
     });
 
     // Redirecta omedelbart - ingen repo-data laddas här
+    // Worker kommer att processera jobbet async utanför request-livscykeln
     return NextResponse.redirect(buildUrl(`/onboarding/code?github=processing&jobId=${jobId}`));
   } finally {
     // Token is not stored; it goes out of scope here. No DB or session persistence.
