@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { getGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { patchAdminOnboarding } from '@/lib/api/admin-portal';
 import { Storage } from '@google-cloud/storage';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
@@ -88,6 +89,18 @@ export async function GET(request: NextRequest) {
             } catch (eventErr) {
               console.error('[GitHub Job] Failed to append code_submitted for onboarding:', eventErr);
             }
+
+            // Synka till admin-portalen så att onboarding visar "har kod" (admin läser från MongoDB, inte events)
+            patchAdminOnboarding(job.onboardingId, 'code', {
+              codePackage: {
+                type: 'github',
+                status: 'received',
+                github: {
+                  repoUrl: job.repoUrl,
+                  storageObjectUrl: gcsPath,
+                },
+              },
+            }).catch((err) => console.error('[GitHub Job] Admin PATCH code failed:', err));
             
             // Hämta uppdaterat jobb
             job = await getGitHubJob(jobId);
