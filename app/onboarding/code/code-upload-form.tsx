@@ -50,6 +50,7 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
     setCodeText(state.code?.codeText || '');
   }, [state, loading, router]);
 
+  // URL-parametrar (github, jobId) används endast för init. Rensa URL direkt så att routing/rerenders inte återställer state.
   useEffect(() => {
     const gh = searchParams.get('github');
     const jobId = searchParams.get('jobId');
@@ -58,6 +59,11 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
       setGithubJobId(jobId);
       setGithubJobStatus('processing');
       setGithubCallbackError(null);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('github');
+      params.delete('jobId');
+      const q = params.toString();
+      router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
     } else if (gh === 'denied') {
       setGithubCallbackError('GitHub-kopplingen avbröts.');
       setGithubJobStatus(null);
@@ -104,12 +110,6 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
         if (job.status === 'completed') {
           setGithubJobStatus('completed');
           setGithubCallbackError(null);
-          // Rensa github=processing och jobId från URL så att livscykeln inte återställer processing
-          const params = new URLSearchParams(searchParams.toString());
-          params.delete('github');
-          params.delete('jobId');
-          const q = params.toString();
-          router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
         } else if (job.status === 'failed') {
           setGithubJobStatus('failed');
           setGithubCallbackError(job.error || 'GitHub import misslyckades.');
