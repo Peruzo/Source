@@ -1,20 +1,18 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
-import { getOrCreateActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
+import { getActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/onboarding/id
- * Hämtar eller skapar aktiv onboardingId för autentiserad användare.
+ * Hämtar aktiv onboardingId för autentiserad användare (read-only).
  * 
- * KRITISK FIX: Återanvänder aktiv onboarding-session om den har events.
- * Skapar ny session endast om:
- * - Ingen onboarding finns, eller
- * - Onboarding är tom (0 events) - förhindrar reuse vid custom signup
+ * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
+ * Returnerar befintlig onboardingId även om den är tom.
  * 
  * Detta säkerställer:
  * - OnboardingId är stabil genom hela onboarding-flödet (/questions → /code → /stripe)
- * - Tom onboarding återanvänds inte vid custom signup
- * - Onboarding med data återanvänds korrekt
+ * - GET-endpoints är read-only och ändrar inte state
+ * - Inga onboarding-loops orsakade av auto-create-logik
  */
 export async function GET() {
   try {
@@ -26,20 +24,11 @@ export async function GET() {
 
     const userSub = session.user.sub;
     
-    // Försök hämta aktiv onboardingId
-    let onboardingId = await getOrCreateActiveOnboardingId(userSub);
+    // Hämtar aktiv onboardingId (read-only, skapar inget)
+    const onboardingId = await getActiveOnboardingId(userSub);
     
-    // Kontrollera om onboarding har events
-    const { listOnboardingEvents } = await import('@/lib/storage/onboarding-events');
-    const events = await listOnboardingEvents(onboardingId);
-    
-    // Om onboarding är tom (0 events), skapa ny session (förhindrar reuse vid custom signup)
-    // Om onboarding har events, återanvänd den (säkerställer stabil onboardingId genom flödet)
-    if (events.length === 0) {
-      console.log(`[Onboarding ID] Onboarding ${onboardingId} is empty, creating new session for userSub: ${userSub}`);
-      onboardingId = await createNewOnboardingSession(userSub);
-    } else {
-      console.log(`[Onboarding ID] Reusing active onboarding ${onboardingId} with ${events.length} events for userSub: ${userSub}`);
+    if (!onboardingId) {
+      return NextResponse.json({ error: 'NO_ONBOARDING_SESSION' }, { status: 404 });
     }
 
     return NextResponse.json({ onboardingId, userSub });

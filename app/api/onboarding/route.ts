@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
-import { getOrCreateActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
+import { getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/onboarding?onboardingId=...
- * Hämtar onboarding-state för autentiserad användare.
+ * Hämtar onboarding-state för autentiserad användare (read-only).
  * State rekonstrueras från append-only event-logg via reducer.
- * Om inga events finns, returneras tom state (skapar inget event).
- * Om onboardingId saknas, hämtas/skapas aktiv onboardingId.
+ * 
+ * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
+ * Om onboardingId saknas → returnera { state: null }
+ * Om 0 events → returnera tom state, skapa INGET
  */
 export async function GET(request: NextRequest) {
   try {
@@ -25,32 +27,26 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     let onboardingId = searchParams.get('onboardingId');
     
-    // Om onboardingId saknas, hämta/skapa aktiv onboardingId
+    // Om onboardingId saknas, försök hämta aktiv onboardingId (read-only)
     if (!onboardingId) {
-      onboardingId = await getOrCreateActiveOnboardingId(userSub);
+      onboardingId = await getActiveOnboardingId(userSub);
+      
+      // Om ingen onboarding-session finns, returnera null state
+      if (!onboardingId) {
+        return NextResponse.json({
+          state: null,
+          onboardingId: null,
+          eventsCount: 0,
+        });
+      }
     }
     
     console.log('[Onboarding GET] userSub =', userSub, 'onboardingId =', onboardingId);
     
     const events = await listOnboardingEvents(onboardingId);
     
-    // PROBLEM 1 FIX: Om onboarding är tom (0 events), skapa alltid ny onboarding-session
-    // Detta förhindrar att gammal onboarding återanvänds vid custom signup
-    if (events.length === 0) {
-      console.log('[Onboarding GET] No events found for onboardingId, creating new onboarding session');
-      const { createNewOnboardingSession } = await import('@/lib/storage/onboarding-sessions');
-      onboardingId = await createNewOnboardingSession(userSub);
-      // Hämta events för den nya sessionen (kommer vara tom)
-      const newEvents = await listOnboardingEvents(onboardingId);
-      const state = reduceOnboarding(newEvents, onboardingId, userSub);
-      return NextResponse.json({
-        state,
-        onboardingId,
-        eventsCount: newEvents.length,
-      });
-    }
-    
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
+    // Inga auto-create-logik här - GET-endpoint är read-only
     const state = reduceOnboarding(events, onboardingId, userSub);
 
     return NextResponse.json({

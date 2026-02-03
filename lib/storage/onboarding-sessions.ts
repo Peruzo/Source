@@ -77,6 +77,44 @@ export async function getOrCreateActiveOnboardingId(userSub: string): Promise<st
 }
 
 /**
+ * Hämtar aktiv onboardingId för en user.sub (read-only, skapar inget).
+ * Returnerar null om ingen onboarding-session finns.
+ * Används i GET-endpoints som ska vara read-only.
+ */
+export async function getActiveOnboardingId(userSub: string): Promise<string | null> {
+  if (!BUCKET || !userSub) {
+    return null;
+  }
+
+  const storage = new Storage(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
+  const bucket = storage.bucket(BUCKET);
+  const sessionsPrefix = `onboarding-sessions/${userSub}/`;
+
+  try {
+    // Lista alla sessions för userSub
+    const [files] = await bucket.getFiles({ prefix: sessionsPrefix });
+    
+    if (files.length > 0) {
+      // Hämta den senaste sessionen (sorterad på filnamn = timestamp)
+      const sortedFiles = files.sort((a, b) => b.name.localeCompare(a.name));
+      const latestFile = sortedFiles[0];
+      
+      const [contents] = await latestFile.download();
+      const session = JSON.parse(contents.toString('utf8')) as OnboardingSession;
+      
+      // Verifiera att sessionen tillhör rätt userSub
+      if (session.userSub === userSub && isValidOnboardingId(session.onboardingId)) {
+        return session.onboardingId;
+      }
+    }
+  } catch (error) {
+    console.warn('[Onboarding Sessions] Error reading existing sessions:', error);
+  }
+
+  return null;
+}
+
+/**
  * Skapar en ny onboarding-session (tvingar ny onboardingId).
  * Används när användaren startar en ny onboarding från början.
  */
