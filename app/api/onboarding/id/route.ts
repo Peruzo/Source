@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
-import { getOrCreateActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
+import { createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/onboarding/id
- * Hämtar eller skapar aktiv onboardingId för autentiserad användare.
- * Returnerar onboardingId som ska användas för alla onboarding-events.
+ * KRITISK FIX: Skapar ALLTID en ny onboarding-session för att förhindra reuse vid custom signup.
+ * 
+ * Varje custom signup ska ALLTID skapa en NY onboarding-session.
+ * userSub får INTE återanvända onboarding.
+ * 
+ * Detta säkerställer att:
+ * - Repo, GitHub-state och frågor ALLTID börjar tomma
+ * - Inga förifyllda onboarding-frågor
+ * - Inget fel repo skickas till worker
+ * - Inga 404 från GitHub trots korrekt worker
  */
 export async function GET() {
   try {
@@ -16,7 +24,12 @@ export async function GET() {
     }
 
     const userSub = session.user.sub;
-    const onboardingId = await getOrCreateActiveOnboardingId(userSub);
+    
+    // KRITISK FIX: Skapa ALLTID ny onboarding-session (blockerar reuse helt i signup-pathen)
+    // Detta förhindrar att gammal onboarding återanvänds vid custom signup
+    const onboardingId = await createNewOnboardingSession(userSub);
+    
+    console.log(`[Onboarding ID] Created new onboarding session: ${onboardingId} for userSub: ${userSub}`);
 
     return NextResponse.json({ onboardingId, userSub });
   } catch (error) {
