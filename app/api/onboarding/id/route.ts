@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
-import { createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
+import { getOrCreateActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/onboarding/id
- * KRITISK FIX: Skapar ALLTID en ny onboarding-session för att förhindra reuse vid custom signup.
+ * Hämtar eller skapar aktiv onboardingId för autentiserad användare.
  * 
- * Varje custom signup ska ALLTID skapa en NY onboarding-session.
- * userSub får INTE återanvända onboarding.
+ * KRITISK FIX: Återanvänder aktiv onboarding-session om den har events.
+ * Skapar ny session endast om:
+ * - Ingen onboarding finns, eller
+ * - Onboarding är tom (0 events) - förhindrar reuse vid custom signup
  * 
- * Detta säkerställer att:
- * - Repo, GitHub-state och frågor ALLTID börjar tomma
- * - Inga förifyllda onboarding-frågor
- * - Inget fel repo skickas till worker
- * - Inga 404 från GitHub trots korrekt worker
+ * Detta säkerställer:
+ * - OnboardingId är stabil genom hela onboarding-flödet (/questions → /code → /stripe)
+ * - Tom onboarding återanvänds inte vid custom signup
+ * - Onboarding med data återanvänds korrekt
  */
 export async function GET() {
   try {
@@ -25,11 +26,21 @@ export async function GET() {
 
     const userSub = session.user.sub;
     
-    // KRITISK FIX: Skapa ALLTID ny onboarding-session (blockerar reuse helt i signup-pathen)
-    // Detta förhindrar att gammal onboarding återanvänds vid custom signup
-    const onboardingId = await createNewOnboardingSession(userSub);
+    // Försök hämta aktiv onboardingId
+    let onboardingId = await getOrCreateActiveOnboardingId(userSub);
     
-    console.log(`[Onboarding ID] Created new onboarding session: ${onboardingId} for userSub: ${userSub}`);
+    // Kontrollera om onboarding har events
+    const { listOnboardingEvents } = await import('@/lib/storage/onboarding-events');
+    const events = await listOnboardingEvents(onboardingId);
+    
+    // Om onboarding är tom (0 events), skapa ny session (förhindrar reuse vid custom signup)
+    // Om onboarding har events, återanvänd den (säkerställer stabil onboardingId genom flödet)
+    if (events.length === 0) {
+      console.log(`[Onboarding ID] Onboarding ${onboardingId} is empty, creating new session for userSub: ${userSub}`);
+      onboardingId = await createNewOnboardingSession(userSub);
+    } else {
+      console.log(`[Onboarding ID] Reusing active onboarding ${onboardingId} with ${events.length} events for userSub: ${userSub}`);
+    }
 
     return NextResponse.json({ onboardingId, userSub });
   } catch (error) {
