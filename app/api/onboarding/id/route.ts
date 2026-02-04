@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
 import { getActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
 import { getAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 

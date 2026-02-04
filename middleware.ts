@@ -13,31 +13,17 @@ import { auth0 } from '@/lib/auth0';
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // Tillåt onboarding-routes utan Auth0-krav
-  // Auth0 middleware lägger bara till session om den finns, men blockerar inte
+  // KRITISK: Onboarding-routes får INTE köra Auth0 middleware
+  // Auth0-init får INTE ske för onboarding-routes (förhindrar implicit Auth0-init)
   if (
     pathname.startsWith('/onboarding/') ||
     pathname.startsWith('/api/onboarding/') ||
     pathname.startsWith('/api/github/')
   ) {
-    // För onboarding-routes: kör Auth0 middleware för att lägga till session om den finns,
-    // men låt request passera även om ingen session finns
-    try {
-      const response = await auth0.middleware(request);
-      // Om middleware redirectar till login, låt det passera för onboarding-routes
-      // (frontend hanterar Auth0-krav vid Stripe-steget)
-      return response;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (message === 'Invalid URL' || message.includes('Invalid URL')) {
-        console.error(
-          '[Auth0 middleware] Invalid URL: set APP_BASE_URL or AUTH0_BASE_URL in .env.local (e.g. http://localhost:3004)'
-        );
-        return NextResponse.next();
-      }
-      // För onboarding-routes: låt request passera även vid Auth0-fel
-      return NextResponse.next();
-    }
+    // För onboarding-routes: låt request passera direkt utan Auth0 middleware
+    // Backend hanterar anonyma sessioner via cookie
+    // Endast Stripe-start kräver Auth0 (hanteras i Stripe-endpoint)
+    return NextResponse.next();
   }
   
   // För övriga routes: kör Auth0 middleware normalt

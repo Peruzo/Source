@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
 import { getAnonymousSessionIdFromCookie } from './anonymous-session-client';
 
 /**
  * Hook för att hämta eller skapa aktiv onboardingId.
  * OnboardingId är obligatoriskt för alla onboarding-operationer.
  * 
- * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
- * För anonyma sessioner används cookie-based sessionId.
+ * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
+ * Auth0-init får INTE ske i onboarding-hooks.
  * 
- * @returns onboardingId, userSub (Auth0 eller anonym), loading, error
+ * För Auth0-autentiserade användare: backend hanterar session via cookie.
+ * För anonyma användare: cookie-based sessionId används.
+ * 
+ * @returns onboardingId, userSub (anonym sessionId), loading, error
  */
 export function useOnboardingId(): {
   onboardingId: string | null;
@@ -19,7 +21,6 @@ export function useOnboardingId(): {
   loading: boolean;
   error: string | null;
 } {
-  const { user, isLoading: authLoading } = useUser();
   const [onboardingId, setOnboardingId] = useState<string | null>(null);
   const [userSub, setUserSub] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,25 +31,10 @@ export function useOnboardingId(): {
 
     async function fetchOnboardingId() {
       try {
-        // Vänta på Auth0-loading om det pågår
-        if (authLoading) {
-          return;
-        }
-
-        // Bestäm userSub: Auth0 user.sub eller anonym sessionId
-        let currentUserSub: string | null = null;
-        
-        if (user?.sub) {
-          // Auth0-autentiserad användare
-          currentUserSub = user.sub;
-        } else {
-          // Anonym session - försök hämta från cookie, annars skapas session vid POST /api/onboarding/start
-          const cookieSessionId = getAnonymousSessionIdFromCookie();
-          if (cookieSessionId) {
-            currentUserSub = cookieSessionId;
-          }
-          // Om ingen cookie finns, kommer backend att skapa session vid POST /api/onboarding/start
-        }
+        // KRITISK: Använd ENDAST cookie-baserad sessionId (ingen Auth0-init)
+        // Backend kommer att skapa anonym sessionId vid POST /api/onboarding/start om ingen finns
+        const cookieSessionId = getAnonymousSessionIdFromCookie();
+        let currentUserSub: string | null = cookieSessionId;
 
         if (!cancelled) {
           setUserSub(currentUserSub);
@@ -149,7 +135,7 @@ export function useOnboardingId(): {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, user?.sub]);
+  }, []); // Inga dependencies - kör endast en gång vid mount
 
   return { onboardingId, userSub, loading, error };
 }

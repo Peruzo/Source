@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
@@ -29,32 +28,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing data' }, { status: 400 });
     }
 
-    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
-    const session = await auth0.getSession();
-    let userSub: string;
-    
-    if (session?.user?.sub) {
-      // Auth0-autentiserad användare - verifiera att sessionId matchar user.sub
-      if (sessionId !== session.user.sub) {
-        console.warn('[Onboarding Step] sessionId mismatch:', { sessionId, userSub: session.user.sub });
-        return NextResponse.json(
-          { success: false, message: 'Onboarding session does not match current user' },
-          { status: 403 }
-        );
-      }
-      userSub = session.user.sub;
-    } else {
-      // Anonym session - använd sessionId från request body som userSub
-      if (!isAnonymousSessionId(sessionId)) {
-        console.warn('[Onboarding Step] Invalid anonymous sessionId format:', sessionId);
-        return NextResponse.json(
-          { success: false, message: 'Invalid sessionId format' },
-          { status: 400 }
-        );
-      }
-      userSub = sessionId;
-      console.log('[Onboarding Step] Using anonymous sessionId:', userSub);
+    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based sessionId)
+    // Auth0-init får INTE ske för onboarding-step (förhindrar implicit Auth0-init)
+    // Verifiera att sessionId är anonym format
+    if (!isAnonymousSessionId(sessionId)) {
+      console.warn('[Onboarding Step] Invalid anonymous sessionId format:', sessionId);
+      return NextResponse.json(
+        { success: false, message: 'Invalid sessionId format' },
+        { status: 400 }
+      );
     }
+    const userSub = sessionId;
+    console.log('[Onboarding Step] Using anonymous sessionId:', userSub);
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
     if (!providedOnboardingId) {
