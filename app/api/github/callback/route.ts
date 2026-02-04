@@ -87,50 +87,71 @@ export async function GET(request: NextRequest) {
 
   const token = tokenData.access_token;
 
-  // PROBLEM 2 FIX: Repo kommer från OAuth state (rad 38), inte från onboarding state
-  // Validera repo-access INNAN createGitHubJob för att säkerställa att repo är korrekt och åtkomligt
-  try {
-    // Verify user has read access to the repo (repo kommer från OAuth state, inte från gammalt onboarding state)
-    const repoRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repoName}`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-          Authorization: `Bearer ${token}`,
-        },
-      }
+  // KRITISK: Verifiera repo-access med user-token INNAN event-sparning och job-skapande
+  // Detta säkerställer att användaren faktiskt har gett consent och har access till repot
+  // github_repo_verified får ALDRIG sättas enbart p.g.a. callback utan verifierad access
+  
+  // Verify user has read access to the repo med OAuth token
+  const repoRes = await fetch(
+    `https://api.github.com/repos/${owner}/${repoName}`,
+    {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  // STRICT: Endast 200 OK tillåter event-sparning och job-skapande
+  if (repoRes.status !== 200) {
+    console.warn(`[GitHub Callback] Repo access denied or repo not found: ${repo} (status: ${repoRes.status})`);
+    console.warn(`[GitHub Callback] User did not grant access or repo is inaccessible. Blocking event and job creation.`);
+    // Returnera 403 - användaren har inte gett consent eller saknar access
+    return NextResponse.json(
+      { 
+        error: 'GITHUB_ACCESS_DENIED',
+        message: 'Repository access denied or not found. User consent may not have been granted.',
+      },
+      { status: 403 }
     );
+  }
 
-    if (!repoRes.ok) {
-      console.warn(`[GitHub Callback] Repo access denied or repo not found: ${repo} (${repoRes.status})`);
-      return NextResponse.redirect(buildUrl('/onboarding/code?github=access_denied'));
-    }
+  // Repo är verifierat - användaren har read-access (200 OK)
+  const repoUrl = `https://github.com/${owner}/${repoName}`;
+  const repoSlug = `${owner}/${repoName}`;
+  const verifiedAt = new Date().toISOString();
 
-    // Repo är verifierat - användaren har read-access
-    const repoUrl = `https://github.com/${owner}/${repoName}`;
-    const repoSlug = `${owner}/${repoName}`;
-    const verifiedAt = new Date().toISOString();
+  // Hämta onboardingId från state eller skapa ny
+  const { getOrCreateActiveOnboardingId } = await import('@/lib/storage/onboarding-sessions');
+  const activeOnboardingId = onboardingId || await getOrCreateActiveOnboardingId(session.user.sub);
 
-    // PROBLEM 2 FIX: Hämta onboardingId från state eller skapa ny, INTE från session.user.sub som fallback
-    // Om onboardingId saknas i state, skapa ny onboarding-session
-    const { getOrCreateActiveOnboardingId } = await import('@/lib/storage/onboarding-sessions');
-    const activeOnboardingId = onboardingId || await getOrCreateActiveOnboardingId(session.user.sub);
+  // KRITISK: Spara GitHub repo-verifiering i onboarding-state FÖRE job-skapande
+  // Jobbet får endast skapas efter github_repo_verified event är sparat (FSM-krav)
+  // Detta sker endast efter strikt verifiering (200 OK från GitHub API)
+  try {
+    await appendOnboardingEvent(activeOnboardingId, {
+      type: 'github_repo_verified',
+      payload: {
+        repoUrl,
+        repoSlug,
+        verifiedAt,
+      },
+    });
+    console.log(`[GitHub Callback] Saved github_repo_verified event for onboarding ${activeOnboardingId} (repo access verified with 200 OK)`);
+  } catch (eventErr) {
+    // Om verifiering-event inte kan sparas → blockera job-skapande
+    // Detta säkerställer att FSM alltid har github_repo_verified innan job skapas
+    console.error('[GitHub Callback] Failed to save github_repo_verified event:', eventErr);
+    return NextResponse.json(
+      { 
+        error: 'EVENT_SAVE_FAILED',
+        message: 'Failed to save repository verification event.',
+      },
+      { status: 500 }
+    );
+  }
 
-    // Spara GitHub repo-verifiering i onboarding-state (API-nivå verifiering)
-    try {
-      await appendOnboardingEvent(activeOnboardingId, {
-        type: 'github_repo_verified',
-        payload: {
-          repoUrl,
-          repoSlug,
-          verifiedAt,
-        },
-      });
-      console.log(`[GitHub Callback] Saved github_repo_verified event for onboarding ${activeOnboardingId}`);
-    } catch (eventErr) {
-      console.error('[GitHub Callback] Failed to save github_repo_verified event:', eventErr);
-      // Fortsätt ändå - jobbet ska skapas även om event-sparning misslyckas
-    }
+  try {
     const memoryBefore = process.memoryUsage();
     console.log(`[GitHub Callback] Memory before job creation:`, {
       heapUsed: Math.round(memoryBefore.heapUsed / 1024 / 1024),
@@ -139,6 +160,7 @@ export async function GET(request: NextRequest) {
 
     // NIVÅ 2: Skapa jobb och spara token (ingen repo-download här)
     // Jobbet kommer att processas av worker-endpoint utanför request-livscykeln
+    // KRITISK: Jobbet skapas endast efter github_repo_verified event är sparat
     const jobId = await createGitHubJob({
       onboardingId: activeOnboardingId,
       userSub: session.user.sub,
@@ -169,6 +191,17 @@ export async function GET(request: NextRequest) {
     // Redirecta omedelbart - ingen repo-data laddas här
     // Worker kommer att processera jobbet async utanför request-livscykeln
     return NextResponse.redirect(buildUrl(`/onboarding/code?github=processing&jobId=${jobId}`));
+  } catch (jobError) {
+    // Om job-skapande misslyckas → logga och returnera error
+    // Event är redan sparat, men jobbet kan inte skapas
+    console.error('[GitHub Callback] Failed to create job after verification:', jobError);
+    return NextResponse.json(
+      { 
+        error: 'JOB_CREATION_FAILED',
+        message: 'Repository verified but job creation failed.',
+      },
+      { status: 500 }
+    );
   } finally {
     // Token is not stored; it goes out of scope here. No DB or session persistence.
   }
