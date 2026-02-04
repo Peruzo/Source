@@ -1,13 +1,14 @@
-import { auth0 } from '@/lib/auth0';
-import { redirect } from 'next/navigation';
 import { StripeStart } from './stripe-start';
 
+/**
+ * KRITISK: Stripe-steget kräver Auth0 för Stripe Connect onboarding.
+ * Men questions och code ska fungera anonymt.
+ * 
+ * Stripe-page kan behålla Auth0-kravet eftersom Stripe Connect faktiskt kräver autentisering.
+ * Men frontend-komponenten hanterar både Auth0 och anonyma sessioner.
+ */
 export default async function StripePage() {
-  const session = await auth0.getSession();
-
-  if (!session?.user) {
-    redirect('/onboarding/login');
-  }
-
-  return <StripeStart userSub={session.user.sub ?? ''} />;
+  // Stripe-steget kan kräva Auth0 när användaren faktiskt gör Stripe onboarding
+  // Men komponenten hanterar både Auth0 och anonyma sessioner
+  return <StripeStart />;
 }

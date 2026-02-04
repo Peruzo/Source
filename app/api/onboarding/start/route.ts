@@ -4,6 +4,7 @@ import { createNewOnboardingSession, getActiveOnboardingId } from '@/lib/storage
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
+import { getOrCreateAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 /**
  * POST /api/onboarding/start
@@ -12,19 +13,27 @@ import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal'
  * Detta är ENDA platsen som får skapa onboarding-sessioner.
  * Anropas från frontend när GET /api/onboarding/id returnerar 404.
  * 
+ * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
+ * För anonyma sessioner används cookie-based sessionId som userSub.
+ * 
  * @param forceNew - Om true, skapar alltid ny onboarding även om befintlig finns (för custom signup)
  * 
- * Returnerar { onboardingId } som ska användas för alla onboarding-operationer.
+ * Returnerar { onboardingId, userSub } som ska användas för alla onboarding-operationer.
  */
 export async function POST(request: NextRequest) {
   try {
+    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
     const session = await auth0.getSession();
+    let userSub: string;
     
-    if (!session?.user?.sub) {
-      return NextResponse.json({ error: 'NOT_AUTHENTICATED' }, { status: 401 });
+    if (session?.user?.sub) {
+      // Auth0-autentiserad användare
+      userSub = session.user.sub;
+    } else {
+      // Anonym session - skapa eller hämta cookie-based sessionId
+      userSub = await getOrCreateAnonymousSessionId();
+      console.log(`[Onboarding Start] Using anonymous sessionId: ${userSub}`);
     }
-
-    const userSub = session.user.sub;
     
     // Läs forceNew och email från request body (email kommer från signup-context)
     let forceNew = false;
@@ -85,7 +94,11 @@ export async function POST(request: NextRequest) {
         // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
         console.warn(`[Onboarding Start] Admin ingest failed (non-blocking) for onboarding ${onboardingId}:`, err);
       });
-      return NextResponse.json({ onboardingId, userSub });
+      return NextResponse.json({ 
+        onboardingId, 
+        userSub,
+        isAnonymous: isAnonymousSessionId(userSub),
+      });
     }
     
     // Resume-flöde: kontrollera om befintlig onboarding finns

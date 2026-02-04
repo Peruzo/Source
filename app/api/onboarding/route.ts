@@ -3,11 +3,14 @@ import { auth0 } from '@/lib/auth0';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
+import { getAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 /**
  * GET /api/onboarding?onboardingId=...
- * Hämtar onboarding-state för autentiserad användare (read-only).
- * State rekonstrueras från append-only event-logg via reducer.
+ * Hämtar onboarding-state (read-only).
+ * 
+ * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
+ * För anonyma sessioner används cookie-based sessionId som userSub.
  * 
  * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
  * Om onboardingId saknas → returnera { state: null }
@@ -15,15 +18,30 @@ import { getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
  */
 export async function GET(request: NextRequest) {
   try {
+    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
     const session = await auth0.getSession();
+    let userSub: string | null = null;
     
-    // Hard guard: kräv autentisering med user.sub
-    if (!session?.user?.sub) {
-      console.warn('[Onboarding GET] Called without authentication');
-      return NextResponse.json({ error: 'NOT_AUTHENTICATED' }, { status: 401 });
+    if (session?.user?.sub) {
+      // Auth0-autentiserad användare
+      userSub = session.user.sub;
+    } else {
+      // Anonym session - hämta från cookie
+      const anonymousSessionId = await getAnonymousSessionId();
+      if (anonymousSessionId) {
+        userSub = anonymousSessionId;
+        console.log('[Onboarding GET] Using anonymous sessionId:', userSub);
+      }
     }
-
-    const userSub = session.user.sub;
+    
+    // Om ingen session finns (varken Auth0 eller anonym) → returnera null state
+    if (!userSub) {
+      return NextResponse.json({
+        state: null,
+        onboardingId: null,
+        eventsCount: 0,
+      });
+    }
     const searchParams = request.nextUrl.searchParams;
     let onboardingId = searchParams.get('onboardingId');
     

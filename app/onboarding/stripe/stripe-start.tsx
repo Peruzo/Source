@@ -7,10 +7,10 @@ import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
 
-export function StripeStart({ userSub }: { userSub: string }) {
+export function StripeStart() {
   const router = useRouter();
-  const { onboardingId, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId(userSub);
-  const { state, loading: stateLoading } = useOnboardingState(userSub, onboardingId);
+  const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
+  const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,8 +18,10 @@ export function StripeStart({ userSub }: { userSub: string }) {
   const loadingState = onboardingIdLoading || stateLoading;
 
   useEffect(() => {
-    if (!userSub) return;
-    setSessionId(getOrCreateSessionId(userSub));
+    // Använd userSub från hook (Auth0 eller anonym sessionId)
+    if (userSub) {
+      setSessionId(userSub);
+    }
   }, [userSub]);
 
   // Visa fel om onboardingId saknas

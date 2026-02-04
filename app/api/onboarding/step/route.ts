@@ -3,6 +3,7 @@ import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -14,25 +15,13 @@ const statusMap: Record<string, string> = {
 
 /**
  * POST /api/onboarding/step
- * Uppdaterar onboarding-steg för autentiserad användare.
- * Sparar state i backend (GCS) och skickar till admin-portalen.
+ * Uppdaterar onboarding-steg.
+ * 
+ * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
+ * För anonyma sessioner används sessionId från request body som userSub.
  */
 export async function POST(request: Request) {
   try {
-    const session = await auth0.getSession();
-    
-    // Hard guard: kräv autentisering med user.sub
-    if (!session?.user?.sub) {
-      console.warn('[Onboarding Step] POST called without authentication');
-      return NextResponse.json(
-        { error: 'NOT_AUTHENTICATED', success: false },
-        { status: 401 }
-      );
-    }
-    
-    const userSub = session.user.sub;
-    console.log('[Onboarding Step] userSub =', userSub);
-
     const body = await request.json();
     const { sessionId, step, data, onboardingId: providedOnboardingId } = body || {};
 
@@ -40,13 +29,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing data' }, { status: 400 });
     }
 
-    // Verifiera att sessionId matchar user.sub
-    if (sessionId !== userSub) {
-      console.warn('[Onboarding Step] sessionId mismatch:', { sessionId, userSub });
-      return NextResponse.json(
-        { success: false, message: 'Onboarding session does not match current user' },
-        { status: 403 }
-      );
+    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
+    const session = await auth0.getSession();
+    let userSub: string;
+    
+    if (session?.user?.sub) {
+      // Auth0-autentiserad användare - verifiera att sessionId matchar user.sub
+      if (sessionId !== session.user.sub) {
+        console.warn('[Onboarding Step] sessionId mismatch:', { sessionId, userSub: session.user.sub });
+        return NextResponse.json(
+          { success: false, message: 'Onboarding session does not match current user' },
+          { status: 403 }
+        );
+      }
+      userSub = session.user.sub;
+    } else {
+      // Anonym session - använd sessionId från request body som userSub
+      if (!isAnonymousSessionId(sessionId)) {
+        console.warn('[Onboarding Step] Invalid anonymous sessionId format:', sessionId);
+        return NextResponse.json(
+          { success: false, message: 'Invalid sessionId format' },
+          { status: 400 }
+        );
+      }
+      userSub = sessionId;
+      console.log('[Onboarding Step] Using anonymous sessionId:', userSub);
     }
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
@@ -118,7 +125,7 @@ export async function POST(request: Request) {
       sessionId,
       step,
       onboardingStatus: state.status, // Använd formell status från FSM (inte heuristik)
-      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
+      user: email ? { email, sub: userSub } : { sub: userSub },
       data,
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',

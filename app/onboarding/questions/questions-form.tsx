@@ -22,14 +22,10 @@ const defaultData: QuestionsData = {
   customerCount: '',
 };
 
-export function QuestionsForm({
-  userSub,
-}: {
-  userSub: string;
-}) {
+export function QuestionsForm() {
   const router = useRouter();
-  const { onboardingId, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId(userSub);
-  const { state, loading: stateLoading } = useOnboardingState(userSub, onboardingId);
+  const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
+  const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [formData, setFormData] = useState<QuestionsData>(defaultData);
   const [submitting, setSubmitting] = useState(false);
@@ -38,8 +34,10 @@ export function QuestionsForm({
   const loading = onboardingIdLoading || stateLoading;
 
   useEffect(() => {
-    if (!userSub) return;
-    setSessionId(getOrCreateSessionId(userSub));
+    // Använd userSub från hook (Auth0 eller anonym sessionId)
+    if (userSub) {
+      setSessionId(userSub);
+    }
   }, [userSub]);
 
   // Visa fel om onboardingId saknas

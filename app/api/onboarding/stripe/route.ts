@@ -5,6 +5,7 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
+import { isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
 
@@ -22,13 +23,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
 
+    const { sessionId, onboardingId: providedOnboardingId } = await request.json();
+    if (!sessionId) {
+      return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
+    }
+
+    // KRITISK: Stripe Connect kräver Auth0-autentisering
+    // Anonyma sessioner kan inte skapa Stripe Connect accounts
     const session = await auth0.getSession();
     
-    // Hard guard: kräv autentisering med user.sub
     if (!session?.user?.sub) {
-      console.warn('[Onboarding Stripe] POST called without authentication');
+      console.warn('[Onboarding Stripe] POST called without Auth0 authentication');
       return NextResponse.json(
-        { error: 'NOT_AUTHENTICATED', success: false },
+        { 
+          error: 'AUTH0_REQUIRED',
+          message: 'Stripe Connect requires authentication. Please log in to continue.',
+          success: false 
+        },
         { status: 401 }
       );
     }
@@ -36,19 +47,18 @@ export async function POST(request: Request) {
     const userSub = session.user.sub;
     console.log('[Onboarding Stripe] userSub =', userSub);
 
-    const { sessionId, onboardingId: providedOnboardingId } = await request.json();
-    if (!sessionId) {
-      return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
-    }
-
-    // Verifiera att sessionId matchar user.sub
-    if (sessionId !== userSub) {
+    // Verifiera att sessionId matchar user.sub (eller är anonym sessionId från onboarding)
+    // Om sessionId är anonym, tillåt det men använd Auth0 userSub för Stripe
+    if (!isAnonymousSessionId(sessionId) && sessionId !== userSub) {
       console.warn('[Onboarding Stripe] sessionId mismatch:', { sessionId, userSub });
       return NextResponse.json(
         { success: false, message: 'Onboarding session does not match current user' },
         { status: 403 }
       );
     }
+    
+    // För anonyma sessioner: använd Auth0 userSub för Stripe (onboardingId är kopplat till anonym sessionId)
+    // Detta tillåter att användaren kan starta onboarding anonymt och logga in vid Stripe-steget
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
     if (!providedOnboardingId) {

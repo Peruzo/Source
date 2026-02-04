@@ -1,40 +1,64 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { getAnonymousSessionIdFromCookie } from './anonymous-session-client';
 
 /**
  * Hook för att hämta eller skapa aktiv onboardingId.
  * OnboardingId är obligatoriskt för alla onboarding-operationer.
  * 
- * @param userSub - Auth0 user.sub (måste vara autentiserad)
- * @returns onboardingId eller null om userSub saknas
+ * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
+ * För anonyma sessioner används cookie-based sessionId.
+ * 
+ * @returns onboardingId, userSub (Auth0 eller anonym), loading, error
  */
-export function useOnboardingId(userSub: string): {
+export function useOnboardingId(): {
   onboardingId: string | null;
+  userSub: string | null;
   loading: boolean;
   error: string | null;
 } {
+  const { user, isLoading: authLoading } = useUser();
   const [onboardingId, setOnboardingId] = useState<string | null>(null);
+  const [userSub, setUserSub] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userSub) {
-      setLoading(false);
-      setOnboardingId(null);
-      return;
-    }
-
     let cancelled = false;
 
     async function fetchOnboardingId() {
       try {
+        // Vänta på Auth0-loading om det pågår
+        if (authLoading) {
+          return;
+        }
+
+        // Bestäm userSub: Auth0 user.sub eller anonym sessionId
+        let currentUserSub: string | null = null;
+        
+        if (user?.sub) {
+          // Auth0-autentiserad användare
+          currentUserSub = user.sub;
+        } else {
+          // Anonym session - försök hämta från cookie, annars skapas session vid POST /api/onboarding/start
+          const cookieSessionId = getAnonymousSessionIdFromCookie();
+          if (cookieSessionId) {
+            currentUserSub = cookieSessionId;
+          }
+          // Om ingen cookie finns, kommer backend att skapa session vid POST /api/onboarding/start
+        }
+
+        if (!cancelled) {
+          setUserSub(currentUserSub);
+        }
+
         const isCustomSignup =
           typeof window !== 'undefined' &&
           (window.location.search.includes('signup=true') || sessionStorage.getItem('customSignup') === 'true');
 
-        // KRITISK FIX (Alternativ B): Vid custom signup anrop ALLTID POST start med forceNew.
-        // GET /api/onboarding/id används INTE alls i signup-fallet – oberoende av session/onboarding.
+        // KRITISK FIX: Vid custom signup anrop ALLTID POST start med forceNew.
         if (isCustomSignup) {
           // Hämta email från sessionStorage (sparat vid signup) så att det kan sparas i onboarding-state
           const signupEmail = typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_signup_email') : null;
@@ -55,6 +79,7 @@ export function useOnboardingId(userSub: string): {
           if (!cancelled) {
             if (startData.onboardingId) {
               setOnboardingId(startData.onboardingId);
+              setUserSub(startData.userSub || currentUserSub);
               setError(null);
               sessionStorage.removeItem('customSignup');
               // Rensa signup-email efter att det har sparats i onboarding-state
@@ -86,6 +111,7 @@ export function useOnboardingId(userSub: string): {
           if (!cancelled) {
             if (startData.onboardingId) {
               setOnboardingId(startData.onboardingId);
+              setUserSub(startData.userSub || currentUserSub);
               setError(null);
             } else {
               throw new Error('No onboardingId in start response');
@@ -98,6 +124,7 @@ export function useOnboardingId(userSub: string): {
           if (!cancelled) {
             if (data.onboardingId) {
               setOnboardingId(data.onboardingId);
+              setUserSub(data.userSub || currentUserSub);
               setError(null);
             } else {
               throw new Error('No onboardingId in response');
@@ -108,6 +135,7 @@ export function useOnboardingId(userSub: string): {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to get onboarding ID');
           setOnboardingId(null);
+          setUserSub(null);
         }
       } finally {
         if (!cancelled) {
@@ -121,7 +149,7 @@ export function useOnboardingId(userSub: string): {
     return () => {
       cancelled = true;
     };
-  }, [userSub]);
+  }, [authLoading, user?.sub]);
 
-  return { onboardingId, loading, error };
+  return { onboardingId, userSub, loading, error };
 }

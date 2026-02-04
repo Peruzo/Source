@@ -4,23 +4,10 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 export async function POST(request: Request) {
   try {
-    const session = await auth0.getSession();
-    
-    // Hard guard: kräv autentisering med user.sub
-    if (!session?.user?.sub) {
-      console.warn('[Onboarding Code] POST called without authentication');
-      return NextResponse.json(
-        { error: 'NOT_AUTHENTICATED', success: false },
-        { status: 401 }
-      );
-    }
-    
-    const userSub = session.user.sub;
-    console.log('[Onboarding Code] userSub =', userSub);
-
     const formData = await request.formData();
     const sessionId = String(formData.get('sessionId') || '');
     const providedOnboardingId = formData.get('onboardingId')?.toString();
@@ -29,13 +16,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
     }
 
-    // Verifiera att sessionId matchar user.sub
-    if (sessionId !== userSub) {
-      console.warn('[Onboarding Code] sessionId mismatch:', { sessionId, userSub });
-      return NextResponse.json(
-        { success: false, message: 'Onboarding session does not match current user' },
-        { status: 403 }
-      );
+    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
+    const session = await auth0.getSession();
+    let userSub: string;
+    
+    if (session?.user?.sub) {
+      // Auth0-autentiserad användare - verifiera att sessionId matchar user.sub
+      if (sessionId !== session.user.sub) {
+        console.warn('[Onboarding Code] sessionId mismatch:', { sessionId, userSub: session.user.sub });
+        return NextResponse.json(
+          { success: false, message: 'Onboarding session does not match current user' },
+          { status: 403 }
+        );
+      }
+      userSub = session.user.sub;
+    } else {
+      // Anonym session - använd sessionId från formData som userSub
+      if (!isAnonymousSessionId(sessionId)) {
+        console.warn('[Onboarding Code] Invalid anonymous sessionId format:', sessionId);
+        return NextResponse.json(
+          { success: false, message: 'Invalid sessionId format' },
+          { status: 400 }
+        );
+      }
+      userSub = sessionId;
+      console.log('[Onboarding Code] Using anonymous sessionId:', userSub);
     }
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
@@ -123,7 +128,7 @@ export async function POST(request: Request) {
       sessionId,
       step: 'code',
       onboardingStatus: updatedState.status, // Använd formell status från FSM
-      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
+      user: email ? { email, sub: userSub } : { sub: userSub },
       data: {
         repoLink,
         codeText,

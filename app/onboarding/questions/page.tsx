@@ -1,17 +1,11 @@
-import { auth0 } from '@/lib/auth0';
-import { redirect } from 'next/navigation';
 import { QuestionsForm } from './questions-form';
 
+/**
+ * KRITISK: Onboarding-sidor kräver INTE Auth0.
+ * Custom signup + onboarding måste fungera helt utan Auth0.
+ * Auth0 är ett val, inte ett hinder.
+ */
 export default async function QuestionsPage() {
-  const session = await auth0.getSession();
-
-  if (!session?.user) {
-    redirect('/onboarding/login');
-  }
-
-  return (
-    <QuestionsForm
-      userSub={session.user.sub ?? ''}
-    />
-  );
+  // Tillåt anonyma sessioner - frontend hanterar sessionId via cookie/hook
+  return <QuestionsForm />;
 }

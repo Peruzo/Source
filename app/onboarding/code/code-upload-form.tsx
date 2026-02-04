@@ -8,11 +8,11 @@ import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
 
-export function CodeUploadForm({ userSub }: { userSub: string }) {
+export function CodeUploadForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { onboardingId, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId(userSub);
-  const { state, loading: stateLoading } = useOnboardingState(userSub, onboardingId);
+  const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
+  const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
@@ -36,8 +36,10 @@ export function CodeUploadForm({ userSub }: { userSub: string }) {
   }, [state?.code]);
 
   useEffect(() => {
-    if (!userSub) return;
-    setSessionId(getOrCreateSessionId(userSub));
+    // Använd userSub från hook (Auth0 eller anonym sessionId)
+    if (userSub) {
+      setSessionId(userSub);
+    }
   }, [userSub]);
 
   // Visa fel om onboardingId saknas
