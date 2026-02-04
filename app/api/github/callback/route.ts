@@ -3,6 +3,7 @@ import { auth0 } from '@/lib/auth0';
 import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 import { createGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
+import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
 
 /**
  * GET /api/github/callback?code=...&state=...
@@ -105,12 +106,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(buildUrl('/onboarding/code?github=access_denied'));
     }
 
+    // Repo är verifierat - användaren har read-access
+    const repoUrl = `https://github.com/${owner}/${repoName}`;
+    const repoSlug = `${owner}/${repoName}`;
+    const verifiedAt = new Date().toISOString();
+
     // PROBLEM 2 FIX: Hämta onboardingId från state eller skapa ny, INTE från session.user.sub som fallback
     // Om onboardingId saknas i state, skapa ny onboarding-session
     const { getOrCreateActiveOnboardingId } = await import('@/lib/storage/onboarding-sessions');
     const activeOnboardingId = onboardingId || await getOrCreateActiveOnboardingId(session.user.sub);
 
-    const repoUrl = `https://github.com/${owner}/${repoName}`;
+    // Spara GitHub repo-verifiering i onboarding-state (API-nivå verifiering)
+    try {
+      await appendOnboardingEvent(activeOnboardingId, {
+        type: 'github_repo_verified',
+        payload: {
+          repoUrl,
+          repoSlug,
+          verifiedAt,
+        },
+      });
+      console.log(`[GitHub Callback] Saved github_repo_verified event for onboarding ${activeOnboardingId}`);
+    } catch (eventErr) {
+      console.error('[GitHub Callback] Failed to save github_repo_verified event:', eventErr);
+      // Fortsätt ändå - jobbet ska skapas även om event-sparning misslyckas
+    }
     const memoryBefore = process.memoryUsage();
     console.log(`[GitHub Callback] Memory before job creation:`, {
       heapUsed: Math.round(memoryBefore.heapUsed / 1024 / 1024),

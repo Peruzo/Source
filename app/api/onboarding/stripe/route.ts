@@ -65,10 +65,26 @@ export async function POST(request: Request) {
     const baseUrl = getBaseUrl();
     console.log(`[Stripe] Using base URL for redirects: ${baseUrl}`);
 
-    // Hämta email från onboarding-state (inte Auth0 session)
+    // Hämta state från onboarding-state (inte Auth0 session)
     const events = await listOnboardingEvents(onboardingId);
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || undefined;
+
+    // KRITISK: Blockera Stripe tills GitHub-repo är verifierat (API-nivå verifiering)
+    // Om användaren har existing site och kod kommer från GitHub, kräv verifiering
+    if (state.questions?.hasExistingSite === 'Ja' && state.code?.codeSource === 'github') {
+      if (!state.github?.verified) {
+        console.warn(`[Onboarding Stripe] Blocked: GitHub repo not verified for onboarding ${onboardingId}`);
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'GITHUB_REPO_NOT_VERIFIED',
+            message: 'GitHub repository must be verified before proceeding to Stripe',
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const account = await stripe.accounts.create({
       type: 'express',

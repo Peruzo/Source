@@ -90,17 +90,42 @@ export async function GET(request: NextRequest) {
               console.error('[GitHub Job] Failed to append code_submitted for onboarding:', eventErr);
             }
 
+            // Hämta state för att kontrollera om repo är verifierat
+            const events = await listOnboardingEvents(job.onboardingId);
+            const state = reduceOnboarding(events, job.onboardingId, job.userSub);
+
             // Synka till admin-portalen så att onboarding visar "har kod" (admin läser från MongoDB, inte events)
-            patchAdminOnboarding(job.onboardingId, 'code', {
-              codePackage: {
-                type: 'github',
-                status: 'received',
-                github: {
-                  repoUrl: job.repoUrl,
-                  storageObjectUrl: gcsPath,
+            // KRITISK: Skicka GitHub-steg endast om repo är verifierat (API-nivå verifiering)
+            if (state.github?.verified) {
+              patchAdminOnboarding(job.onboardingId, 'code', {
+                codePackage: {
+                  type: 'github',
+                  status: 'received',
+                  github: {
+                    repoUrl: job.repoUrl,
+                    storageObjectUrl: gcsPath,
+                  },
                 },
-              },
-            }).catch((err) => console.error('[GitHub Job] Admin PATCH code failed:', err));
+              }).catch((err) => console.error('[GitHub Job] Admin PATCH code failed:', err));
+
+              // Skicka GitHub-steg till admin ingest endast när verifierat
+              sendToAdminPortal('onboarding', {
+                idempotencyKey: `onboarding-${job.onboardingId}-github-verified`,
+                publicOnboardingId: job.onboardingId,
+                user: state.email ? { email: state.email, sub: job.userSub } : { sub: job.userSub },
+                step: 'github_verified',
+                onboardingStatus: 'påbörjad',
+                data: {
+                  repoUrl: job.repoUrl,
+                  repoSlug: state.github.repoSlug,
+                  verifiedAt: state.github.verifiedAt,
+                },
+                submittedAt: new Date().toISOString(),
+                source: 'public_onboarding',
+              }).catch((err) => console.error('[GitHub Job] Admin ingest failed:', err));
+            } else {
+              console.warn(`[GitHub Job] Skipping admin sync: GitHub repo not verified for onboarding ${job.onboardingId}`);
+            }
             
             // Hämta uppdaterat jobb
             job = await getGitHubJob(jobId);

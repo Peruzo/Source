@@ -13,6 +13,12 @@ export type OnboardingState = {
     codeSource?: 'github' | 'manual';
     storageObjectUrl?: string;
   } | null;
+  github: {
+    repoUrl?: string;
+    repoSlug?: string;
+    verified: boolean;
+    verifiedAt?: string;
+  } | null;
   stripe: {
     accountId?: string;
     status?: string;
@@ -45,6 +51,7 @@ export function reduceOnboarding(
       name: null,
       questions: null,
       code: null,
+      github: null,
       stripe: null,
       plan: null,
       updatedAt: null,
@@ -59,6 +66,7 @@ export function reduceOnboarding(
     name: null,
     questions: null,
     code: null,
+    github: null,
     stripe: null,
     plan: null,
     updatedAt: null,
@@ -94,6 +102,15 @@ export function reduceOnboarding(
           fileName: event.payload.fileName,
           codeSource: event.payload.codeSource,
           storageObjectUrl: event.payload.storageObjectUrl,
+        };
+        break;
+
+      case 'github_repo_verified':
+        state.github = {
+          repoUrl: event.payload.repoUrl,
+          repoSlug: event.payload.repoSlug,
+          verified: true,
+          verifiedAt: event.payload.verifiedAt,
         };
         break;
 

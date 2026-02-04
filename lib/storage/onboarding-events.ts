@@ -11,6 +11,7 @@ export type OnboardingEventInput =
   | { type: 'email_set'; payload: { email: string; name?: string } }
   | { type: 'questions_submitted'; payload: Record<string, any> }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string } }
+  | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string } }
   | { type: 'stripe_started'; payload: { accountId: string } }
   | { type: 'stripe_completed'; payload: { accountId: string } }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string } };
@@ -22,6 +23,7 @@ export type OnboardingEvent =
   | { type: 'email_set'; payload: { email: string; name?: string }; at: string }
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string }; at: string }
+  | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string }; at: string }
   | { type: 'stripe_started'; payload: { accountId: string }; at: string }
   | { type: 'stripe_completed'; payload: { accountId: string }; at: string }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string }; at: string };
@@ -56,6 +58,8 @@ export async function appendOnboardingEvent<T extends OnboardingEventInput>(
         return { type: 'questions_submitted', payload: event.payload, at: now };
       case 'code_submitted':
         return { type: 'code_submitted', payload: event.payload, at: now };
+      case 'github_repo_verified':
+        return { type: 'github_repo_verified', payload: event.payload, at: now };
       case 'stripe_started':
         return { type: 'stripe_started', payload: event.payload, at: now };
       case 'stripe_completed':
