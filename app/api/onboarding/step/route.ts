@@ -102,18 +102,18 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
-    // Hämta email från onboarding-state (inte Auth0 session)
+    // Hämta state från onboarding-state (inte Auth0 session)
     const events = await listOnboardingEvents(onboardingId);
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || '';
 
-    // Skicka till admin-portalen (befintlig logik)
+    // Skicka till admin-portalen med formell status från FSM
     const payload = {
       idempotencyKey: `onboarding-${onboardingId}-${step}`,
       onboardingId,
       sessionId,
       step,
-      onboardingStatus: statusMap[step] || 'påbörjad',
+      onboardingStatus: state.status, // Använd formell status från FSM (inte heuristik)
       user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data,
       submittedAt: new Date().toISOString(),

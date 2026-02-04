@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
-    // Hämta email från onboarding-state (inte Auth0 session)
+    // Hämta state från onboarding-state (inte Auth0 session)
     const updatedEvents = await listOnboardingEvents(onboardingId);
     const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
     const email = updatedState.email || '';
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
       onboardingId,
       sessionId,
       step: 'code',
-      onboardingStatus: 'påbörjad',
+      onboardingStatus: updatedState.status, // Använd formell status från FSM
       user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data: {
         repoLink,

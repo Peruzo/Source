@@ -3,7 +3,7 @@ import { auth0 } from '@/lib/auth0';
 import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
-import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
@@ -70,20 +70,19 @@ export async function POST(request: Request) {
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || undefined;
 
-    // KRITISK: Blockera Stripe tills GitHub-repo är verifierat (API-nivå verifiering)
-    // Om användaren har existing site och kod kommer från GitHub, kräv verifiering
-    if (state.questions?.hasExistingSite === 'Ja' && state.code?.codeSource === 'github') {
-      if (!state.github?.verified) {
-        console.warn(`[Onboarding Stripe] Blocked: GitHub repo not verified for onboarding ${onboardingId}`);
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'GITHUB_REPO_NOT_VERIFIED',
-            message: 'GitHub repository must be verified before proceeding to Stripe',
-          },
-          { status: 403 }
-        );
-      }
+    // FSM: Verifiera att onboarding är i korrekt status för att starta Stripe
+    try {
+      assertStatus(state, 'code_completed');
+    } catch (statusError) {
+      console.warn(`[Onboarding Stripe] Invalid status for onboarding ${onboardingId}:`, statusError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'INVALID_ONBOARDING_STATE',
+          message: statusError instanceof Error ? statusError.message : 'Onboarding must be in code_completed status to start Stripe',
+        },
+        { status: 403 }
+      );
     }
 
     const account = await stripe.accounts.create({
@@ -118,12 +117,16 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
+    // Hämta uppdaterad state efter event-append
+    const updatedEvents = await listOnboardingEvents(onboardingId);
+    const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
+
     await sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-start`,
       onboardingId,
       sessionId,
       step: 'stripe_started',
-      onboardingStatus: 'påbörjad',
+      onboardingStatus: updatedState.status, // Använd formell status från FSM
       user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data: {
         accountId: account.id,

@@ -29,25 +29,25 @@ export function StripeStart({ userSub }: { userSub: string }) {
     }
   }, [onboardingIdError]);
 
-  // Backend-driven: kräv questions och (om hasExistingSite) code i state
-  // KRITISK: Blockera Stripe tills GitHub-repo är verifierat (API-nivå verifiering)
+  // FSM: Backend-driven guards baserat på formell status
+  // Status är enda sanningskällan - inga heuristiska kontroller
   useEffect(() => {
     if (loadingState) return;
-    if (!state?.questions) {
+    if (!state) return;
+
+    // Redirecta baserat på status (FSM-driven)
+    if (state.status === 'started') {
       router.replace('/onboarding/questions');
       return;
     }
-    if (state.questions.hasExistingSite === 'Ja') {
-      if (!state?.code) {
-        router.replace('/onboarding/code');
-        return;
-      }
-      // Om kod kommer från GitHub, kräv att repo är verifierat innan Stripe tillåts
-      if (state.code.codeSource === 'github' && (!state?.github?.verified)) {
-        // Redirecta tillbaka till code-steget med felmeddelande
-        router.replace('/onboarding/code?github=verification_required');
-        return;
-      }
+    if (state.status === 'code_pending' || state.status === 'github_verified') {
+      router.replace('/onboarding/code');
+      return;
+    }
+    // Endast code_completed eller senare tillåter Stripe
+    if (state.status !== 'code_completed' && state.status !== 'stripe_started' && state.status !== 'stripe_completed' && state.status !== 'ready_for_review') {
+      router.replace('/onboarding/questions');
+      return;
     }
   }, [state, loadingState, router]);
 

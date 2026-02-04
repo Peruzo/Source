@@ -1,8 +1,102 @@
 import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
 
+/**
+ * Formell onboarding-status (FSM - Finite State Machine).
+ * Status är enda sanningskällan för onboarding-flödet.
+ * Status ändras endast via reducer baserat på events.
+ */
+export type OnboardingStatus =
+  | 'started'
+  | 'questions_completed'
+  | 'code_pending'
+  | 'github_verified'
+  | 'code_completed'
+  | 'stripe_started'
+  | 'stripe_completed'
+  | 'ready_for_review';
+
+/**
+ * Transition-regler för onboarding-statusmaskin.
+ * Definierar vilka events som är tillåtna i vilken status,
+ * och vilken ny status som ska sättas.
+ */
+type TransitionRule = {
+  eventType: OnboardingEvent['type'];
+  allowedStatuses: OnboardingStatus[];
+  newStatus: OnboardingStatus | null; // null = ingen statusändring
+};
+
+const TRANSITIONS: TransitionRule[] = [
+  {
+    eventType: 'questions_submitted',
+    allowedStatuses: ['started'],
+    newStatus: 'questions_completed',
+  },
+  {
+    eventType: 'email_set',
+    allowedStatuses: ['started', 'questions_completed', 'code_pending', 'github_verified', 'code_completed'],
+    newStatus: null, // Ingen statusändring
+  },
+  {
+    eventType: 'github_repo_verified',
+    allowedStatuses: ['code_pending'],
+    newStatus: 'github_verified',
+  },
+  {
+    eventType: 'code_submitted',
+    allowedStatuses: ['github_verified', 'questions_completed'], // github_verified för GitHub, questions_completed för manual
+    newStatus: 'code_completed',
+  },
+  {
+    eventType: 'stripe_started',
+    allowedStatuses: ['code_completed'],
+    newStatus: 'stripe_started',
+  },
+  {
+    eventType: 'stripe_completed',
+    allowedStatuses: ['stripe_started'],
+    newStatus: 'ready_for_review',
+  },
+  {
+    eventType: 'plan_selected',
+    allowedStatuses: ['started', 'questions_completed', 'code_pending', 'github_verified', 'code_completed', 'stripe_started', 'stripe_completed', 'ready_for_review'],
+    newStatus: null, // Ingen statusändring
+  },
+];
+
+/**
+ * Hjälpfunktion för att verifiera och ändra status baserat på event.
+ * Returnerar ny status eller null om ingen ändring ska ske.
+ * Kastar error i dev om transition är otillåten.
+ */
+function getNextStatus(
+  currentStatus: OnboardingStatus,
+  eventType: OnboardingEvent['type']
+): OnboardingStatus | null {
+  const rule = TRANSITIONS.find((t) => t.eventType === eventType);
+  
+  if (!rule) {
+    // Event-typ saknar transition-regel - ingen statusändring
+    return null;
+  }
+
+  if (!rule.allowedStatuses.includes(currentStatus)) {
+    // Otillåten transition - logga och ignorera i prod, kasta i dev
+    const errorMsg = `Invalid transition: cannot apply ${eventType} in status ${currentStatus}. Allowed statuses: ${rule.allowedStatuses.join(', ')}`;
+    if (process.env.NODE_ENV === 'development') {
+      throw new Error(errorMsg);
+    }
+    console.warn(`[Onboarding FSM] ${errorMsg}`);
+    return null;
+  }
+
+  return rule.newStatus;
+}
+
 export type OnboardingState = {
   onboardingId: string;
   userSub: string;
+  status: OnboardingStatus; // Formell status (single source of truth)
   email: string | null;
   name: string | null;
   questions: Record<string, any> | null;
@@ -42,11 +136,12 @@ export function reduceOnboarding(
   onboardingId: string,
   userSub: string
 ): OnboardingState {
-  // Om inga events finns, returnera helt tom state
+  // Om inga events finns, returnera helt tom state med initial status
   if (events.length === 0) {
     return {
       onboardingId,
       userSub,
+      status: 'started',
       email: null,
       name: null,
       questions: null,
@@ -62,6 +157,7 @@ export function reduceOnboarding(
   const state: OnboardingState = {
     onboardingId,
     userSub,
+    status: 'started', // Initial status
     email: null,
     name: null,
     questions: null,
@@ -85,6 +181,13 @@ export function reduceOnboarding(
       createdAt = event.at;
     }
 
+    // FSM: Verifiera och uppdatera status baserat på event
+    const nextStatus = getNextStatus(state.status, event.type);
+    if (nextStatus !== null) {
+      state.status = nextStatus;
+    }
+
+    // Uppdatera state-data baserat på event
     switch (event.type) {
       case 'email_set':
         state.email = event.payload.email;
@@ -93,6 +196,10 @@ export function reduceOnboarding(
 
       case 'questions_submitted':
         state.questions = event.payload;
+        // Om hasExistingSite === 'Ja', behåll code_pending (annars är status redan questions_completed från transition)
+        if (event.payload.hasExistingSite === 'Ja' && state.status === 'questions_completed') {
+          state.status = 'code_pending';
+        }
         break;
 
       case 'code_submitted':
@@ -142,4 +249,27 @@ export function reduceOnboarding(
   state.updatedAt = updatedAt;
 
   return state;
+}
+
+/**
+ * Assert att onboarding-state har rätt status.
+ * Används i backend-guards för att säkerställa att operationer endast kan utföras i korrekt status.
+ * 
+ * @throws Error om status inte matchar requiredStatus
+ */
+export function assertStatus(
+  state: OnboardingState | null,
+  requiredStatus: OnboardingStatus | OnboardingStatus[]
+): void {
+  if (!state) {
+    throw new Error('INVALID_ONBOARDING_STATE: State is null');
+  }
+
+  const allowedStatuses = Array.isArray(requiredStatus) ? requiredStatus : [requiredStatus];
+  
+  if (!allowedStatuses.includes(state.status)) {
+    throw new Error(
+      `INVALID_ONBOARDING_STATE: Expected status ${allowedStatuses.join(' or ')}, but got ${state.status}`
+    );
+  }
 }

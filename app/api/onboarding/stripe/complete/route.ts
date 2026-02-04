@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
-import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 
 /**
  * POST /api/onboarding/stripe/complete
@@ -43,6 +43,25 @@ export async function POST(request: Request) {
     const onboardingId = providedOnboardingId;
     console.log('[Onboarding Stripe Complete] Using onboardingId:', onboardingId);
 
+    // Hämta state för att verifiera status
+    const events = await listOnboardingEvents(onboardingId);
+    const state = reduceOnboarding(events, onboardingId, userSub);
+
+    // FSM: Verifiera att onboarding är i korrekt status för att slutföra Stripe
+    try {
+      assertStatus(state, 'stripe_started');
+    } catch (statusError) {
+      console.warn(`[Onboarding Stripe Complete] Invalid status for onboarding ${onboardingId}:`, statusError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'INVALID_ONBOARDING_STATE',
+          message: statusError instanceof Error ? statusError.message : 'Onboarding must be in stripe_started status to complete Stripe',
+        },
+        { status: 403 }
+      );
+    }
+
     // Append event till event-logg (append-only, ingen read-modify-write)
     // onboardingId är redan hämtat/skapat ovan
     try {
@@ -55,18 +74,18 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
-    // Hämta email från onboarding-state (inte Auth0 session)
-    const events = await listOnboardingEvents(onboardingId);
-    const state = reduceOnboarding(events, onboardingId, userSub);
-    const email = state.email || '';
+    // Hämta uppdaterad state efter event-append
+    const updatedEvents = await listOnboardingEvents(onboardingId);
+    const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
+    const email = updatedState.email || '';
 
-    // Skicka till admin-portalen
+    // Skicka till admin-portalen med formell status från FSM
     await sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-complete`,
       onboardingId,
       sessionId: userSub,
       step: 'stripe_completed',
-      onboardingStatus: 'redo',
+      onboardingStatus: updatedState.status, // Använd formell status från FSM (inte heuristik)
       user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data: {
         accountId,

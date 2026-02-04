@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
         idempotencyKey: `onboarding-${onboardingId}-start`,
         publicOnboardingId: onboardingId,
         user: email ? { email } : {},
-        status: 'started',
+        status: state.status, // Använd formell status från FSM
+        onboardingStatus: state.status, // För bakåtkompatibilitet
       }).catch((err) => console.error('[Onboarding Start] Ingest onboarding failed:', err));
       return NextResponse.json({ onboardingId, userSub });
     }
