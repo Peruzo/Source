@@ -78,43 +78,118 @@ export async function GET(request: NextRequest) {
     access_token?: string;
     error?: string;
     error_description?: string;
+    scope?: string;
+    token_type?: string;
   };
 
+  // KRITISK SÄKERHET: Endast OAuth token från code-exchange får användas
+  // Ingen fallback till app/installation token är tillåten
   if (!tokenData.access_token) {
-    console.warn('[GitHub Callback] No access_token:', tokenData.error, tokenData.error_description);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=denied'));
+    console.warn('[GitHub Callback] No access_token from OAuth code-exchange:', tokenData.error, tokenData.error_description);
+    return NextResponse.json(
+      {
+        error: 'OAUTH_TOKEN_MISSING',
+        message: 'Failed to obtain OAuth access token from code exchange. User consent may not have been granted.',
+      },
+      { status: 403 }
+    );
   }
 
+  // Säkerställ att token kommer från OAuth-flödet (inte app/installation token)
   const token = tokenData.access_token;
+  const tokenType = tokenData.token_type || 'unknown';
+  const tokenScopes = tokenData.scope || 'unknown';
 
-  // KRITISK: Verifiera repo-access med user-token INNAN event-sparning och job-skapande
+  // Logga token source för verifiering (säkerhetsaudit)
+  console.log(`[GitHub Callback] OAuth token obtained:`, {
+    tokenType,
+    scopes: tokenScopes,
+    source: 'oauth_code_exchange',
+    hasToken: !!token,
+    tokenLength: token?.length || 0,
+  });
+
+  // KRITISK SÄKERHET: Verifiera repo-access med OAuth user-token INNAN event-sparning och job-skapande
   // Detta säkerställer att användaren faktiskt har gett consent och har access till repot
   // github_repo_verified får ALDRIG sättas enbart p.g.a. callback utan verifierad access
+  // Token MÅSTE komma från OAuth code-exchange (inte app/installation token)
   
-  // Verify user has read access to the repo med OAuth token
+  // Verify user has read access to the repo med OAuth token från code-exchange
   const repoRes = await fetch(
     `https://api.github.com/repos/${owner}/${repoName}`,
     {
       headers: {
         Accept: 'application/vnd.github.v3+json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Endast OAuth token från code-exchange
       },
     }
   );
 
+  // Logga GitHub response headers för verifiering (säkerhetsaudit)
+  const oauthScopesHeader = repoRes.headers.get('x-oauth-scopes');
+  const githubAuthHeader = repoRes.headers.get('x-github-request-id');
+  console.log(`[GitHub Callback] GitHub API response:`, {
+    status: repoRes.status,
+    oauthScopes: oauthScopesHeader || 'not present',
+    githubRequestId: githubAuthHeader || 'not present',
+    tokenSource: 'oauth_code_exchange',
+    repo: `${owner}/${repoName}`,
+  });
+
   // STRICT: Endast 200 OK tillåter event-sparning och job-skapande
+  // KRITISK SÄKERHET: Verifiera att token faktiskt ger access (inte app-token som kan ha access)
   if (repoRes.status !== 200) {
     console.warn(`[GitHub Callback] Repo access denied or repo not found: ${repo} (status: ${repoRes.status})`);
-    console.warn(`[GitHub Callback] User did not grant access or repo is inaccessible. Blocking event and job creation.`);
-    // Returnera 403 - användaren har inte gett consent eller saknar access
+    console.warn(`[GitHub Callback] OAuth token from code-exchange does not grant access. Blocking event and job creation.`);
+    console.warn(`[GitHub Callback] Token details:`, {
+      tokenType,
+      scopes: tokenScopes,
+      oauthScopesHeader: oauthScopesHeader || 'not present',
+    });
+    // Returnera 403 - OAuth token ger inte access (användaren har inte gett consent eller saknar access)
     return NextResponse.json(
       { 
         error: 'GITHUB_ACCESS_DENIED',
-        message: 'Repository access denied or not found. User consent may not have been granted.',
+        message: 'OAuth token from code-exchange does not grant repository access. User consent may not have been granted or token is invalid.',
       },
       { status: 403 }
     );
   }
+
+  // Ytterligare säkerhetskontroll: Verifiera att OAuth scopes finns i response header
+  // Om x-oauth-scopes saknas eller är tom → token kan vara app-token (inte OAuth user-token)
+  if (!oauthScopesHeader || oauthScopesHeader.trim() === '') {
+    console.error(`[GitHub Callback] SECURITY WARNING: x-oauth-scopes header missing in GitHub API response. Token may not be OAuth user-token.`);
+    console.error(`[GitHub Callback] Blocking event and job creation to prevent unauthorized access.`);
+    return NextResponse.json(
+      {
+        error: 'OAUTH_SCOPE_VERIFICATION_FAILED',
+        message: 'Cannot verify OAuth token scopes. Token may not be from OAuth code-exchange.',
+      },
+      { status: 403 }
+    );
+  }
+
+  // Verifiera att OAuth scopes innehåller 'repo' (krävs för private repo access)
+  const scopes = oauthScopesHeader.split(',').map(s => s.trim());
+  if (!scopes.includes('repo')) {
+    console.warn(`[GitHub Callback] OAuth token missing 'repo' scope. Scopes: ${scopes.join(', ')}`);
+    console.warn(`[GitHub Callback] Blocking event and job creation - insufficient permissions.`);
+    return NextResponse.json(
+      {
+        error: 'OAUTH_SCOPE_INSUFFICIENT',
+        message: `OAuth token missing required 'repo' scope. Granted scopes: ${scopes.join(', ')}`,
+      },
+      { status: 403 }
+    );
+  }
+
+  console.log(`[GitHub Callback] OAuth token verified:`, {
+    scopes: scopes.join(', '),
+    hasRepoScope: scopes.includes('repo'),
+    tokenSource: 'oauth_code_exchange',
+    repoAccess: 'granted',
+  });
 
   // Repo är verifierat - användaren har read-access (200 OK)
   const repoUrl = `https://github.com/${owner}/${repoName}`;
