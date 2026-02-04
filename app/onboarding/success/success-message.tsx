@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 
-export function SuccessMessage({ userSub }: { userSub: string }) {
+export function SuccessMessage() {
   const searchParams = useSearchParams();
   const account = searchParams.get('account') ?? '';
   const sessionId = searchParams.get('sessionId') ?? '';
-  const { onboardingId } = useOnboardingId(userSub);
+  const { onboardingId } = useOnboardingId();
 
   // Markera Stripe-onboarding som klar i backend när success-sidan laddas
   useEffect(() => {

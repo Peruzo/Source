@@ -9,5 +9,5 @@ export default async function SuccessPage() {
     redirect('/onboarding/login');
   }
 
-  return <SuccessMessage userSub={session.user.sub ?? ''} />;
+  return <SuccessMessage />;
 }
