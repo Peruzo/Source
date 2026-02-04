@@ -92,6 +92,13 @@ export function LoginClient() {
         setIsSubmitting(false);
         return;
       }
+      // Spara email i sessionStorage så att onboarding-start kan läsa det (email ska komma från onboarding-state, inte Auth0)
+      if (email.trim()) {
+        sessionStorage.setItem('onboarding_signup_email', email.trim());
+        if (trimmedFirst && trimmedLast) {
+          sessionStorage.setItem('onboarding_signup_name', `${trimmedFirst} ${trimmedLast}`);
+        }
+      }
       const loginUrl = data.loginUrl ?? `/api/auth/login?${new URLSearchParams({ returnTo: AUTH_RETURN }).toString()}`;
       window.location.href = loginUrl;
     } catch (err) {

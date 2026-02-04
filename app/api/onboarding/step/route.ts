@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
-import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -66,6 +67,16 @@ export async function POST(request: Request) {
           type: 'questions_submitted',
           payload: data,
         });
+        // Om email finns i data (från questions-formuläret), spara det också i onboarding-state
+        if (data.userEmail && typeof data.userEmail === 'string' && data.userEmail.trim()) {
+          await appendOnboardingEvent(onboardingId, {
+            type: 'email_set',
+            payload: {
+              email: data.userEmail.trim(),
+              name: typeof data.userName === 'string' ? data.userName.trim() : undefined,
+            },
+          });
+        }
       } else if (step === 'code') {
         await appendOnboardingEvent(onboardingId, {
           type: 'code_submitted',
@@ -91,6 +102,11 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
+    // Hämta email från onboarding-state (inte Auth0 session)
+    const events = await listOnboardingEvents(onboardingId);
+    const state = reduceOnboarding(events, onboardingId, userSub);
+    const email = state.email || '';
+
     // Skicka till admin-portalen (befintlig logik)
     const payload = {
       idempotencyKey: `onboarding-${onboardingId}-${step}`,
@@ -98,11 +114,7 @@ export async function POST(request: Request) {
       sessionId,
       step,
       onboardingStatus: statusMap[step] || 'påbörjad',
-      user: {
-        email: session.user.email,
-        name: session.user.name,
-        sub: session.user.sub,
-      },
+      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data,
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',

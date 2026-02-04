@@ -11,7 +11,6 @@ export default async function QuestionsPage() {
 
   return (
     <QuestionsForm
-      userEmail={session.user.email || ''}
       userSub={session.user.sub ?? ''}
     />
   );

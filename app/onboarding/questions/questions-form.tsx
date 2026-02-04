@@ -23,10 +23,8 @@ const defaultData: QuestionsData = {
 };
 
 export function QuestionsForm({
-  userEmail,
   userSub,
 }: {
-  userEmail: string;
   userSub: string;
 }) {
   const router = useRouter();
@@ -82,13 +80,17 @@ export function QuestionsForm({
     setSubmitting(true);
     setError('');
 
+    // Hämta email från onboarding-state (inte Auth0 session)
+    const emailFromState = state?.email || '';
+    
     const payload = {
       sessionId,
       onboardingId,
       step: 'questions',
       data: {
         ...formData,
-        userEmail,
+        // Skicka email från state om det finns (så att step-endpoint kan spara det som email_set event)
+        ...(emailFromState ? { userEmail: emailFromState } : {}),
       },
     };
 

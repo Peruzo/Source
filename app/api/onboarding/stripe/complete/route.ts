@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
-import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 /**
  * POST /api/onboarding/stripe/complete
@@ -54,6 +55,11 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
+    // Hämta email från onboarding-state (inte Auth0 session)
+    const events = await listOnboardingEvents(onboardingId);
+    const state = reduceOnboarding(events, onboardingId, userSub);
+    const email = state.email || '';
+
     // Skicka till admin-portalen
     await sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-complete`,
@@ -61,11 +67,7 @@ export async function POST(request: Request) {
       sessionId: userSub,
       step: 'stripe_completed',
       onboardingStatus: 'redo',
-      user: {
-        email: session.user.email,
-        name: session.user.name,
-        sub: session.user.sub,
-      },
+      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data: {
         accountId,
       },

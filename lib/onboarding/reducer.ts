@@ -3,6 +3,8 @@ import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
 export type OnboardingState = {
   onboardingId: string;
   userSub: string;
+  email: string | null;
+  name: string | null;
   questions: Record<string, any> | null;
   code: {
     repoLink?: string;
@@ -39,6 +41,8 @@ export function reduceOnboarding(
     return {
       onboardingId,
       userSub,
+      email: null,
+      name: null,
       questions: null,
       code: null,
       stripe: null,
@@ -51,6 +55,8 @@ export function reduceOnboarding(
   const state: OnboardingState = {
     onboardingId,
     userSub,
+    email: null,
+    name: null,
     questions: null,
     code: null,
     stripe: null,
@@ -72,6 +78,11 @@ export function reduceOnboarding(
     }
 
     switch (event.type) {
+      case 'email_set':
+        state.email = event.payload.email;
+        state.name = event.payload.name || null;
+        break;
+
       case 'questions_submitted':
         state.questions = event.payload;
         break;

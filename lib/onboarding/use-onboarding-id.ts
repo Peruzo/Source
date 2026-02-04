@@ -36,10 +36,17 @@ export function useOnboardingId(userSub: string): {
         // KRITISK FIX (Alternativ B): Vid custom signup anrop ALLTID POST start med forceNew.
         // GET /api/onboarding/id används INTE alls i signup-fallet – oberoende av session/onboarding.
         if (isCustomSignup) {
+          // Hämta email från sessionStorage (sparat vid signup) så att det kan sparas i onboarding-state
+          const signupEmail = typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_signup_email') : null;
+          const signupName = typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_signup_name') : null;
           const startRes = await fetch('/api/onboarding/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ forceNew: true }),
+            body: JSON.stringify({
+              forceNew: true,
+              email: signupEmail || undefined,
+              name: signupName || undefined,
+            }),
           });
           if (!startRes.ok) {
             throw new Error(`Failed to start onboarding: ${startRes.status}`);
@@ -50,6 +57,11 @@ export function useOnboardingId(userSub: string): {
               setOnboardingId(startData.onboardingId);
               setError(null);
               sessionStorage.removeItem('customSignup');
+              // Rensa signup-email efter att det har sparats i onboarding-state
+              if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('onboarding_signup_email');
+                sessionStorage.removeItem('onboarding_signup_name');
+              }
             } else {
               throw new Error('No onboardingId in start response');
             }

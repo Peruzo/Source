@@ -109,17 +109,18 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
+    // Hämta email från onboarding-state (inte Auth0 session)
+    const updatedEvents = await listOnboardingEvents(onboardingId);
+    const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
+    const email = updatedState.email || '';
+
     const payload = {
       idempotencyKey: `onboarding-${onboardingId}-code`,
       onboardingId,
       sessionId,
       step: 'code',
       onboardingStatus: 'påbörjad',
-      user: {
-        email: session.user.email,
-        name: session.user.name,
-        sub: session.user.sub,
-      },
+      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data: {
         repoLink,
         codeText,

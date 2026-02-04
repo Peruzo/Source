@@ -8,6 +8,7 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID;
  * at sätts endast av systemet när eventet sparas.
  */
 export type OnboardingEventInput =
+  | { type: 'email_set'; payload: { email: string; name?: string } }
   | { type: 'questions_submitted'; payload: Record<string, any> }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string } }
   | { type: 'stripe_started'; payload: { accountId: string } }
@@ -18,6 +19,7 @@ export type OnboardingEventInput =
  * Fullständigt onboarding-event med timestamp (sparat i GCS).
  */
 export type OnboardingEvent =
+  | { type: 'email_set'; payload: { email: string; name?: string }; at: string }
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string }; at: string }
   | { type: 'stripe_started'; payload: { accountId: string }; at: string }
@@ -48,6 +50,8 @@ export async function appendOnboardingEvent<T extends OnboardingEventInput>(
   // Bygg fullEvent explicit så TypeScript kan verifiera att type och payload matchar
   const fullEvent: OnboardingEvent = (() => {
     switch (event.type) {
+      case 'email_set':
+        return { type: 'email_set', payload: event.payload, at: now };
       case 'questions_submitted':
         return { type: 'questions_submitted', payload: event.payload, at: now };
       case 'code_submitted':

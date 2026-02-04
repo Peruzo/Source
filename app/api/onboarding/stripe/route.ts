@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import Stripe from 'stripe';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
-import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
 
 const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
@@ -64,9 +65,14 @@ export async function POST(request: Request) {
     const baseUrl = getBaseUrl();
     console.log(`[Stripe] Using base URL for redirects: ${baseUrl}`);
 
+    // Hämta email från onboarding-state (inte Auth0 session)
+    const events = await listOnboardingEvents(onboardingId);
+    const state = reduceOnboarding(events, onboardingId, userSub);
+    const email = state.email || undefined;
+
     const account = await stripe.accounts.create({
       type: 'express',
-      email: session.user.email || undefined,
+      email,
       metadata: {
         sessionId,
         userSub,
@@ -102,11 +108,7 @@ export async function POST(request: Request) {
       sessionId,
       step: 'stripe_started',
       onboardingStatus: 'påbörjad',
-      user: {
-        email: session.user.email,
-        name: session.user.name,
-        sub: session.user.sub,
-      },
+      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
       data: {
         accountId: account.id,
       },
