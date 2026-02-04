@@ -117,11 +117,15 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
+    // KRITISK: FSM-transitionen är klar (event append lyckades, Stripe account skapad)
+    // Returnera response omedelbart - admin-sync är best effort och får inte påverka FSM
+    
     // Hämta uppdaterad state efter event-append
     const updatedEvents = await listOnboardingEvents(onboardingId);
     const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
 
-    await sendToAdminPortal('onboarding', {
+    // Best effort: admin-sync får aldrig påverka FSM-transitionen
+    sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-start`,
       onboardingId,
       sessionId,
@@ -133,8 +137,12 @@ export async function POST(request: Request) {
       },
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
+    }).catch((adminError) => {
+      // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
+      console.warn(`[Onboarding Stripe] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
 
+    // Returnera response oavsett admin-sync-resultat
     return NextResponse.json({ url: accountLink.url, accountId: account.id });
   } catch (error) {
     console.error('[Stripe] Error:', error);

@@ -102,12 +102,16 @@ export async function POST(request: Request) {
       // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
+    // KRITISK: FSM-transitionen är klar (event append lyckades)
+    // Returnera 200 omedelbart - admin-sync är best effort och får inte påverka FSM
+    
     // Hämta state från onboarding-state (inte Auth0 session)
     const events = await listOnboardingEvents(onboardingId);
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || '';
 
-    // Skicka till admin-portalen med formell status från FSM
+    // Admin-sync: fire-and-forget (best effort, får aldrig kasta eller orsaka 500)
+    // Detta är arkitekturkrav: FSM-transitioner får aldrig bero på externa system
     const payload = {
       idempotencyKey: `onboarding-${onboardingId}-${step}`,
       onboardingId,
@@ -120,7 +124,13 @@ export async function POST(request: Request) {
       source: 'public_onboarding',
     };
 
-    await sendToAdminPortal('onboarding', payload);
+    // Best effort: admin-sync får aldrig påverka FSM-transitionen
+    sendToAdminPortal('onboarding', payload).catch((adminError) => {
+      // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
+      console.warn(`[Onboarding Step] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
+    });
+
+    // Returnera 200 oavsett admin-sync-resultat
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[Onboarding Step] Error:', error);

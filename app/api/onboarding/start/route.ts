@@ -62,11 +62,17 @@ export async function POST(request: NextRequest) {
       const email = state.email || '';
       const name = state.name || '';
       
+      // KRITISK: Onboarding-session är skapad (FSM-transition klar)
+      // Admin-sync är best effort och får aldrig påverka session-skapandet
+      
       if (email) {
         patchAdminOnboarding(onboardingId, 'contact', {
           email,
           primaryContact: { email, name },
-        }).catch((err) => console.error('[Onboarding Start] Admin PATCH contact failed:', err));
+        }).catch((err) => {
+          // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
+          console.warn(`[Onboarding Start] Admin PATCH contact failed (non-blocking) for onboarding ${onboardingId}:`, err);
+        });
       }
       
       sendToAdminPortal('onboarding', {
@@ -75,7 +81,10 @@ export async function POST(request: NextRequest) {
         user: email ? { email } : {},
         status: state.status, // Använd formell status från FSM
         onboardingStatus: state.status, // För bakåtkompatibilitet
-      }).catch((err) => console.error('[Onboarding Start] Ingest onboarding failed:', err));
+      }).catch((err) => {
+        // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
+        console.warn(`[Onboarding Start] Admin ingest failed (non-blocking) for onboarding ${onboardingId}:`, err);
+      });
       return NextResponse.json({ onboardingId, userSub });
     }
     

@@ -79,8 +79,11 @@ export async function POST(request: Request) {
     const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
     const email = updatedState.email || '';
 
-    // Skicka till admin-portalen med formell status från FSM
-    await sendToAdminPortal('onboarding', {
+    // KRITISK: FSM-transitionen är klar (event append lyckades)
+    // Returnera 200 omedelbart - admin-sync är best effort och får inte påverka FSM
+    
+    // Skicka till admin-portalen med formell status från FSM (best effort)
+    sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-complete`,
       onboardingId,
       sessionId: userSub,
@@ -92,8 +95,12 @@ export async function POST(request: Request) {
       },
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
+    }).catch((adminError) => {
+      // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
+      console.warn(`[Onboarding Stripe Complete] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
 
+    // Returnera 200 oavsett admin-sync-resultat
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[Stripe Complete] Error:', error);
