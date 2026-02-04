@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
-import { getAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 /**
  * GET /api/onboarding?onboardingId=...
  * Hämtar onboarding-state (read-only).
  * 
- * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
- * För anonyma sessioner används cookie-based sessionId som userSub.
+ * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
+ * Auth0-init får INTE ske för onboarding GET (förhindrar implicit Auth0-init).
  * 
  * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
  * Om onboardingId saknas → returnera { state: null }
@@ -17,36 +17,28 @@ import { getAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/an
  */
 export async function GET(request: NextRequest) {
   try {
-    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
-    const session = await auth0.getSession();
-    let userSub: string | null = null;
+    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
+    // Auth0-init får INTE ske för onboarding GET
+    const anonymousSessionId = await getAnonymousSessionId();
+    const sessionId = anonymousSessionId;
     
-    if (session?.user?.sub) {
-      // Auth0-autentiserad användare
-      userSub = session.user.sub;
-    } else {
-      // Anonym session - hämta från cookie
-      const anonymousSessionId = await getAnonymousSessionId();
-      if (anonymousSessionId) {
-        userSub = anonymousSessionId;
-        console.log('[Onboarding GET] Using anonymous sessionId:', userSub);
-      }
-    }
-    
-    // Om ingen session finns (varken Auth0 eller anonym) → returnera null state
-    if (!userSub) {
+    // Om ingen session finns → returnera null state
+    if (!sessionId) {
       return NextResponse.json({
         state: null,
         onboardingId: null,
         eventsCount: 0,
       });
     }
+    
+    console.log('[Onboarding GET] Using anonymous sessionId:', sessionId);
+    
     const searchParams = request.nextUrl.searchParams;
     let onboardingId = searchParams.get('onboardingId');
     
     // Om onboardingId saknas, försök hämta aktiv onboardingId (read-only)
     if (!onboardingId) {
-      onboardingId = await getActiveOnboardingId(userSub);
+      onboardingId = await getActiveOnboardingId(sessionId);
       
       // Om ingen onboarding-session finns, returnera null state
       if (!onboardingId) {
@@ -58,13 +50,13 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    console.log('[Onboarding GET] userSub =', userSub, 'onboardingId =', onboardingId);
+    console.log('[Onboarding GET] sessionId =', sessionId, 'onboardingId =', onboardingId);
     
     const events = await listOnboardingEvents(onboardingId);
     
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
     // Inga auto-create-logik här - GET-endpoint är read-only
-    const state = reduceOnboarding(events, onboardingId, userSub);
+    const state = reduceOnboarding(events, onboardingId, sessionId);
 
     return NextResponse.json({
       state,
