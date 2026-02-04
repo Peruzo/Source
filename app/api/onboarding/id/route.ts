@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
-import { getAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 /**
  * GET /api/onboarding/id
  * Hämtar aktiv onboardingId (read-only).
  * 
- * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
- * För anonyma sessioner används cookie-based sessionId som userSub.
+ * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
+ * Auth0-init får INTE ske för onboarding-id (förhindrar implicit Auth0-init).
  * 
  * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
  * Returnerar befintlig onboardingId även om den är tom.
@@ -16,32 +16,23 @@ import { getAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/an
  * - OnboardingId är stabil genom hela onboarding-flödet (/questions → /code → /stripe)
  * - GET-endpoints är read-only och ändrar inte state
  * - Inga onboarding-loops orsakade av auto-create-logik
+ * - Ingen Auth0-init under onboarding
  */
 export async function GET() {
   try {
-    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
-    const session = await auth0.getSession();
-    let userSub: string | null = null;
+    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
+    // Auth0-init får INTE ske för onboarding-id
+    const anonymousSessionId = await getAnonymousSessionId();
+    const sessionId = anonymousSessionId;
     
-    if (session?.user?.sub) {
-      // Auth0-autentiserad användare
-      userSub = session.user.sub;
-    } else {
-      // Anonym session - hämta från cookie
-      const anonymousSessionId = await getAnonymousSessionId();
-      if (anonymousSessionId) {
-        userSub = anonymousSessionId;
-        console.log('[Onboarding ID] Using anonymous sessionId:', userSub);
-      }
-    }
-    
-    // Om ingen session finns → returnera 404
-    if (!userSub) {
+    if (!sessionId) {
       return NextResponse.json({ error: 'NO_ONBOARDING_SESSION' }, { status: 404 });
     }
     
+    console.log('[Onboarding ID] Using anonymous sessionId:', sessionId);
+    
     // Hämtar aktiv onboardingId (read-only, skapar inget)
-    const onboardingId = await getActiveOnboardingId(userSub);
+    const onboardingId = await getActiveOnboardingId(sessionId);
     
     if (!onboardingId) {
       return NextResponse.json({ error: 'NO_ONBOARDING_SESSION' }, { status: 404 });
@@ -49,8 +40,8 @@ export async function GET() {
 
     return NextResponse.json({ 
       onboardingId, 
-      userSub,
-      isAnonymous: isAnonymousSessionId(userSub),
+      sessionId,
+      isAnonymous: true,
     });
   } catch (error) {
     console.error('[Onboarding ID] Error:', error);
@@ -62,19 +53,30 @@ export async function GET() {
  * POST /api/onboarding/id
  * Skapar en ny onboarding-session (tvingar ny onboardingId).
  * Används när användaren startar en ny onboarding från början.
+ * 
+ * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
+ * Auth0-init får INTE ske för onboarding-id.
+ * 
+ * OBS: Denna endpoint används sällan - POST /api/onboarding/start är primär.
  */
 export async function POST() {
   try {
-    const session = await auth0.getSession();
+    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
+    // Auth0-init får INTE ske för onboarding-id
+    const anonymousSessionId = await getAnonymousSessionId();
     
-    if (!session?.user?.sub) {
-      return NextResponse.json({ error: 'NOT_AUTHENTICATED' }, { status: 401 });
+    if (!anonymousSessionId) {
+      return NextResponse.json({ error: 'NO_SESSION' }, { status: 400 });
     }
 
-    const userSub = session.user.sub;
-    const onboardingId = await createNewOnboardingSession(userSub);
+    const sessionId = anonymousSessionId;
+    const onboardingId = await createNewOnboardingSession(sessionId);
 
-    return NextResponse.json({ onboardingId, userSub });
+    return NextResponse.json({ 
+      onboardingId, 
+      sessionId,
+      isAnonymous: true,
+    });
   } catch (error) {
     console.error('[Onboarding ID] Error creating new session:', error);
     return NextResponse.json({ error: 'Failed to create onboarding session' }, { status: 500 });
