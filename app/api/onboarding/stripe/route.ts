@@ -7,18 +7,27 @@ import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
 import { isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
-const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
-
-if (!stripeSecretKey) {
-  console.warn('[Stripe] STRIPE_PLATFORM_SECRET not configured');
+/**
+ * KRITISK: Stripe SDK-init sker på runtime (request scope), inte module scope.
+ * Detta förhindrar SDK-init under build och gör att env-validering sker vid runtime.
+ */
+function getStripeClient(): Stripe | null {
+  const stripeSecretKey = process.env.STRIPE_PLATFORM_SECRET;
+  
+  if (!stripeSecretKey) {
+    // Warning är OK, men får inte kasta eller blockera build
+    console.warn('[Stripe] STRIPE_PLATFORM_SECRET not configured');
+    return null;
+  }
+  
+  return new Stripe(stripeSecretKey, { apiVersion: '2025-12-15.clover' });
 }
-
-const stripe = stripeSecretKey
-  ? new Stripe(stripeSecretKey, { apiVersion: '2025-12-15.clover' })
-  : null;
 
 export async function POST(request: Request) {
   try {
+    // Initiera Stripe SDK på runtime (request scope)
+    const stripe = getStripeClient();
+    
     if (!stripe) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
