@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 /** Release sticky when progress passes this; applied imperatively in RAF (no state). */
 const STICKY_RELEASE_PROGRESS = 0.9;
@@ -174,6 +176,28 @@ export function ScrollControlledVideoSection() {
           ref={canvasRef}
           className="w-full h-full object-cover pointer-events-none"
         />
+        <div className="absolute inset-0 flex flex-col items-center justify-start pt-24 md:pt-32 px-4 pointer-events-none">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-black text-center mb-4">
+            Ett bokningssystem byggt för alla branscher
+          </h1>
+          <p className="text-lg md:text-xl lg:text-2xl text-black/80 text-center">
+            Som anpassar sig efter ditt arbetsflöde.
+          </p>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-12 md:pb-16 pointer-events-auto">
+          <Link
+            href="/bokningssystem"
+            className="inline-flex items-center gap-2 text-black hover:text-black/80 font-semibold text-lg group transition-colors duration-200"
+          >
+            Se mer om vårt bokningssystem
+            <motion.span
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              →
+            </motion.span>
+          </Link>
+        </div>
       </div>
     </section>
   );

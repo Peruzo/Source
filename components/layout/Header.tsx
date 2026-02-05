@@ -13,6 +13,8 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const isBookingsystemPage = pathname === '/bokningssystem';
+  const isLogistikPage = pathname === '/logistik';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,7 +78,7 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+        isScrolled || isBookingsystemPage || isLogistikPage
           ? 'bg-white/95 backdrop-blur-md shadow-sm'
           : 'bg-transparent'
       }`}
@@ -95,7 +97,7 @@ export function Header() {
                   alt="Source - Everything You Need in One Place"
                   width={120}
                   height={48}
-                  className={`logo-img ${isScrolled ? 'logo-dark' : 'logo-light'}`}
+                  className={`logo-img ${isScrolled || isBookingsystemPage || isLogistikPage ? 'logo-dark' : 'logo-light'}`}
                   priority
                   unoptimized
                 />
@@ -128,7 +130,9 @@ export function Header() {
                       <Link
                         href={link.href}
                         className={`relative text-sm lg:text-base font-medium transition-colors duration-200 ${
-                          isScrolled ? 'text-gray-900 hover:text-emerald-600' : 'text-white hover:text-emerald-300'
+                          isScrolled || isBookingsystemPage || isLogistikPage
+                            ? 'text-gray-900 hover:text-emerald-600'
+                            : 'text-white hover:text-emerald-300'
                         }`}
                         aria-expanded={link.hasMenu ? activeMenu === link.menuKey : undefined}
                       >
@@ -187,7 +191,7 @@ export function Header() {
           <button
             onClick={handleMenuToggle}
             className={`md:hidden w-11 h-11 flex items-center justify-center transition-colors ${
-              isScrolled ? 'text-gray-900' : 'text-white'
+              isScrolled || isBookingsystemPage || isLogistikPage ? 'text-gray-900' : 'text-white'
             }`}
             aria-label="Toggle menu"
           >

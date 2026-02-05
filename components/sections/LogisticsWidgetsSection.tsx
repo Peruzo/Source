@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Container } from '@/components/ui/Container';
 import { FadeIn } from '@/components/animations/FadeIn';
@@ -233,9 +234,9 @@ export function LogisticsWidgetsSection() {
             </FadeIn>
 
             <FadeIn delay={0.2}>
-              <button className="mt-6 px-8 py-4 bg-white text-black rounded-full font-semibold text-base hover:bg-white/90 transition-colors">
+              <Link href="/logistik" className="inline-block mt-6 px-8 py-4 bg-white text-black rounded-full font-semibold text-base hover:bg-white/90 transition-colors">
                 Kom igång med logistik
-              </button>
+              </Link>
             </FadeIn>
           </div>
         </div>
