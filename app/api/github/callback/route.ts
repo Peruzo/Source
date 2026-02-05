@@ -193,9 +193,14 @@ export async function GET(request: NextRequest) {
   const repoSlug = `${owner}/${repoName}`;
   const verifiedAt = new Date().toISOString();
 
-  // Hämta onboardingId från state eller skapa ny
-  const { getOrCreateActiveOnboardingId } = await import('@/lib/storage/onboarding-sessions');
-  const activeOnboardingId = onboardingId || await getOrCreateActiveOnboardingId(session.user.sub);
+  // ARKITEKTURREGEL: onboardingId MÅSTE komma från state. Callback skapar aldrig onboarding.
+  if (!onboardingId) {
+    return NextResponse.json(
+      { error: 'INVALID_STATE_NO_ONBOARDING_ID' },
+      { status: 400 }
+    );
+  }
+  const activeOnboardingId = onboardingId;
 
   // KRITISK: Spara GitHub repo-verifiering i onboarding-state FÖRE job-skapande
   // Jobbet får endast skapas efter github_repo_verified event är sparat (FSM-krav)
