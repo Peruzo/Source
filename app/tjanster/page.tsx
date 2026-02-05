@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { LogisticsWidgetsSection } from '@/components/sections/LogisticsWidgetsSection';
+import { ScrollControlledVideoSection } from '@/components/sections/ScrollControlledVideoSection';
 
 const services = [
   {
@@ -602,6 +603,9 @@ export default function ServicesPage() {
 
             {/* Logistics Widgets Section - Revolut Design */}
             <LogisticsWidgetsSection />
+
+            {/* Scroll-controlled 4K video (Revolut-style) */}
+            <ScrollControlledVideoSection />
 
             </Fragment>
           );
