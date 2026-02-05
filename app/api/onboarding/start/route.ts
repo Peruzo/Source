@@ -12,27 +12,19 @@ import { getOrCreateAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboa
  * Detta är ENDA platsen som får skapa onboarding-sessioner.
  * Anropas från frontend när GET /api/onboarding/id returnerar 404.
  * 
- * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
- * För anonyma sessioner används cookie-based sessionId som userSub.
+ * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
+ * Auth0-init får INTE ske för onboarding-start.
  * 
  * @param forceNew - Om true, skapar alltid ny onboarding även om befintlig finns (för custom signup)
  * 
- * Returnerar { onboardingId, userSub } som ska användas för alla onboarding-operationer.
+ * Returnerar { onboardingId, userSub, isAnonymous } (userSub = anonym sessionId).
  */
 export async function POST(request: NextRequest) {
   try {
-    // KRITISK: Tillåt både Auth0-autentiserade och anonyma sessioner
-    const session = await auth0.getSession();
-    let userSub: string;
-    
-    if (session?.user?.sub) {
-      // Auth0-autentiserad användare
-      userSub = session.user.sub;
-    } else {
-      // Anonym session - skapa eller hämta cookie-based sessionId
-      userSub = await getOrCreateAnonymousSessionId();
-      console.log(`[Onboarding Start] Using anonymous sessionId: ${userSub}`);
-    }
+    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
+    // Auth0-init får INTE ske för onboarding-start
+    const userSub = await getOrCreateAnonymousSessionId();
+    console.log(`[Onboarding Start] Using anonymous sessionId: ${userSub}`);
     
     // Läs forceNew och email från request body (email kommer från signup-context)
     let forceNew = false;
