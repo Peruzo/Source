@@ -93,14 +93,16 @@ export function LoginClient() {
         return;
       }
       // Spara email i sessionStorage så att onboarding-start kan läsa det (email ska komma från onboarding-state, inte Auth0)
+      sessionStorage.setItem('customSignup', 'true');
       if (email.trim()) {
         sessionStorage.setItem('onboarding_signup_email', email.trim());
         if (trimmedFirst && trimmedLast) {
           sessionStorage.setItem('onboarding_signup_name', `${trimmedFirst} ${trimmedLast}`);
         }
       }
-      const loginUrl = data.loginUrl ?? `/api/auth/login?${new URLSearchParams({ returnTo: AUTH_RETURN }).toString()}`;
-      window.location.href = loginUrl;
+      // ARKITEKTURREGEL: Ingen redirect till Auth0 login. Användaren fortsätter med anonym onboarding.
+      const redirectTo = data.redirectTo ?? `${AUTH_RETURN}?signup=true`;
+      window.location.href = redirectTo;
     } catch (err) {
       setSubmitError(normalizeError(err));
       setIsSubmitting(false);

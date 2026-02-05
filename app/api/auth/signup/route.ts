@@ -52,11 +52,6 @@ export async function POST(request: NextRequest) {
   }
 
   const signupUrl = `https://${domain}/dbconnections/signup`;
-  const appBaseUrl =
-    process.env.APP_BASE_URL ||
-    process.env.AUTH0_BASE_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    '';
 
   const res = await fetch(signupUrl, {
     method: 'POST',
@@ -104,12 +99,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // KRITISK FIX: Lägg till signup-flagga i returnTo för att identifiera custom signup
-  const returnTo = `${AUTH_RETURN}?signup=true`;
-  const loginUrl = `${appBaseUrl.replace(/\/$/, '')}/api/auth/login?${new URLSearchParams({
-    returnTo,
-    login_hint: email,
-  }).toString()}`;
-
-  return NextResponse.json({ loginUrl });
+  // ARKITEKTURREGEL: Custom signup ska INTE trigga Auth0 login.
+  // Användaren fortsätter med anonym onboarding; identity-verify (Auth0) används endast senare vid behov (t.ex. Stripe).
+  return NextResponse.json({
+    success: true,
+    redirectTo: `${AUTH_RETURN}?signup=true`,
+  });
 }

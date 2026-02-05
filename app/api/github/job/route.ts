@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
 import { getGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
+import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { Storage } from '@google-cloud/storage';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
@@ -12,21 +12,15 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID;
 /**
  * GET /api/github/job?jobId=...
  * Hämtar status för ett GitHub import-jobb.
- * 
- * Om jobbet är 'running' eller 'queued', kontrollerar den om ZIP-filen finns i GCS.
- * Om filen finns, uppdateras jobbet till 'completed' med GCS-path och size.
- * 
+ *
+ * ARKITEKTURREGEL: Ingen Auth0. Åtkomst via jobId (hemlig UUID) + valfri match mot anonym cookie.
+ * Om cookie finns och job.userSub inte matchar sessionId → 403.
+ *
+ * Om jobbet är 'running' eller 'queued', kontrolleras om ZIP-filen finns i GCS.
  * GCS används som sanningskälla - ingen callback från worker.
- * Public website uppdaterar status baserat på GCS-filens existens.
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth0.getSession();
-    
-    if (!session?.user?.sub) {
-      return NextResponse.json({ error: 'NOT_AUTHENTICATED' }, { status: 401 });
-    }
-
     const jobId = request.nextUrl.searchParams.get('jobId');
     if (!jobId) {
       return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });
@@ -37,8 +31,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
-    // Verifiera att jobbet tillhör användaren
-    if (job.userSub !== session.user.sub) {
+    const sessionId = await getAnonymousSessionId();
+    if (sessionId && job.userSub !== sessionId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

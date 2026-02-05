@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
 import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 import { createGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
@@ -43,10 +42,8 @@ export async function GET(request: NextRequest) {
   }
   const [, owner, repoName] = match;
 
-  const session = await auth0.getSession();
-  if (!session?.user || session.user.sub !== sessionId) {
-    return NextResponse.redirect(buildUrl('/onboarding/login'));
-  }
+  // ARKITEKTURREGEL: Ingen Auth0. State innehåller sessionId (anon_<uuid>) och onboardingId från connect.
+  // Vi verifierar inte Auth0-session – användaren kommer tillbaka från GitHub OAuth i samma webbläsare.
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
@@ -238,7 +235,7 @@ export async function GET(request: NextRequest) {
     // KRITISK: Jobbet skapas endast efter github_repo_verified event är sparat
     const jobId = await createGitHubJob({
       onboardingId: activeOnboardingId,
-      userSub: session.user.sub,
+      userSub: sessionId,
       repo,
       owner,
       repoName,

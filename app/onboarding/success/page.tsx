@@ -1,13 +1,10 @@
-import { redirect } from 'next/navigation';
-import { auth0 } from '@/lib/auth0';
 import { SuccessMessage } from './success-message';
 
-export default async function SuccessPage() {
-  const session = await auth0.getSession();
-
-  if (!session?.user) {
-    redirect('/onboarding/login');
-  }
-
+/**
+ * ARKITEKTURREGEL: /onboarding/** får aldrig initiera Auth0.
+ * Success-sidan använder useOnboardingId() (cookie-baserad) och anropar
+ * POST /api/onboarding/stripe/complete med onboardingId – Auth0 används endast i Stripe-API:et.
+ */
+export default function SuccessPage() {
   return <SuccessMessage />;
 }
