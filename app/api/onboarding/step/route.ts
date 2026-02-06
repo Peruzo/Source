@@ -52,6 +52,19 @@ export async function POST(request: Request) {
     const onboardingId = providedOnboardingId;
     console.log('[Onboarding Step] Using onboardingId:', onboardingId);
 
+    // VALIDERA payload för questions-step
+    if (step === 'questions') {
+      if (!data || typeof data !== 'object') {
+        return NextResponse.json({ success: false, message: 'Invalid questions data' }, { status: 400 });
+      }
+      const requiredFields = ['hasExistingSite', 'currentStage', 'primaryGoal', 'customerCount'];
+      for (const field of requiredFields) {
+        if (!data[field]) {
+          return NextResponse.json({ success: false, message: `Missing required field: ${field}` }, { status: 400 });
+        }
+      }
+    }
+
     // Append event till event-logg (append-only, ingen read-modify-write)
     try {
       if (step === 'questions') {
@@ -95,12 +108,17 @@ export async function POST(request: Request) {
     }
 
     // KRITISK: FSM-transitionen är klar (event append lyckades)
-    // Returnera 200 omedelbart - admin-sync är best effort och får inte påverka FSM
-    
-    // Hämta state från onboarding-state (inte Auth0 session)
+    // Hämta state från onboarding-state (inte Auth0 session) för att bestämma nextStep
     const events = await listOnboardingEvents(onboardingId);
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || '';
+
+    // Bestäm nextStep atomiskt baserat på questions-data
+    let nextStep: string | undefined;
+    if (step === 'questions') {
+      // Atomiskt: om hasExistingSite === 'Ja' → 'code', annars → 'stripe'
+      nextStep = data.hasExistingSite === 'Ja' ? 'code' : 'stripe';
+    }
 
     // Admin-sync: fire-and-forget (best effort, får aldrig kasta eller orsaka 500)
     // Detta är arkitekturkrav: FSM-transitioner får aldrig bero på externa system
@@ -122,8 +140,8 @@ export async function POST(request: Request) {
       console.warn(`[Onboarding Step] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
 
-    // Returnera 200 oavsett admin-sync-resultat
-    return NextResponse.json({ success: true });
+    // Returnera 200 med nextStep när questions skickas (annars undefined)
+    return NextResponse.json({ ok: true, ...(nextStep ? { nextStep } : {}) });
   } catch (error) {
     console.error('[Onboarding Step] Error:', error);
     return NextResponse.json({ success: false }, { status: 500 });

@@ -53,14 +53,13 @@ export function CodeUploadForm() {
   useEffect(() => {
     if (loading) return;
     
-    if (!state?.questions || state.questions.hasExistingSite !== 'Ja') {
-      router.replace('/onboarding/questions');
-      return;
-    }
+    // ARKITEKTURREGEL: Ingen server-side redirect baserat på step.
+    // Sidan får renderas även om state ännu inte reflekterar 'code'.
+    // Visa loader om state.step !== 'code' (hanteras i render-logik nedan).
     
-    setRepoLink(state.code?.repoLink || '');
-    setCodeText(state.code?.codeText || '');
-  }, [state, loading, router]);
+    setRepoLink(state?.code?.repoLink || '');
+    setCodeText(state?.code?.codeText || '');
+  }, [state, loading]);
 
   // URL-parametrar (github, jobId) används endast för init. Rensa URL direkt så att routing/rerenders inte återställer state.
   useEffect(() => {
@@ -161,6 +160,20 @@ export function CodeUploadForm() {
 
   const codeFromBackend = Boolean(state?.code) || codePersistedByBackend;
   const isReadOnly = codeFromBackend;
+
+  // ARKITEKTURREGEL: Visa loader om state ännu inte reflekterar 'code' (t.ex. efter questions submit)
+  // Sidan får renderas även om state.step !== 'code', men visa loader för användaren
+  const isWaitingForStateUpdate = !loading && (!state?.questions || state.questions.hasExistingSite !== 'Ja');
+
+  if (loading || isWaitingForStateUpdate) {
+    return (
+      <section className="max-w-3xl mx-auto px-6 py-16">
+        <div className="text-center">
+          <p className="text-gray-600">Laddar...</p>
+        </div>
+      </section>
+    );
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

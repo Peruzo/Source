@@ -105,20 +105,25 @@ export function QuestionsForm() {
         setSubmitting(false);
         return;
       }
+
+      // Vänta på 200 OK innan navigation
+      const result = await response.json();
+      
+      // Navigera baserat på nextStep från backend (atomiskt bestämt)
+      if (result.nextStep === 'code') {
+        router.push('/onboarding/code');
+      } else if (result.nextStep === 'stripe') {
+        const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
+        router.push(getStripeOnboardingUrl(planId));
+      } else {
+        // Fallback (bör inte hända)
+        setError('Kunde inte bestämma nästa steg.');
+        setSubmitting(false);
+      }
     } catch (err) {
       setError(normalizeError(err));
       setSubmitting(false);
       return;
-    }
-
-    // State sparas automatiskt i backend via POST /api/onboarding/step
-    // Ingen localStorage-sparning behövs längre
-
-    if (formData.hasExistingSite === 'Ja') {
-      router.push('/onboarding/code');
-    } else {
-      const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
-      router.push(getStripeOnboardingUrl(planId));
     }
   };
 
