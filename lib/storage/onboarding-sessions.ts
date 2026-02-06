@@ -5,6 +5,25 @@ const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ON
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
 
 /**
+ * NYTT: Aktiv onboarding per session (in-memory bindning).
+ * En sessionId → exakt 1 aktiv onboardingId tills onboarding är klar.
+ * Detta förhindrar att onboardingId ändras efter questions.
+ */
+const activeOnboardingBySession = new Map<string, string>();
+
+export function bindOnboardingToSession(sessionId: string, onboardingId: string) {
+  activeOnboardingBySession.set(sessionId, onboardingId);
+}
+
+export function getActiveOnboardingForSession(sessionId: string): string | null {
+  return activeOnboardingBySession.get(sessionId) ?? null;
+}
+
+export function clearActiveOnboardingForSession(sessionId: string) {
+  activeOnboardingBySession.delete(sessionId);
+}
+
+/**
  * Onboarding-session metadata (kopplat till user.sub).
  * Varje user.sub kan ha flera onboarding-sessioner (onboardingId).
  */

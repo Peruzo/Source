@@ -44,6 +44,9 @@ export async function POST(request: NextRequest) {
       const onboardingId = await createNewOnboardingSession(userSub);
       console.log(`[Onboarding Start] Created new onboarding session (forceNew): ${onboardingId} for userSub: ${userSub}`);
       
+      // KRITISKT: Bind onboardingId till sessionId (förhindrar att onboardingId ändras)
+      bindOnboardingToSession(userSub, onboardingId);
+      
       // Spara email i onboarding-state om det finns (från signup-context)
       if (emailFromBody) {
         try {
@@ -122,6 +125,9 @@ export async function POST(request: NextRequest) {
     // Ingen befintlig onboarding: skapa ny
     const onboardingId = await createNewOnboardingSession(userSub);
     console.log(`[Onboarding Start] Created new onboarding session: ${onboardingId} for userSub: ${userSub}`);
+    
+    // KRITISKT: Bind onboardingId till sessionId (förhindrar att onboardingId ändras)
+    bindOnboardingToSession(userSub, onboardingId);
     
     // Spara email i onboarding-state om det finns (från request body)
     if (emailFromBody) {

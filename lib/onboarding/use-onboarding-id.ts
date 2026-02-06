@@ -40,6 +40,22 @@ export function useOnboardingId(): {
           setUserSub(currentUserSub);
         }
 
+        // ARKITEKTURREGEL: onboardingId är write-once per session.
+        // Om onboardingId redan finns i sessionStorage → använd den (förhindrar "hoppa bak")
+        const existingOnboardingId = typeof window !== 'undefined' 
+          ? sessionStorage.getItem('onboarding_id') 
+          : null;
+        
+        if (existingOnboardingId) {
+          console.log('[useOnboardingId] Using existing onboardingId from sessionStorage:', existingOnboardingId);
+          if (!cancelled) {
+            setOnboardingId(existingOnboardingId);
+            setError(null);
+            setLoading(false);
+          }
+          return;
+        }
+
         const isCustomSignup =
           typeof window !== 'undefined' &&
           (window.location.search.includes('signup=true') || sessionStorage.getItem('customSignup') === 'true');
@@ -67,9 +83,10 @@ export function useOnboardingId(): {
               setOnboardingId(startData.onboardingId);
               setUserSub(startData.userSub || currentUserSub);
               setError(null);
-              sessionStorage.removeItem('customSignup');
-              // Rensa signup-email efter att det har sparats i onboarding-state
+              // Spara onboardingId i sessionStorage (write-once)
               if (typeof window !== 'undefined') {
+                sessionStorage.setItem('onboarding_id', startData.onboardingId);
+                sessionStorage.removeItem('customSignup');
                 sessionStorage.removeItem('onboarding_signup_email');
                 sessionStorage.removeItem('onboarding_signup_name');
               }
@@ -81,10 +98,27 @@ export function useOnboardingId(): {
           return;
         }
 
-        // Resume / vanligt flöde: GET id (read-only), vid 404 skapa explicit utan forceNew
+        // Resume / vanligt flöde: GET id (read-only), om null skapa explicit utan forceNew
         const res = await fetch('/api/onboarding/id');
 
-        if (res.status === 404) {
+        if (!res.ok) {
+          throw new Error(`Failed to get onboarding ID: ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        if (data.onboardingId) {
+          // Spara onboardingId i sessionStorage (write-once)
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('onboarding_id', data.onboardingId);
+          }
+          if (!cancelled) {
+            setOnboardingId(data.onboardingId);
+            setUserSub(data.userSub || currentUserSub);
+            setError(null);
+          }
+        } else {
+          // Ingen onboardingId finns → skapa ny via POST /api/onboarding/start
           const startRes = await fetch('/api/onboarding/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -99,21 +133,12 @@ export function useOnboardingId(): {
               setOnboardingId(startData.onboardingId);
               setUserSub(startData.userSub || currentUserSub);
               setError(null);
+              // Spara onboardingId i sessionStorage (write-once)
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('onboarding_id', startData.onboardingId);
+              }
             } else {
               throw new Error('No onboardingId in start response');
-            }
-          }
-        } else if (!res.ok) {
-          throw new Error(`Failed to get onboarding ID: ${res.status}`);
-        } else {
-          const data = await res.json();
-          if (!cancelled) {
-            if (data.onboardingId) {
-              setOnboardingId(data.onboardingId);
-              setUserSub(data.userSub || currentUserSub);
-              setError(null);
-            } else {
-              throw new Error('No onboardingId in response');
             }
           }
         }

@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getActiveOnboardingId, createNewOnboardingSession } from '@/lib/storage/onboarding-sessions';
 import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { getActiveOnboardingForSession } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/onboarding/id
  * Hämtar aktiv onboardingId (read-only).
  * 
+ * ARKITEKTURREGEL: Denna endpoint får ALDRIG skapa onboarding.
+ * Onboarding skapas endast via POST /api/onboarding/start.
+ * 
  * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
  * Auth0-init får INTE ske för onboarding-id (förhindrar implicit Auth0-init).
- * 
- * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
- * Returnerar befintlig onboardingId även om den är tom.
  * 
  * Detta säkerställer:
  * - OnboardingId är stabil genom hela onboarding-flödet (/questions → /code → /stripe)
@@ -22,63 +22,20 @@ export async function GET() {
   try {
     // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
     // Auth0-init får INTE ske för onboarding-id
-    const anonymousSessionId = await getAnonymousSessionId();
-    const sessionId = anonymousSessionId;
+    const sessionId = await getAnonymousSessionId();
     
     if (!sessionId) {
-      return NextResponse.json({ error: 'NO_ONBOARDING_SESSION' }, { status: 404 });
+      return NextResponse.json({ onboardingId: null }, { status: 200 });
     }
     
     console.log('[Onboarding ID] Using anonymous sessionId:', sessionId);
     
-    // Hämtar aktiv onboardingId (read-only, skapar inget)
-    const onboardingId = await getActiveOnboardingId(sessionId);
+    // Hämtar aktiv onboardingId från session-bindning (read-only, skapar inget)
+    const onboardingId = getActiveOnboardingForSession(sessionId);
     
-    if (!onboardingId) {
-      return NextResponse.json({ error: 'NO_ONBOARDING_SESSION' }, { status: 404 });
-    }
-
-    return NextResponse.json({ 
-      onboardingId, 
-      sessionId,
-      isAnonymous: true,
-    });
+    return NextResponse.json({ onboardingId });
   } catch (error) {
     console.error('[Onboarding ID] Error:', error);
     return NextResponse.json({ error: 'Failed to get onboarding ID' }, { status: 500 });
-  }
-}
-
-/**
- * POST /api/onboarding/id
- * Skapar en ny onboarding-session (tvingar ny onboardingId).
- * Används när användaren startar en ny onboarding från början.
- * 
- * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
- * Auth0-init får INTE ske för onboarding-id.
- * 
- * OBS: Denna endpoint används sällan - POST /api/onboarding/start är primär.
- */
-export async function POST() {
-  try {
-    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
-    // Auth0-init får INTE ske för onboarding-id
-    const anonymousSessionId = await getAnonymousSessionId();
-    
-    if (!anonymousSessionId) {
-      return NextResponse.json({ error: 'NO_SESSION' }, { status: 400 });
-    }
-
-    const sessionId = anonymousSessionId;
-    const onboardingId = await createNewOnboardingSession(sessionId);
-
-    return NextResponse.json({ 
-      onboardingId, 
-      sessionId,
-      isAnonymous: true,
-    });
-  } catch (error) {
-    console.error('[Onboarding ID] Error creating new session:', error);
-    return NextResponse.json({ error: 'Failed to create onboarding session' }, { status: 500 });
   }
 }
