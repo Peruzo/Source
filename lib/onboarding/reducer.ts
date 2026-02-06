@@ -182,7 +182,16 @@ export function reduceOnboarding(
     }
 
     // FSM: Verifiera och uppdatera status baserat på event
-    const nextStatus = getNextStatus(state.status, event.type);
+    let nextStatus = getNextStatus(state.status, event.type);
+    
+    // KRITISKT: För questions_submitted, om hasExistingSite === 'Ja', sätt code_pending istället för questions_completed
+    if (event.type === 'questions_submitted' && event.payload.hasExistingSite === 'Ja' && nextStatus === 'questions_completed') {
+      // Validera att transition är tillåten (från 'started')
+      if (state.status === 'started') {
+        nextStatus = 'code_pending';
+      }
+    }
+    
     if (nextStatus !== null) {
       state.status = nextStatus;
     }
@@ -196,10 +205,7 @@ export function reduceOnboarding(
 
       case 'questions_submitted':
         state.questions = event.payload;
-        // Om hasExistingSite === 'Ja', behåll code_pending (annars är status redan questions_completed från transition)
-        if (event.payload.hasExistingSite === 'Ja' && state.status === 'questions_completed') {
-          state.status = 'code_pending';
-        }
+        // Status är redan satt till code_pending (om hasExistingSite === 'Ja') eller questions_completed ovan
         break;
 
       case 'code_submitted':
