@@ -24,6 +24,22 @@ export function clearActiveOnboardingForSession(sessionId: string) {
 }
 
 /**
+ * Hämtar aktiv onboardingId för en sessionId (först i-memory, sedan GCS).
+ * Returnerar null om ingen onboarding finns.
+ * Används för att säkerställa att samma sessionId alltid får samma onboardingId.
+ */
+export async function getActiveOnboardingIdForSession(sessionId: string): Promise<string | null> {
+  // Först kolla i-memory Map (snabbast)
+  const inMemoryId = getActiveOnboardingForSession(sessionId);
+  if (inMemoryId) {
+    return inMemoryId;
+  }
+  
+  // Om inte i-memory, kolla GCS
+  return await getActiveOnboardingId(sessionId);
+}
+
+/**
  * Onboarding-session metadata (kopplat till user.sub).
  * Varje user.sub kan ha flera onboarding-sessioner (onboardingId).
  */

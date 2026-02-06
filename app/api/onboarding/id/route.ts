@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
-import { getActiveOnboardingForSession } from '@/lib/storage/onboarding-sessions';
+import { getActiveOnboardingIdForSession } from '@/lib/storage/onboarding-sessions';
 
 /**
  * GET /api/onboarding/id
@@ -31,7 +31,7 @@ export async function GET() {
     console.log('[Onboarding ID] Using anonymous sessionId:', sessionId);
     
     // Hämtar aktiv onboardingId från session-bindning (read-only, skapar inget)
-    const onboardingId = getActiveOnboardingForSession(sessionId);
+    const onboardingId = await getActiveOnboardingIdForSession(sessionId);
     
     return NextResponse.json({ onboardingId });
   } catch (error) {
