@@ -81,11 +81,14 @@ export function QuestionsForm() {
     // Hämta email från onboarding-state (inte Auth0 session)
     const emailFromState = state?.email || '';
     
+    // Bestäm nextStep baserat på formulärdata
+    const nextStep = formData.hasExistingSite === 'Ja' ? 'code' : 'stripe';
+    
     const payload = {
-      sessionId,
       onboardingId,
       step: 'questions',
-      data: {
+      nextStep,
+      answers: {
         ...formData,
         // Skicka email från state om det finns (så att step-endpoint kan spara det som email_set event)
         ...(emailFromState ? { userEmail: emailFromState } : {}),
