@@ -99,13 +99,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // Append event till event-logg (append-only, ingen read-modify-write)
+    // KRITISKT: Append event till event-logg (append-only, ingen read-modify-write)
+    // FSM-transitionen MÅSTE sparas för att state ska uppdateras
     try {
       if (currentStep === 'questions') {
         await appendOnboardingEvent(onboardingId, {
           type: 'questions_submitted',
           payload: payloadData,
         });
+        console.log(`[Onboarding Step] Appended questions_submitted event for onboarding ${onboardingId}`);
+        
         // Om email finns i payloadData (från questions-formuläret), spara det också i onboarding-state
         if (payloadData.userEmail && typeof payloadData.userEmail === 'string' && payloadData.userEmail.trim()) {
           await appendOnboardingEvent(onboardingId, {
@@ -137,12 +140,16 @@ export async function POST(request: Request) {
         });
       }
     } catch (eventError) {
-      console.error('[Onboarding Step] Error appending event:', eventError);
-      // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
+      console.error('[Onboarding Step] CRITICAL: Failed to append event:', eventError);
+      // KRITISKT: Om event-sparning misslyckas kan FSM-transitionen inte appliceras
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Failed to save onboarding step. Please try again.' 
+      }, { status: 500 });
     }
 
     // KRITISK: FSM-transitionen är klar (event append lyckades)
-    // Hämta state från onboarding-state (inte Auth0 session) för att bestämma nextStep
+    // Hämta UPPDATERAD state från onboarding-state (inklusive nyss appendade event)
     const events = await listOnboardingEvents(onboardingId);
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || '';
@@ -157,14 +164,18 @@ export async function POST(request: Request) {
       determinedNextStep = payloadData.hasExistingSite === 'Ja' ? 'code' : 'stripe';
     }
 
+    // KRITISKT: För admin-sync, skicka nextStep (inte currentStep) när questions_submitted
+    // Admin ingest måste visa step progression: questions → code
+    const adminStep = currentStep === 'questions' && determinedNextStep ? determinedNextStep : currentStep;
+
     // Admin-sync: fire-and-forget (best effort, får aldrig kasta eller orsaka 500)
     // Detta är arkitekturkrav: FSM-transitioner får aldrig bero på externa system
     const adminPayload = {
-      idempotencyKey: `onboarding-${onboardingId}-${currentStep}`,
+      idempotencyKey: `onboarding-${onboardingId}-${currentStep}-${determinedNextStep || 'completed'}`,
       onboardingId,
       sessionId: userSub,
-      step: currentStep,
-      onboardingStatus: state.status, // Använd formell status från FSM (inte heuristik)
+      step: adminStep, // KRITISKT: Skicka nextStep (code) istället för currentStep (questions)
+      onboardingStatus: state.status, // Använd formell status från FSM (code_pending eller questions_completed)
       user: email ? { email, sub: userSub } : { sub: userSub },
       data: payloadData,
       submittedAt: new Date().toISOString(),
@@ -177,13 +188,17 @@ export async function POST(request: Request) {
       console.warn(`[Onboarding Step] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
 
-    // Returnera alltid { ok: true, step: "code" } vid lyckad transition från questions
-    if (currentStep === 'questions' && determinedNextStep === 'code') {
-      return NextResponse.json({ ok: true, step: 'code', nextStep: 'code' });
+    // RESPONSE CONTRACT: Returnera alltid success: true och nextStep när questions skickas
+    if (currentStep === 'questions') {
+      return NextResponse.json({ 
+        success: true, 
+        nextStep: determinedNextStep || 'stripe',
+        step: determinedNextStep || 'stripe' // För bakåtkompatibilitet
+      });
     }
     
-    // Returnera 200 med nextStep när questions skickas (annars undefined)
-    return NextResponse.json({ ok: true, ...(determinedNextStep ? { step: determinedNextStep, nextStep: determinedNextStep } : {}) });
+    // För andra steps, returnera success: true
+    return NextResponse.json({ success: true, ...(determinedNextStep ? { nextStep: determinedNextStep } : {}) });
   } catch (error) {
     console.error('[Onboarding Step] Error:', error);
     return NextResponse.json({ success: false }, { status: 500 });
