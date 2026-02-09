@@ -198,12 +198,8 @@ export function CodeUploadForm() {
 
     // KRITISKT: Hämta sessionId från anonym onboarding-session (samma källa som onboardingId)
     // Backend kräver anon_<uuid> i FormData, inte userSub från hook
-    const sessionId = getAnonymousSessionIdFromCookie();
-    if (!sessionId) {
-      setError('Kunde inte hitta session. Ladda om sidan.');
-      setSubmitting(false);
-      return;
-    }
+    // Backend avgör om tomt sessionId är OK eller inte
+    const sessionId = getAnonymousSessionIdFromCookie() || '';
 
     const formData = new FormData();
     formData.append('sessionId', sessionId);
