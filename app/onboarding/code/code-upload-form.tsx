@@ -6,6 +6,7 @@ import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { getStoredPlanId, getStripeOnboardingUrl } from '@/lib/onboarding/selected-plan';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
+import { getAnonymousSessionIdFromCookie } from '@/lib/onboarding/anonymous-session-client';
 import { normalizeError } from '@/lib/utils/normalize-error';
 
 export function CodeUploadForm() {
@@ -13,7 +14,6 @@ export function CodeUploadForm() {
   const searchParams = useSearchParams();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
-  const [sessionId, setSessionId] = useState('');
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -34,13 +34,6 @@ export function CodeUploadForm() {
   useEffect(() => {
     if (state?.code) codeAlreadyInBackendRef.current = true;
   }, [state?.code]);
-
-  useEffect(() => {
-    // Använd userSub från hook (Auth0 eller anonym sessionId)
-    if (userSub) {
-      setSessionId(userSub);
-    }
-  }, [userSub]);
 
   // Visa fel om onboardingId saknas
   useEffect(() => {
@@ -202,6 +195,15 @@ export function CodeUploadForm() {
     }
 
     setSubmitting(true);
+
+    // KRITISKT: Hämta sessionId från anonym onboarding-session (samma källa som onboardingId)
+    // Backend kräver anon_<uuid> i FormData, inte userSub från hook
+    const sessionId = getAnonymousSessionIdFromCookie();
+    if (!sessionId) {
+      setError('Kunde inte hitta session. Ladda om sidan.');
+      setSubmitting(false);
+      return;
+    }
 
     const formData = new FormData();
     formData.append('sessionId', sessionId);
