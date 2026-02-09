@@ -161,12 +161,14 @@ export function CodeUploadForm() {
   const codeFromBackend = Boolean(state?.code) || codePersistedByBackend;
   const isReadOnly = codeFromBackend;
 
-  // ARKITEKTURREGEL: Visa loader endast när state saknas eller fortfarande är "started"
-  // Blockera INTE baserat på state.questions.hasExistingSite
-  // code-sidan ska rendera när state.status === 'code_pending' ELLER 'code_completed'
+  // ARKITEKTURREGEL: Visa loader endast när state.status === 'started'
+  // state === undefined är normalt initialt tillstånd vid RSC → client hydration och ska INTE blockera
+  // code-sidan ska rendera när state.status === 'code_pending' ELLER 'code_completed' ELLER när state saknas
   const isWaitingForStateUpdate =
     !loading &&
-    (!state || state.status === 'started');
+    state !== null &&
+    state !== undefined &&
+    state.status === 'started';
 
   if (loading || isWaitingForStateUpdate) {
     return (
