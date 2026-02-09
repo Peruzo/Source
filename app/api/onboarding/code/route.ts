@@ -3,16 +3,27 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
-import { isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const sessionId = String(formData.get('sessionId') || '');
+    let sessionId = String(formData.get('sessionId') || '').trim();
     const providedOnboardingId = formData.get('onboardingId')?.toString();
 
+    // KRITISKT: I anonym onboarding måste backend:
+    // 1. Acceptera sessionId från FormData OM det finns
+    // 2. Annars läsa anon-session från cookie
+    // 3. Annars returnera 400
     if (!sessionId) {
-      return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
+      // Försök läsa från cookie
+      const cookieSessionId = await getAnonymousSessionId();
+      if (cookieSessionId) {
+        sessionId = cookieSessionId;
+        console.log('[Onboarding Code] Using sessionId from cookie:', sessionId);
+      } else {
+        return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
+      }
     }
 
     // KRITISK: Använd ENDAST anonyma sessioner (cookie-based sessionId)
