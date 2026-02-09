@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
-import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
-import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 export async function POST(request: Request) {
@@ -50,100 +47,63 @@ export async function POST(request: Request) {
     const onboardingId = providedOnboardingId;
     console.log('[Onboarding Code] Using onboardingId:', onboardingId);
 
-    // Förhindra POST när kod redan är kopplad via GitHub (backend-driven)
-    const events = await listOnboardingEvents(onboardingId);
-    const currentState = reduceOnboarding(events, onboardingId, userSub);
-    if (currentState.code?.codeSource === 'github') {
-      return NextResponse.json(
-        { success: false, message: 'Code already linked via GitHub.' },
-        { status: 400 }
-      );
-    }
-
     const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '');
     const file = formData.get('file') as File | null;
+
+    // /api/onboarding/code ska ALDRIG blockeras av FSM-status
+    // FSM-transition sker senare i GitHub-jobbet
+
+    // 1. Validera input (repoLink, file, etc)
+    if (!repoLink && !codeText && !file) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing code input. Provide repoLink, codeText, or file.',
+      }, { status: 400 });
+    }
 
     // Only repo link, no file/codeText: verify GitHub repo; if private, return flags for GitHub OAuth
     if (repoLink && !file && !codeText.trim()) {
       const access = await checkRepoAccess(repoLink);
       if (access.repoSlug && (access.private || !access.ok)) {
         return NextResponse.json({
-          success: false,
-          repoPrivate: true,
-          requiresGithubAccess: true,
-          repoSlug: access.repoSlug,
+          success: true,
+          job: {
+            status: 'requires_github_oauth',
+            repoPrivate: true,
+            requiresGithubAccess: true,
+            repoSlug: access.repoSlug,
+          },
         });
       }
-    }
-
-    let filePayload: null | {
-      name: string;
-      type: string;
-      size: number;
-      base64: string;
-    } = null;
-
-    if (file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      filePayload = {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        base64: buffer.toString('base64'),
-      };
-    }
-
-    // Append event till event-logg (append-only, ingen read-modify-write)
-    // onboardingId är redan hämtat/skapat ovan
-    try {
-      await appendOnboardingEvent(onboardingId, {
-        type: 'code_submitted',
-        payload: {
-          repoLink,
-          codeText,
-          fileName: file?.name,
+      // Public repo - kan hanteras direkt, men GitHub OAuth-flödet används normalt
+      // Returnera att job kan startas
+      return NextResponse.json({
+        success: true,
+        job: {
+          status: 'started',
+          message: 'Public repo detected. Use GitHub OAuth flow for consistency.',
         },
       });
-    } catch (eventError) {
-      console.error('[Onboarding Code] Error appending event:', eventError);
-      // Fortsätt även om event-sparning misslyckas (admin-portalen är primär)
     }
 
-    // KRITISK: FSM-transitionen är klar (event append lyckades)
-    // Returnera 200 omedelbart - admin-sync är best effort och får inte påverka FSM
-    
-    // Hämta state från onboarding-state (inte Auth0 session)
-    const updatedEvents = await listOnboardingEvents(onboardingId);
-    const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
-    const email = updatedState.email || '';
+    // 2. Starta eller återanvänd GitHub-job (idempotent)
+    // För file/codeText: spara temporärt (ingen FSM-transition här)
+    // FSM-transition till code_completed sker endast i GitHub-job-processorn
 
-    const payload = {
-      idempotencyKey: `onboarding-${onboardingId}-code`,
-      onboardingId,
-      sessionId,
-      step: 'code',
-      onboardingStatus: updatedState.status, // Använd formell status från FSM
-      user: email ? { email, sub: userSub } : { sub: userSub },
-      data: {
-        repoLink,
-        codeText,
-        file: filePayload,
-        temporary: true,
-        readOnly: true,
+    // För nuvarande implementation: file/codeText sparas temporärt
+    // Men eftersom FSM-transition sker i GitHub-job, behöver vi inte göra något här
+    // Returnera success med job-status
+
+    // 3. Returnera job-status
+    // ALLTID returnera 200
+    return NextResponse.json({
+      success: true,
+      job: {
+        status: 'started',
+        message: 'Code submitted. Processing...',
       },
-      submittedAt: new Date().toISOString(),
-      source: 'public_onboarding',
-    };
-
-    // Best effort: admin-sync får aldrig påverka FSM-transitionen
-    sendToAdminPortal('onboarding', payload).catch((adminError) => {
-      // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
-      console.warn(`[Onboarding Code] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
-
-    // Returnera 200 oavsett admin-sync-resultat
-    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[Onboarding Code] Error:', error);
     return NextResponse.json({ success: false }, { status: 500 });

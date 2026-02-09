@@ -134,6 +134,7 @@ export async function GET(request: NextRequest) {
               // Markera som notifierat INNAN vi skickar (förhindrar race condition)
               await updateJobStatus(jobId, job.status, { adminNotifiedAt: notifyTime });
               
+              // 🔥 ENDA stället FSM-event skickas för github_verified
               sendToAdminPortal('onboarding', {
                 idempotencyKey: `onboarding-${job.onboardingId}-github-verified`,
                 publicOnboardingId: job.onboardingId,
@@ -154,10 +155,38 @@ export async function GET(request: NextRequest) {
                   { step: 'github_verified', jobId, adminNotifiedAt: notifyTime }
                 );
               });
+
+              // 🔥 ENDA stället FSM-transition till code_completed sker
+              // Edge-triggered: körs exakt en gång när job är completed
+              sendToAdminPortal('onboarding', {
+                idempotencyKey: `onboarding-${job.onboardingId}-code-completed`,
+                publicOnboardingId: job.onboardingId,
+                user: state.email ? { email: state.email, sub: job.userSub } : { sub: job.userSub },
+                step: 'code_completed',
+                onboardingStatus: 'code_completed',
+                data: {
+                  repoUrl: job.repoUrl,
+                  repoSlug: state.github.repoSlug,
+                  storageObjectUrl: gcsPath,
+                  completedAt: notifyTime,
+                },
+                submittedAt: notifyTime,
+                source: 'public_onboarding',
+              }).catch((err) => {
+                console.error('[GitHub Job] Admin ingest code_completed failed:', err);
+                console.info(
+                  '[FSM GUARD] Event blocked from retry',
+                  { step: 'code_completed', jobId, adminNotifiedAt: notifyTime }
+                );
+              });
             } else {
               console.info(
                 '[FSM GUARD] Event blocked',
                 { step: 'github_verified', fsmStatus: 'already_notified', adminNotifiedAt: job.adminNotifiedAt, jobId }
+              );
+              console.info(
+                '[FSM GUARD] Event blocked',
+                { step: 'code_completed', fsmStatus: 'already_notified', adminNotifiedAt: job.adminNotifiedAt, jobId }
               );
             }
             

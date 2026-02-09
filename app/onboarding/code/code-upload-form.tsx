@@ -215,18 +215,33 @@ export function CodeUploadForm() {
       body: formData,
     });
 
-    const data = await response.json().catch(() => ({}));
+    const result = await response.json().catch(() => ({}));
 
-    if (data.repoPrivate === true && data.requiresGithubAccess === true && data.repoSlug) {
-      setPrivateRepoPrompt({ repoSlug: data.repoSlug });
+    // Explicit tolkning av payload - aldrig tolka HTTP-status som onboarding-semantik
+    if (!result.success) {
+      setError(result.error ?? 'Unexpected error');
       setSubmitting(false);
       return;
     }
 
-    if (!response.ok) {
-      setError(normalizeError(data.message || data.error || 'Ett fel uppstod. Försök igen.'));
-      setSubmitting(false);
-      return;
+    // Hantera job-status explicit
+    if (result.job) {
+      switch (result.job.status) {
+        case 'requires_github_oauth':
+          if (result.job.repoPrivate && result.job.requiresGithubAccess && result.job.repoSlug) {
+            setPrivateRepoPrompt({ repoSlug: result.job.repoSlug });
+            setSubmitting(false);
+            return;
+          }
+          break;
+        case 'started':
+        case 'already_running':
+          // Visa loader / polling (hanteras av GitHub OAuth-flödet)
+          break;
+        case 'completed':
+          // Fortsätt till Stripe
+          break;
+      }
     }
 
     const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
