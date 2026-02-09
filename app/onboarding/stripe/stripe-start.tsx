@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
@@ -9,13 +9,33 @@ import { normalizeError } from '@/lib/utils/normalize-error';
 
 export function StripeStart() {
   const router = useRouter();
+  const pathname = usePathname();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasAuth0Session, setHasAuth0Session] = useState<boolean | null>(null);
 
   const loadingState = onboardingIdLoading || stateLoading;
+
+  // Kontrollera Auth0-session
+  useEffect(() => {
+    async function checkAuth0Session() {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          setHasAuth0Session(!!data.user);
+        } else {
+          setHasAuth0Session(false);
+        }
+      } catch {
+        setHasAuth0Session(false);
+      }
+    }
+    checkAuth0Session();
+  }, []);
 
   useEffect(() => {
     // Använd userSub från hook (Auth0 eller anonym sessionId)
@@ -23,6 +43,11 @@ export function StripeStart() {
       setSessionId(userSub);
     }
   }, [userSub]);
+
+  const loginWithRedirect = (options: { appState?: { returnTo: string } }) => {
+    const returnTo = options.appState?.returnTo || pathname;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+  };
 
   // Visa fel om onboardingId saknas
   useEffect(() => {
@@ -70,9 +95,14 @@ export function StripeStart() {
         body: JSON.stringify({ sessionId, onboardingId }),
       });
 
+      if (response.status === 401) {
+        await loginWithRedirect({ appState: { returnTo: pathname } });
+        return;
+      }
+
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setError(normalizeError(data.error || data.message || 'Ett fel uppstod. Försök igen.'));
+        setError(data.message || 'Ett fel uppstod. Försök igen.');
         setLoading(false);
         return;
       }
@@ -92,14 +122,24 @@ export function StripeStart() {
         För att aktivera betalningar behöver vi koppla Stripe. Det tar bara några minuter.
       </p>
       {error && <p className="text-red-600 mb-4">{typeof error === 'string' ? error : normalizeError(error)}</p>}
-      <button
-        type="button"
-        onClick={startStripe}
-        className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
-        disabled={loading}
-      >
-        {loading ? 'Förbereder...' : 'Starta Stripe onboarding'}
-      </button>
+      {hasAuth0Session === false ? (
+        <button
+          type="button"
+          onClick={() => loginWithRedirect({ appState: { returnTo: pathname } })}
+          className="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition"
+        >
+          Logga in för att fortsätta till Stripe
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={startStripe}
+          className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
+          disabled={loading || hasAuth0Session === null}
+        >
+          {loading ? 'Förbereder...' : 'Starta Stripe onboarding'}
+        </button>
+      )}
     </section>
   );
 }
