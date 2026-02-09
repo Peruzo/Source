@@ -182,11 +182,24 @@ export async function POST(request: Request) {
       source: 'public_onboarding',
     };
 
-    // Best effort: admin-sync får aldrig påverka FSM-transitionen
-    sendToAdminPortal('onboarding', adminPayload).catch((adminError) => {
-      // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
-      console.warn(`[Onboarding Step] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
-    });
+    // FSM GUARD – prevent duplicate transitions
+    // questions_submitted skickas endast om FSM faktiskt är i questions
+    // Om FSM redan är code_pending → inget event skickas
+    if (
+      adminPayload.step === 'questions' &&
+      state.status !== 'started'
+    ) {
+      console.info(
+        '[FSM GUARD] Event blocked',
+        { step: adminPayload.step, fsmStatus: state.status, onboardingId }
+      );
+    } else {
+      // Best effort: admin-sync får aldrig påverka FSM-transitionen
+      sendToAdminPortal('onboarding', adminPayload).catch((adminError) => {
+        // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
+        console.warn(`[Onboarding Step] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
+      });
+    }
 
     // RESPONSE CONTRACT: Returnera alltid success: true och nextStep när questions skickas
     if (currentStep === 'questions') {

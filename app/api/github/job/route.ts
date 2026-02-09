@@ -126,21 +126,40 @@ export async function GET(request: NextRequest) {
               },
             }).catch((err) => console.error('[GitHub Job] Admin PATCH code failed:', err));
 
-            // Skicka GitHub-steg till admin ingest endast när verifierat
-            sendToAdminPortal('onboarding', {
-              idempotencyKey: `onboarding-${job.onboardingId}-github-verified`,
-              publicOnboardingId: job.onboardingId,
-              user: state.email ? { email: state.email, sub: job.userSub } : { sub: job.userSub },
-              step: 'github_verified',
-              onboardingStatus: state.status, // Använd formell status från FSM
-              data: {
-                repoUrl: job.repoUrl,
-                repoSlug: state.github.repoSlug,
-                verifiedAt: state.github.verifiedAt,
-              },
-              submittedAt: new Date().toISOString(),
-              source: 'public_onboarding',
-            }).catch((err) => console.error('[GitHub Job] Admin ingest failed:', err));
+            // FSM GUARD – prevent duplicate events from polling
+            // FSM-events från polling måste vara edge-triggered, inte level-triggered
+            // Skicka GitHub-steg till admin ingest endast när verifierat OCH inte redan notifierat
+            if (!job.adminNotifiedAt) {
+              const notifyTime = new Date().toISOString();
+              // Markera som notifierat INNAN vi skickar (förhindrar race condition)
+              await updateJobStatus(jobId, job.status, { adminNotifiedAt: notifyTime });
+              
+              sendToAdminPortal('onboarding', {
+                idempotencyKey: `onboarding-${job.onboardingId}-github-verified`,
+                publicOnboardingId: job.onboardingId,
+                user: state.email ? { email: state.email, sub: job.userSub } : { sub: job.userSub },
+                step: 'github_verified',
+                onboardingStatus: state.status, // Använd formell status från FSM
+                data: {
+                  repoUrl: job.repoUrl,
+                  repoSlug: state.github.repoSlug,
+                  verifiedAt: state.github.verifiedAt,
+                },
+                submittedAt: notifyTime,
+                source: 'public_onboarding',
+              }).catch((err) => {
+                console.error('[GitHub Job] Admin ingest failed:', err);
+                console.info(
+                  '[FSM GUARD] Event blocked from retry',
+                  { step: 'github_verified', jobId, adminNotifiedAt: notifyTime }
+                );
+              });
+            } else {
+              console.info(
+                '[FSM GUARD] Event blocked',
+                { step: 'github_verified', fsmStatus: 'already_notified', adminNotifiedAt: job.adminNotifiedAt, jobId }
+              );
+            }
             
             // Hämta uppdaterat jobb
             job = await getGitHubJob(jobId);

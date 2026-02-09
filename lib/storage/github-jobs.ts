@@ -31,6 +31,8 @@ export type GitHubJob = {
   // GitHub token sparas temporärt i jobbet för worker-processering
   // Token rensas när jobbet är klart eller misslyckat
   githubToken?: string;
+  // FSM guard: förhindra att github_verified event skickas flera gånger från polling
+  adminNotifiedAt?: string;
 };
 
 /**
@@ -126,7 +128,7 @@ export async function processGitHubJob(
 export async function updateJobStatus(
   jobId: string,
   status: GitHubJobStatus,
-  updates?: Partial<Pick<GitHubJob, 'uploadResult' | 'error' | 'startedAt' | 'completedAt' | 'progress' | 'githubToken'>>
+  updates?: Partial<Pick<GitHubJob, 'uploadResult' | 'error' | 'startedAt' | 'completedAt' | 'progress' | 'githubToken' | 'adminNotifiedAt'>>
 ): Promise<void> {
   if (!BUCKET) return;
 
