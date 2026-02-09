@@ -161,9 +161,12 @@ export function CodeUploadForm() {
   const codeFromBackend = Boolean(state?.code) || codePersistedByBackend;
   const isReadOnly = codeFromBackend;
 
-  // ARKITEKTURREGEL: Visa loader om state ännu inte reflekterar 'code' (t.ex. efter questions submit)
-  // Sidan får renderas även om state.step !== 'code', men visa loader för användaren
-  const isWaitingForStateUpdate = !loading && (!state?.questions || state.questions.hasExistingSite !== 'Ja');
+  // ARKITEKTURREGEL: Visa loader endast när state saknas eller fortfarande är "started"
+  // Blockera INTE baserat på state.questions.hasExistingSite
+  // code-sidan ska rendera när state.status === 'code_pending' ELLER 'code_completed'
+  const isWaitingForStateUpdate =
+    !loading &&
+    (!state || state.status === 'started');
 
   if (loading || isWaitingForStateUpdate) {
     return (
