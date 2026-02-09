@@ -5,7 +5,7 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
-import { isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 /**
  * KRITISK: Stripe SDK-init sker på runtime (request scope), inte module scope.
@@ -32,9 +32,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
 
-    const { sessionId, onboardingId: providedOnboardingId } = await request.json();
+    const body = await request.json();
+    let sessionId = (body.sessionId || '').trim();
+    const providedOnboardingId = body.onboardingId;
+
+    // KRITISKT: I anonym onboarding måste backend:
+    // 1. Acceptera sessionId från body OM det finns
+    // 2. Annars läsa anon-session från cookie
+    // 3. Annars returnera 400
     if (!sessionId) {
-      return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
+      // Försök läsa från cookie
+      const cookieSessionId = await getAnonymousSessionId();
+      if (cookieSessionId) {
+        sessionId = cookieSessionId;
+        console.log('[Onboarding Stripe] Using sessionId from cookie:', sessionId);
+      } else {
+        return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
+      }
     }
 
     // KRITISK: Stripe Connect kräver Auth0-autentisering
