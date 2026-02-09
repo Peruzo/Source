@@ -46,10 +46,11 @@ export function StripeStart() {
       router.replace('/onboarding/code');
       return;
     }
-    // Endast code_completed eller senare tillåter Stripe
+    // Stripe tillåts först efter code_completed
+    // MEN vi får aldrig redirecta bakåt över questions
+    // Om status inte är code_completed eller senare, vänta (gör ingenting)
     if (state.status !== 'code_completed' && state.status !== 'stripe_started' && state.status !== 'stripe_completed' && state.status !== 'ready_for_review') {
-      router.replace('/onboarding/questions');
-      return;
+      return; // gör ingenting, vänta på korrekt status
     }
   }, [state, loadingState, router]);
 
