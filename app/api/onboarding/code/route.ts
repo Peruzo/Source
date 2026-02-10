@@ -3,7 +3,6 @@ import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
-import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 
 export async function POST(request: Request) {
   try {
@@ -49,26 +48,6 @@ export async function POST(request: Request) {
     
     const onboardingId = providedOnboardingId;
     console.log('[Onboarding Code] Using onboardingId:', onboardingId);
-
-    // Säkerställ att onboarding/start har körts (auto-init om saknas)
-    const adminExists = await checkAdminOnboardingExists(onboardingId);
-    if (!adminExists) {
-      // Hämta state för att få email och status
-      const events = await listOnboardingEvents(onboardingId);
-      const state = reduceOnboarding(events, onboardingId, userSub);
-      const email = state.email || '';
-      
-      // Skicka ingest-event för att initiera admin-onboarding
-      await sendToAdminPortal('onboarding', {
-        idempotencyKey: `onboarding-${onboardingId}-start`,
-        publicOnboardingId: onboardingId,
-        user: email ? { email } : {},
-        status: state.status || 'started',
-        onboardingStatus: state.status || 'started',
-      }).catch((err) => {
-        console.warn(`[Onboarding Code] Auto-init admin onboarding failed (non-blocking) for onboarding ${onboardingId}:`, err);
-      });
-    }
 
     const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '');
