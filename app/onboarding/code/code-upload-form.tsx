@@ -356,7 +356,7 @@ export function CodeUploadForm() {
         {error && (
           <div className="rounded-md bg-red-50 p-3 text-red-800" role="alert">
             <p className="whitespace-pre-line">{typeof error === 'string' ? error : normalizeError(error)}</p>
-            {showGithubAuthButton && onboardingId && repoLink && (
+            {showGithubAuthButton && onboardingId && repoLink && state?.status === 'code_pending' && (
               <a
                 href={`/api/github/connect?repo=${encodeURIComponent(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''))}&onboardingId=${encodeURIComponent(onboardingId)}`}
                 className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
@@ -391,7 +391,7 @@ export function CodeUploadForm() {
           </div>
         )}
 
-        {privateRepoPrompt && onboardingId && (
+        {privateRepoPrompt && onboardingId && state?.status === 'code_pending' && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
             <p className="font-medium">🔒 Det här är ett privat repo</p>
             <p className="mt-1 text-sm">
@@ -403,6 +403,18 @@ export function CodeUploadForm() {
             >
               Koppla GitHub-konto
             </a>
+          </div>
+        )}
+
+        {state?.status === 'code_completed' && state?.code?.repoLink && (
+          <div className="rounded-md bg-emerald-50 p-3 text-emerald-800" role="status">
+            <p className="font-medium">✓ GitHub-repo redan verifierat</p>
+            <p className="mt-1 text-sm truncate" title={state.code.repoLink}>
+              {state.code.repoLink}
+            </p>
+            <p className="mt-2 text-sm">
+              Repot har redan kopplats och verifierats. Du kan fortsätta till Stripe onboarding.
+            </p>
           </div>
         )}
 
