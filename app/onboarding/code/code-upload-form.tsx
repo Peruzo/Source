@@ -58,6 +58,7 @@ export function CodeUploadForm() {
   useEffect(() => {
     const gh = searchParams.get('github');
     const jobId = searchParams.get('jobId');
+    const errorParam = searchParams.get('error');
     
     if (gh === 'processing' && jobId) {
       setGithubJobId(jobId);
@@ -66,6 +67,36 @@ export function CodeUploadForm() {
       const params = new URLSearchParams(searchParams.toString());
       params.delete('github');
       params.delete('jobId');
+      const q = params.toString();
+      router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
+    } else if (gh === 'access_denied' && errorParam) {
+      // Dekoda strukturerad felinfo från backend (base64url)
+      try {
+        // Använd atob för base64-dekodning i browser (base64url är kompatibelt med base64 för URL-safe chars)
+        const decoded = atob(errorParam.replace(/-/g, '+').replace(/_/g, '/'));
+        const errorData = JSON.parse(decoded);
+        if (errorData?.error === 'GITHUB_ACCESS_DENIED') {
+          setGithubCallbackError(
+            'Vi kunde inte få åtkomst till GitHub-repot.\n\n' +
+            'Vanliga orsaker:\n' +
+            '• Repot är privat och OAuth-åtkomst saknas\n' +
+            '• Repot ägs av en organisation som inte tillåter tredjepartsappar\n' +
+            '• Du har inte själv tillgång till repot\n\n' +
+            'Åtgärd:\n' +
+            '1. Kontrollera att du äger repot eller har access\n' +
+            '2. Säkerställ att GitHub frågar efter repo-åtkomst vid godkännande\n' +
+            '3. Om det är ett organisationsrepo – be admin godkänna OAuth-appen'
+          );
+        } else {
+          setGithubCallbackError(errorData?.message || 'Kunde inte koppla eller hämta repot. Försök igen.');
+        }
+      } catch {
+        setGithubCallbackError('Kunde inte koppla eller hämta repot. Försök igen.');
+      }
+      setGithubJobStatus(null);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('github');
+      params.delete('error');
       const q = params.toString();
       router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
     } else if (gh === 'denied') {
@@ -80,11 +111,11 @@ export function CodeUploadForm() {
     } else if (gh === 'payload_error') {
       setGithubCallbackError('Fel i payload. Kontakta support om problemet kvarstår.');
       setGithubJobStatus(null);
-    } else if (gh === 'error' || gh === 'access_denied' || gh === 'download_failed') {
+    } else if (gh === 'error' || gh === 'download_failed') {
       setGithubCallbackError('Kunde inte koppla eller hämta repot. Försök igen.');
       setGithubJobStatus(null);
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   // Poll GitHub jobb-status när processing
   useEffect(() => {
@@ -308,9 +339,21 @@ export function CodeUploadForm() {
 
         {error && <p className="text-red-600">{typeof error === 'string' ? error : normalizeError(error)}</p>}
         {githubCallbackError && (
-          <p className="rounded-md bg-amber-50 p-3 text-amber-800" role="alert">
-            {typeof githubCallbackError === 'string' ? githubCallbackError : normalizeError(githubCallbackError)}
-          </p>
+          <div className="rounded-md bg-amber-50 p-3 text-amber-800" role="alert">
+            <p className="whitespace-pre-line">
+              {typeof githubCallbackError === 'string' ? githubCallbackError : normalizeError(githubCallbackError)}
+            </p>
+            {githubCallbackError.includes('Vi kunde inte få åtkomst till GitHub-repot') && (
+              <a
+                href="https://github.com/settings/connections/applications"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block text-sm underline text-emerald-600"
+              >
+                Kontrollera GitHub-appar och behörigheter
+              </a>
+            )}
+          </div>
         )}
 
         {githubJobStatus === 'processing' && (

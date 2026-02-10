@@ -143,14 +143,45 @@ export async function GET(request: NextRequest) {
       scopes: tokenScopes,
       oauthScopesHeader: oauthScopesHeader || 'not present',
     });
-    // Returnera 403 - OAuth token ger inte access (användaren har inte gett consent eller saknar access)
-    return NextResponse.json(
-      { 
-        error: 'GITHUB_ACCESS_DENIED',
-        message: 'OAuth token from code-exchange does not grant repository access. User consent may not have been granted or token is invalid.',
+    
+    // Försök hämta repo-info från response body (kan innehålla felmeddelande eller repo-data)
+    let repoIsPrivate = false;
+    let installationId: string | null = null;
+    try {
+      const repoData = await repoRes.clone().json().catch(() => null);
+      if (repoData && typeof repoData === 'object') {
+        // Om det är repo-data (inte felmeddelande)
+        if ('private' in repoData) {
+          repoIsPrivate = repoData.private === true;
+          installationId = repoData.installation?.id?.toString() || null;
+        }
+      }
+    } catch {
+      // Ignorera om vi inte kan läsa body
+    }
+    
+    const repoFullName = `${owner}/${repoName}`;
+    const errorData = {
+      success: false,
+      error: 'GITHUB_ACCESS_DENIED',
+      reason: 'REPO_ACCESS_DENIED',
+      details: {
+        repo: repoFullName,
+        isPrivate: repoIsPrivate,
+        installationId: installationId ?? null,
+        possibleCauses: [
+          'missing_repo_scope',
+          'organization_oauth_restriction',
+          'no_user_access_to_repo'
+        ]
       },
-      { status: 403 }
-    );
+      message:
+        'GitHub kunde inte verifiera åtkomst till repot. Detta beror oftast på att repot är privat och OAuth-appen saknar rättigheter, eller att organisationen inte tillåter tredjepartsappar.'
+    };
+    
+    // Redirecta med strukturerad felinfo i query params (base64url-encoded JSON)
+    const errorParam = Buffer.from(JSON.stringify(errorData)).toString('base64url');
+    return NextResponse.redirect(buildUrl(`/onboarding/code?github=access_denied&error=${encodeURIComponent(errorParam)}`));
   }
 
   // Ytterligare säkerhetskontroll: Verifiera att OAuth scopes finns i response header
