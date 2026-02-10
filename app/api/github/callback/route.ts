@@ -28,16 +28,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
-  let state: { repo: string; sessionId: string; onboardingId?: string };
+  let oauthState: { repo: string; sessionId: string; onboardingId?: string };
+
   try {
-    state = JSON.parse(
+    oauthState = JSON.parse(
       Buffer.from(stateRaw, 'base64url').toString('utf8')
     ) as { repo: string; sessionId: string; onboardingId?: string };
   } catch {
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return NextResponse.json({ error: 'INVALID_STATE' }, { status: 400 });
   }
 
-  const { repo, sessionId, onboardingId } = state;
+  const { repo, sessionId, onboardingId } = oauthState;
   const match = repo.match(/^([^/]+)\/([^/]+)$/);
   if (!match) {
     return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
@@ -216,8 +217,8 @@ export async function GET(request: NextRequest) {
 
   // Hämta state för att få email om det behövs för re-init
   const events = await listOnboardingEvents(activeOnboardingId);
-  const state = reduceOnboarding(events, activeOnboardingId, sessionId);
-  const email = state.email || '';
+  const onboardingState = reduceOnboarding(events, activeOnboardingId, sessionId);
+  const email = onboardingState.email || '';
 
   // Re-initiera admin-onboarding om det saknas (non-blocking)
   const adminExists = await checkAdminOnboardingExists(activeOnboardingId);
@@ -231,8 +232,8 @@ export async function GET(request: NextRequest) {
       idempotencyKey: `onboarding-${activeOnboardingId}-start`,
       publicOnboardingId: activeOnboardingId,
       user: email ? { email } : {},
-      onboardingStatus: state.status || 'started',
-      status: state.status || 'started',
+      onboardingStatus: onboardingState.status || 'started',
+      status: onboardingState.status || 'started',
     }).catch(err => {
       console.warn('[GitHub Callback] Admin re-init failed (non-blocking)', err);
     });
