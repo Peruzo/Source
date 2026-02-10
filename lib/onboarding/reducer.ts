@@ -181,6 +181,8 @@ export function reduceOnboarding(
       createdAt = event.at;
     }
 
+    const statusBefore = state.status;
+
     // FSM: Verifiera och uppdatera status baserat på event
     let nextStatus = getNextStatus(state.status, event.type);
     
@@ -195,6 +197,16 @@ export function reduceOnboarding(
     if (nextStatus !== null) {
       state.status = nextStatus;
     }
+
+    console.log('[reduceOnboarding] Event processed:', {
+      onboardingId,
+      userSub,
+      eventType: event.type,
+      statusBefore,
+      statusAfter: state.status,
+      nextStatus,
+      eventAt: event.at
+    });
 
     // Uppdatera state-data baserat på event
     switch (event.type) {
@@ -253,6 +265,16 @@ export function reduceOnboarding(
 
   state.createdAt = createdAt;
   state.updatedAt = updatedAt;
+
+  console.log('[reduceOnboarding] Final state:', {
+    onboardingId,
+    userSub,
+    finalStatus: state.status,
+    hasCode: !!state.code,
+    hasGithub: !!state.github,
+    eventsProcessed: sortedEvents.length,
+    fullState: state
+  });
 
   return state;
 }

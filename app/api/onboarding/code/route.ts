@@ -73,7 +73,21 @@ export async function POST(request: Request) {
       if (repoIsPrivate && access.repoSlug) {
         // Hämta onboarding state för att kolla OAuth-verifiering
         const events = await listOnboardingEvents(onboardingId);
+        console.log('[Onboarding Code] Events before reduce:', {
+          onboardingId,
+          sessionId: userSub,
+          eventsCount: events.length,
+          eventTypes: events.map(e => e.type),
+          hasCodeSubmitted: events.some(e => e.type === 'code_submitted')
+        });
         const state = reduceOnboarding(events, onboardingId, userSub);
+        console.log('[Onboarding Code] State after reduce:', {
+          onboardingId,
+          sessionId: userSub,
+          stateStatus: state.status,
+          stateCode: state.code,
+          stateGithub: state.github
+        });
         
         if (!state.github?.verified) {
           return NextResponse.json(

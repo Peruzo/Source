@@ -54,9 +54,27 @@ export async function GET(request: NextRequest) {
     
     const events = await listOnboardingEvents(onboardingId);
     
+    console.log('[Onboarding GET] Events:', {
+      onboardingId,
+      sessionId,
+      eventsCount: events.length,
+      eventTypes: events.map(e => e.type),
+      hasCodeCompleted: events.some(e => e.type === 'code_submitted'),
+      events: events.map(e => ({ type: e.type, at: e.at, payload: e.payload }))
+    });
+    
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
     // Inga auto-create-logik här - GET-endpoint är read-only
     const state = reduceOnboarding(events, onboardingId, sessionId);
+
+    console.log('[Onboarding GET] Reduced state:', {
+      onboardingId,
+      sessionId,
+      stateStatus: state.status,
+      stateCode: state.code,
+      stateGithub: state.github,
+      fullState: state
+    });
 
     return NextResponse.json({
       state,

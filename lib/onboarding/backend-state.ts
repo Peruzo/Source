@@ -40,6 +40,14 @@ export function useOnboardingState(userSub: string, onboardingId?: string | null
           throw new Error(`Failed to load onboarding: ${res.status}`);
         }
         const data = await res.json();
+        console.log('[useOnboardingState] API response:', {
+          onboardingId,
+          userSub,
+          state: data.state,
+          stateStatus: data.state?.status,
+          eventsCount: data.eventsCount,
+          fullResponse: data
+        });
         if (!cancelled) {
           setState(data.state);
           setError(null);

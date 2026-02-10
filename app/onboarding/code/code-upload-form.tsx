@@ -14,6 +14,19 @@ export function CodeUploadForm() {
   const searchParams = useSearchParams();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
+
+  // Debug: Logga state när den ändras
+  useEffect(() => {
+    console.log('[CodeUploadForm] State updated:', {
+      onboardingId,
+      userSub,
+      stateStatus: state?.status,
+      stateCode: state?.code,
+      stateGithub: state?.github,
+      loading: stateLoading,
+      fullState: state
+    });
+  }, [state, onboardingId, userSub, stateLoading]);
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
   const [file, setFile] = useState<File | null>(null);
