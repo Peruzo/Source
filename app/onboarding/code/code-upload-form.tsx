@@ -217,7 +217,14 @@ export function CodeUploadForm() {
     event.preventDefault();
     setError('');
 
-    // KRITISK: När backend redan har code (oavsett källa) – aldrig POST. Endast navigera.
+    // FSM: När code redan är färdigt → gå DIREKT till Stripe
+    if (state?.status === 'code_completed') {
+      const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
+      router.push(getStripeOnboardingUrl(planId));
+      return;
+    }
+
+    // När backend redan har code (oavsett källa) – aldrig POST. Endast navigera.
     if (state?.code || codeAlreadyInBackendRef.current) {
       const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
       router.push(getStripeOnboardingUrl(planId));
