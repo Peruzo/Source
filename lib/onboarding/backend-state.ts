@@ -40,15 +40,26 @@ export function useOnboardingState(userSub: string, onboardingId?: string | null
           throw new Error(`Failed to load onboarding: ${res.status}`);
         }
         const data = await res.json();
-        console.log('[useOnboardingState] API response:', {
+        console.log('[useOnboardingState] RAW API response:', {
           onboardingId,
           userSub,
-          state: data.state,
-          stateStatus: data.state?.status,
+          responseState: data.state,
+          responseStateStatus: data.state?.status,
+          responseStateIsNull: data.state === null,
+          responseStateIsUndefined: data.state === undefined,
           eventsCount: data.eventsCount,
-          fullResponse: data
+          responseOnboardingId: data.onboardingId,
+          fullResponse: JSON.stringify(data, null, 2),
+          responseType: typeof data.state
         });
         if (!cancelled) {
+          console.log('[useOnboardingState] Setting state:', {
+            onboardingId,
+            userSub,
+            stateToSet: data.state,
+            stateToSetStatus: data.state?.status,
+            stateToSetIsNull: data.state === null
+          });
           setState(data.state);
           setError(null);
         }

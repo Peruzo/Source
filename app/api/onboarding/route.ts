@@ -54,13 +54,21 @@ export async function GET(request: NextRequest) {
     
     const events = await listOnboardingEvents(onboardingId);
     
-    console.log('[Onboarding GET] Events:', {
+    console.log('[Onboarding GET] RAW Events from GCS:', {
       onboardingId,
       sessionId,
       eventsCount: events.length,
+      firstEvent: events.length > 0 ? events[0] : null,
+      lastEvent: events.length > 0 ? events[events.length - 1] : null,
       eventTypes: events.map(e => e.type),
-      hasCodeCompleted: events.some(e => e.type === 'code_submitted'),
-      events: events.map(e => ({ type: e.type, at: e.at, payload: e.payload }))
+      hasCodeSubmitted: events.some(e => e.type === 'code_submitted'),
+      hasGithubVerified: events.some(e => e.type === 'github_repo_verified'),
+      allEvents: events.map(e => ({ 
+        type: e.type, 
+        at: e.at, 
+        payload: e.payload,
+        fullEvent: e
+      }))
     });
     
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
@@ -73,14 +81,26 @@ export async function GET(request: NextRequest) {
       stateStatus: state.status,
       stateCode: state.code,
       stateGithub: state.github,
-      fullState: state
+      fullState: state,
+      isStateNull: state === null
     });
 
-    return NextResponse.json({
+    const responseData = {
       state,
       onboardingId,
       eventsCount: events.length,
+    };
+
+    console.log('[Onboarding GET] RAW Response being sent to frontend:', {
+      responseState: responseData.state,
+      responseStateStatus: responseData.state?.status,
+      responseStateIsNull: responseData.state === null,
+      responseOnboardingId: responseData.onboardingId,
+      responseEventsCount: responseData.eventsCount,
+      fullResponse: JSON.stringify(responseData, null, 2)
     });
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('[Onboarding GET] Error:', error);
     return NextResponse.json({ error: 'Failed to load onboarding state' }, { status: 500 });

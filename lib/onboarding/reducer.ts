@@ -136,8 +136,17 @@ export function reduceOnboarding(
   onboardingId: string,
   userSub: string
 ): OnboardingState {
+  console.log('[reduceOnboarding] ENTRY:', {
+    onboardingId,
+    userSub,
+    eventsCount: events.length,
+    eventsInput: events,
+    firstEvent: events.length > 0 ? events[0] : null
+  });
+
   // Om inga events finns, returnera helt tom state med initial status
   if (events.length === 0) {
+    console.log('[reduceOnboarding] NO EVENTS - returning empty state with status: started');
     return {
       onboardingId,
       userSub,
@@ -172,10 +181,21 @@ export function reduceOnboarding(
   // Sortera events på timestamp (at) för deterministisk ordning
   const sortedEvents = [...events].sort((a, b) => a.at.localeCompare(b.at));
 
+  console.log('[reduceOnboarding] After sorting:', {
+    onboardingId,
+    userSub,
+    sortedEventsCount: sortedEvents.length,
+    sortedEventTypes: sortedEvents.map(e => e.type),
+    sortedEvents: sortedEvents.map(e => ({ type: e.type, at: e.at }))
+  });
+
   let createdAt: string | null = null;
   let updatedAt: string | null = null;
+  let eventsProcessed = 0;
+  let eventsSkipped = 0;
 
   for (const event of sortedEvents) {
+    eventsProcessed++;
     updatedAt = event.at;
     if (!createdAt) {
       createdAt = event.at;
@@ -198,6 +218,9 @@ export function reduceOnboarding(
       state.status = nextStatus;
     }
 
+    const wasStatusChanged = nextStatus !== null && nextStatus !== statusBefore;
+    const wasEventApplied = true; // Alla events appliceras, ingen filtrering här
+
     console.log('[reduceOnboarding] Event processed:', {
       onboardingId,
       userSub,
@@ -205,8 +228,23 @@ export function reduceOnboarding(
       statusBefore,
       statusAfter: state.status,
       nextStatus,
-      eventAt: event.at
+      wasStatusChanged,
+      wasEventApplied,
+      eventAt: event.at,
+      eventPayload: event.payload,
+      eventNumber: eventsProcessed,
+      totalEvents: sortedEvents.length
     });
+
+    if (!wasEventApplied) {
+      eventsSkipped++;
+      console.warn('[reduceOnboarding] Event SKIPPED:', {
+        onboardingId,
+        userSub,
+        eventType: event.type,
+        reason: 'Event was not applied (should not happen)'
+      });
+    }
 
     // Uppdatera state-data baserat på event
     switch (event.type) {
@@ -272,9 +310,18 @@ export function reduceOnboarding(
     finalStatus: state.status,
     hasCode: !!state.code,
     hasGithub: !!state.github,
-    eventsProcessed: sortedEvents.length,
-    fullState: state
+    eventsProcessed,
+    eventsSkipped,
+    totalEventsInput: events.length,
+    totalEventsSorted: sortedEvents.length,
+    fullState: state,
+    stateIsNull: state === null
   });
+
+  // VERIFIERA: Reducer returnerar ALDRIG null - den returnerar alltid en OnboardingState
+  if (state === null) {
+    console.error('[reduceOnboarding] CRITICAL: State is null - this should never happen!');
+  }
 
   return state;
 }
