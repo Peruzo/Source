@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 export async function POST(request: Request) {
   try {
@@ -65,7 +67,28 @@ export async function POST(request: Request) {
     // Only repo link, no file/codeText: verify GitHub repo; if private, return flags for GitHub OAuth
     if (repoLink && !file && !codeText.trim()) {
       const access = await checkRepoAccess(repoLink);
-      if (access.repoSlug && (access.private || !access.ok)) {
+      const repoIsPrivate = access.private || !access.ok;
+      
+      // Hård gate: Blockera GitHub-job innan OAuth är verifierad för privata repo
+      if (repoIsPrivate && access.repoSlug) {
+        // Hämta onboarding state för att kolla OAuth-verifiering
+        const events = await listOnboardingEvents(onboardingId);
+        const state = reduceOnboarding(events, onboardingId, userSub);
+        
+        if (!state.github?.verified) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'GITHUB_OAUTH_REQUIRED',
+              message: 'Privata GitHub-repon kräver OAuth-auktorisering innan verifiering kan startas.',
+              nextStep: 'github_auth'
+            },
+            { status: 403 }
+          );
+        }
+      }
+      
+      if (access.repoSlug && repoIsPrivate) {
         return NextResponse.json({
           success: true,
           job: {

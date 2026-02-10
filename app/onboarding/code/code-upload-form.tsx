@@ -21,6 +21,7 @@ export function CodeUploadForm() {
   const [error, setError] = useState('');
   const [privateRepoPrompt, setPrivateRepoPrompt] = useState<{ repoSlug: string } | null>(null);
   const [githubCallbackError, setGithubCallbackError] = useState<string | null>(null);
+  const [showGithubAuthButton, setShowGithubAuthButton] = useState(false);
   const [githubJobId, setGithubJobId] = useState<string | null>(null);
   const [githubJobStatus, setGithubJobStatus] = useState<'processing' | 'completed' | 'failed' | null>(null);
   /** Sätt när GitHub-job completed (innan state har refetch:ats) så att vi aldrig POST:ar och knappen är klickbar. */
@@ -250,6 +251,15 @@ export function CodeUploadForm() {
 
     // Explicit tolkning av payload - aldrig tolka HTTP-status som onboarding-semantik
     if (!result.success) {
+      if (result?.error === 'GITHUB_OAUTH_REQUIRED') {
+        setError(
+          'Detta är ett privat GitHub-repo.\n\n' +
+          'Du måste först auktorisera GitHub för att vi ska kunna läsa repot.'
+        );
+        setShowGithubAuthButton(true);
+        setSubmitting(false);
+        return;
+      }
       setError(result.error ?? 'Unexpected error');
       setSubmitting(false);
       return;
@@ -319,6 +329,7 @@ export function CodeUploadForm() {
             onChange={(event) => {
               setRepoLink(event.target.value);
               setPrivateRepoPrompt(null);
+              setShowGithubAuthButton(false);
             }}
             readOnly={isReadOnly}
             className={`w-full border border-gray-300 rounded-md p-3 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
@@ -337,7 +348,19 @@ export function CodeUploadForm() {
           />
         </div>
 
-        {error && <p className="text-red-600">{typeof error === 'string' ? error : normalizeError(error)}</p>}
+        {error && (
+          <div className="rounded-md bg-red-50 p-3 text-red-800" role="alert">
+            <p className="whitespace-pre-line">{typeof error === 'string' ? error : normalizeError(error)}</p>
+            {showGithubAuthButton && onboardingId && repoLink && (
+              <a
+                href={`/api/github/connect?repo=${encodeURIComponent(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''))}&onboardingId=${encodeURIComponent(onboardingId)}`}
+                className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              >
+                Auktorisera GitHub
+              </a>
+            )}
+          </div>
+        )}
         {githubCallbackError && (
           <div className="rounded-md bg-amber-50 p-3 text-amber-800" role="alert">
             <p className="whitespace-pre-line">

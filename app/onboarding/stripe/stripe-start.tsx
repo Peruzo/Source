@@ -115,6 +115,27 @@ export function StripeStart() {
     }
   };
 
+  // Blockera hela sidan utan Auth0
+  if (hasAuth0Session === false) {
+    return (
+      <section className="max-w-2xl mx-auto px-6 py-16">
+        <div className="p-6">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-4">Stripe onboarding</h1>
+          <p className="text-gray-600 mb-4">
+            Du måste logga in för att fortsätta till Stripe.
+          </p>
+          <button
+            type="button"
+            onClick={() => loginWithRedirect({ appState: { returnTo: pathname } })}
+            className="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition"
+          >
+            Logga in
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="max-w-2xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-semibold text-gray-900 mb-4">Stripe onboarding</h1>
@@ -122,24 +143,14 @@ export function StripeStart() {
         För att aktivera betalningar behöver vi koppla Stripe. Det tar bara några minuter.
       </p>
       {error && <p className="text-red-600 mb-4">{typeof error === 'string' ? error : normalizeError(error)}</p>}
-      {hasAuth0Session === false ? (
-        <button
-          type="button"
-          onClick={() => loginWithRedirect({ appState: { returnTo: pathname } })}
-          className="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          Logga in för att fortsätta till Stripe
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={startStripe}
-          className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          disabled={loading || hasAuth0Session === null}
-        >
-          {loading ? 'Förbereder...' : 'Starta Stripe onboarding'}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={startStripe}
+        className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
+        disabled={loading || hasAuth0Session === null}
+      >
+        {loading ? 'Förbereder...' : 'Starta Stripe onboarding'}
+      </button>
     </section>
   );
 }
