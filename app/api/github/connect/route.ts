@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getBaseUrl } from '@/lib/utils/base-url';
 import { getOrCreateAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
+import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
+import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 /**
  * GET /api/github/connect?repo=owner/repo&onboardingId=...
@@ -54,6 +57,26 @@ export async function GET(request: NextRequest) {
       { error: 'GitHub OAuth är inte konfigurerad' },
       { status: 500 }
     );
+  }
+
+  // 1. Säkerställ admin-onboarding innan OAuth
+  const adminExists = await checkAdminOnboardingExists(onboardingId);
+
+  if (!adminExists) {
+    // Hämta state för att få email om det finns
+    const events = await listOnboardingEvents(onboardingId);
+    const state = reduceOnboarding(events, onboardingId, sessionId);
+    const email = state.email || '';
+
+    await sendToAdminPortal('onboarding', {
+      idempotencyKey: `onboarding-${onboardingId}-start`,
+      publicOnboardingId: onboardingId,
+      user: email ? { email } : {},
+      onboardingStatus: state.status || 'started',
+      status: state.status || 'started',
+    }).catch((err) => {
+      console.warn(`[GitHub Connect] Admin onboarding init failed (non-blocking) for onboarding ${onboardingId}:`, err);
+    });
   }
 
   const baseUrl = getBaseUrl();
