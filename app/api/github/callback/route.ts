@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 import { createGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
-import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
-import { checkAdminOnboardingExists } from '@/lib/api/admin-portal';
+import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
+import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 /**
  * GET /api/github/callback?code=...&state=...
@@ -84,13 +85,7 @@ export async function GET(request: NextRequest) {
   // Ingen fallback till app/installation token är tillåten
   if (!tokenData.access_token) {
     console.warn('[GitHub Callback] No access_token from OAuth code-exchange:', tokenData.error, tokenData.error_description);
-    return NextResponse.json(
-      {
-        error: 'OAUTH_TOKEN_MISSING',
-        message: 'Failed to obtain OAuth access token from code exchange. User consent may not have been granted.',
-      },
-      { status: 403 }
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
   // Säkerställ att token kommer från OAuth-flödet (inte app/installation token)
@@ -190,13 +185,7 @@ export async function GET(request: NextRequest) {
   if (!oauthScopesHeader || oauthScopesHeader.trim() === '') {
     console.error(`[GitHub Callback] SECURITY WARNING: x-oauth-scopes header missing in GitHub API response. Token may not be OAuth user-token.`);
     console.error(`[GitHub Callback] Blocking event and job creation to prevent unauthorized access.`);
-    return NextResponse.json(
-      {
-        error: 'OAUTH_SCOPE_VERIFICATION_FAILED',
-        message: 'Cannot verify OAuth token scopes. Token may not be from OAuth code-exchange.',
-      },
-      { status: 403 }
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
   // Verifiera att OAuth scopes innehåller 'repo' (krävs för private repo access)
@@ -204,13 +193,7 @@ export async function GET(request: NextRequest) {
   if (!scopes.includes('repo')) {
     console.warn(`[GitHub Callback] OAuth token missing 'repo' scope. Scopes: ${scopes.join(', ')}`);
     console.warn(`[GitHub Callback] Blocking event and job creation - insufficient permissions.`);
-    return NextResponse.json(
-      {
-        error: 'OAUTH_SCOPE_INSUFFICIENT',
-        message: `OAuth token missing required 'repo' scope. Granted scopes: ${scopes.join(', ')}`,
-      },
-      { status: 403 }
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
   console.log(`[GitHub Callback] OAuth token verified:`, {
@@ -227,29 +210,32 @@ export async function GET(request: NextRequest) {
 
   // ARKITEKTURREGEL: onboardingId MÅSTE komma från state. Callback skapar aldrig onboarding.
   if (!onboardingId) {
-    return NextResponse.json(
-      { error: 'INVALID_STATE_NO_ONBOARDING_ID' },
-      { status: 400 }
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
   const activeOnboardingId = onboardingId;
 
-  // BLOCKERA om admin-onboarding inte finns
+  // Hämta state för att få email om det behövs för re-init
+  const events = await listOnboardingEvents(activeOnboardingId);
+  const state = reduceOnboarding(events, activeOnboardingId, sessionId);
+  const email = state.email || '';
+
+  // Re-initiera admin-onboarding om det saknas (non-blocking)
   const adminExists = await checkAdminOnboardingExists(activeOnboardingId);
 
   if (!adminExists) {
-    console.error('[GitHub Callback] Admin onboarding missing, aborting GitHub job start', {
+    console.warn('[GitHub Callback] Admin onboarding missing, continuing and re-initializing', {
       onboardingId: activeOnboardingId,
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'ONBOARDING_NOT_INITIALIZED',
-        message: 'Onboarding has not been initialized. Please restart onboarding.',
-      },
-      { status: 409 }
-    );
+    await sendToAdminPortal('onboarding', {
+      idempotencyKey: `onboarding-${activeOnboardingId}-start`,
+      publicOnboardingId: activeOnboardingId,
+      user: email ? { email } : {},
+      onboardingStatus: state.status || 'started',
+      status: state.status || 'started',
+    }).catch(err => {
+      console.warn('[GitHub Callback] Admin re-init failed (non-blocking)', err);
+    });
   }
 
   // KRITISK: Spara GitHub repo-verifiering i onboarding-state FÖRE job-skapande
@@ -266,16 +252,10 @@ export async function GET(request: NextRequest) {
     });
     console.log(`[GitHub Callback] Saved github_repo_verified event for onboarding ${activeOnboardingId} (repo access verified with 200 OK)`);
   } catch (eventErr) {
-    // Om verifiering-event inte kan sparas → blockera job-skapande
+    // Om verifiering-event inte kan sparas → redirecta tillbaka (job skapas inte)
     // Detta säkerställer att FSM alltid har github_repo_verified innan job skapas
     console.error('[GitHub Callback] Failed to save github_repo_verified event:', eventErr);
-    return NextResponse.json(
-      { 
-        error: 'EVENT_SAVE_FAILED',
-        message: 'Failed to save repository verification event.',
-      },
-      { status: 500 }
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
   try {
@@ -319,16 +299,10 @@ export async function GET(request: NextRequest) {
     // Worker kommer att processera jobbet async utanför request-livscykeln
     return NextResponse.redirect(buildUrl(`/onboarding/code?github=processing&jobId=${jobId}`));
   } catch (jobError) {
-    // Om job-skapande misslyckas → logga och returnera error
+    // Om job-skapande misslyckas → logga och redirecta tillbaka
     // Event är redan sparat, men jobbet kan inte skapas
     console.error('[GitHub Callback] Failed to create job after verification:', jobError);
-    return NextResponse.json(
-      { 
-        error: 'JOB_CREATION_FAILED',
-        message: 'Repository verified but job creation failed.',
-      },
-      { status: 500 }
-    );
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   } finally {
     // Token is not stored; it goes out of scope here. No DB or session persistence.
   }
