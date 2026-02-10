@@ -55,6 +55,14 @@ export function CodeUploadForm() {
     setCodeText(state?.code?.codeText || '');
   }, [state, loading]);
 
+  // Rensa GitHub-relaterad UI-state när FSM-status blir code_completed
+  useEffect(() => {
+    if (state?.status === 'code_completed') {
+      setPrivateRepoPrompt(null);
+      setShowGithubAuthButton(false);
+    }
+  }, [state?.status]);
+
   // URL-parametrar (github, jobId) används endast för init. Rensa URL direkt så att routing/rerenders inte återställer state.
   useEffect(() => {
     const gh = searchParams.get('github');
