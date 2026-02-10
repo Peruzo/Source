@@ -5,6 +5,7 @@ import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { auth0 } from '@/lib/auth0';
 
 /**
  * GET /api/github/connect?repo=owner/repo&onboardingId=...
@@ -36,6 +37,27 @@ export async function GET(request: NextRequest) {
   const sessionId = await getOrCreateAnonymousSessionId();
   const onboardingId = providedOnboardingId;
 
+  // FSM-status-guard: GitHub OAuth är endast tillåten i code_pending
+  const events = await listOnboardingEvents(onboardingId);
+  const onboardingState = reduceOnboarding(events, onboardingId, sessionId);
+
+  // GitHub OAuth är endast tillåten i code_pending
+  if (onboardingState.status !== 'code_pending') {
+    console.warn('[GitHub Connect] Blocked due to invalid FSM status', {
+      onboardingId,
+      status: onboardingState.status,
+    });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'INVALID_ONBOARDING_STATE',
+        message: 'GitHub connection is only allowed while code is pending.',
+      },
+      { status: 409 }
+    );
+  }
+
   // SÄKERSTÄLL att admin-onboarding finns innan OAuth
   const adminExists = await checkAdminOnboardingExists(onboardingId);
 
@@ -66,6 +88,24 @@ export async function GET(request: NextRequest) {
       },
       { status: 400 }
     );
+  }
+
+  const isPrivateRepo = access.private || !access.ok;
+
+  // Kräv Auth0 för privata repon (innan redirect)
+  if (isPrivateRepo) {
+    const session = await auth0.getSession();
+
+    if (!session?.user?.sub) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'AUTH0_REQUIRED',
+          message: 'You must be logged in to connect a private GitHub repository.',
+        },
+        { status: 401 }
+      );
+    }
   }
 
   const clientId = process.env.GITHUB_CLIENT_ID;
