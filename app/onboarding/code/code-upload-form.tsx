@@ -214,6 +214,13 @@ export function CodeUploadForm() {
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
+    console.log('[handleSubmit] fired', { 
+      stateStatus: state?.status, 
+      codeFromBackend, 
+      submitting, 
+      githubJobStatus,
+      onboardingId: !!onboardingId 
+    });
     event.preventDefault();
     setError('');
 
@@ -437,6 +444,20 @@ export function CodeUploadForm() {
           type="submit"
           className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
           disabled={submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file)}
+          onClick={() => {
+            const isDisabled = submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file);
+            console.log('[Submit Button] clicked', {
+              isDisabled,
+              submitting,
+              githubJobStatus,
+              onboardingId: !!onboardingId,
+              codeFromBackend,
+              repoLink: !!repoLink,
+              codeText: !!codeText,
+              file: !!file,
+              stateStatus: state?.status
+            });
+          }}
         >
           {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : 'Fortsätt till Stripe'}
         </button>
