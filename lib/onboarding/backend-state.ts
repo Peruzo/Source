@@ -8,10 +8,10 @@ export type { OnboardingState };
  * Hook för att hämta onboarding-state från backend.
  * Backend är enda källan till sanning; localStorage används endast för UI/draft.
  * 
- * @param userSub - Auth0 user.sub ELLER anonym sessionId (kan vara tom sträng för anonym onboarding)
- * @param onboardingId - OnboardingId för att hämta specifik onboarding-session (krävs för anonym onboarding)
+ * @param userSub - Auth0 user.sub ELLER anonym sessionId (valfri - kan vara null/undefined/tom sträng)
+ * @param onboardingId - OnboardingId för att hämta specifik onboarding-session (krävs)
  */
-export function useOnboardingState(userSub: string, onboardingId?: string | null) {
+export function useOnboardingState(userSub: string | null | undefined, onboardingId?: string | null) {
   const [state, setState] = useState<OnboardingState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,15 +26,8 @@ export function useOnboardingState(userSub: string, onboardingId?: string | null
       onboardingIdIsUndefined: onboardingId === undefined
     });
 
-    // KRITISK FIX: I anonym onboarding är userSub tom sträng ('') eller sessionId
-    // Hooken ska INTE blockera när userSub är tom - onboardingId är tillräckligt
-    // Endast blockera om BÅDE userSub och onboardingId saknas
-    if (!userSub && !onboardingId) {
-      console.log('[useOnboardingState] Blocked: both userSub and onboardingId are missing');
-      setLoading(false);
-      return;
-    }
-
+    // KRITISK FIX: userSub är valfri för public onboarding
+    // Hooken kräver ENDAST onboardingId - userSub kan vara null/undefined/tom sträng
     // Om onboardingId saknas, vänta tills den är tillgänglig
     if (onboardingId === undefined || onboardingId === null) {
       console.log('[useOnboardingState] Waiting for onboardingId');
