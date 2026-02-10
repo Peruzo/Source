@@ -3,6 +3,7 @@ import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 import { createGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { checkAdminOnboardingExists } from '@/lib/api/admin-portal';
 
 /**
  * GET /api/github/callback?code=...&state=...
@@ -232,6 +233,24 @@ export async function GET(request: NextRequest) {
     );
   }
   const activeOnboardingId = onboardingId;
+
+  // BLOCKERA om admin-onboarding inte finns
+  const adminExists = await checkAdminOnboardingExists(activeOnboardingId);
+
+  if (!adminExists) {
+    console.error('[GitHub Callback] Admin onboarding missing, aborting GitHub job start', {
+      onboardingId: activeOnboardingId,
+    });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'ONBOARDING_NOT_INITIALIZED',
+        message: 'Onboarding has not been initialized. Please restart onboarding.',
+      },
+      { status: 409 }
+    );
+  }
 
   // KRITISK: Spara GitHub repo-verifiering i onboarding-state FÖRE job-skapande
   // Jobbet får endast skapas efter github_repo_verified event är sparat (FSM-krav)

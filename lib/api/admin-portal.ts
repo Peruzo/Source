@@ -70,6 +70,40 @@ function createHMAC(body: string): string {
 const ADMIN_PORTAL_URL = process.env.ADMIN_PORTAL_URL;
 
 /**
+ * Kontrollerar om admin-onboarding finns för ett onboardingId.
+ * Används för att säkerställa att onboarding är initierad innan GitHub-job startar.
+ */
+export async function checkAdminOnboardingExists(onboardingId: string): Promise<boolean> {
+  if (!ADMIN_PORTAL_URL) {
+    console.warn('[Admin Portal] ADMIN_PORTAL_URL not set, cannot check onboarding existence');
+    return false;
+  }
+  const secret = process.env.ADMIN_SHARED_SECRET;
+  if (!secret) {
+    console.warn('[Admin Portal] ADMIN_SHARED_SECRET not set, cannot check onboarding existence');
+    return false;
+  }
+  
+  const url = `${ADMIN_PORTAL_URL.replace(/\/$/, '')}/api/onboarding/${encodeURIComponent(onboardingId)}`;
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-admin-secret': secret,
+      },
+    });
+    
+    // 200 = onboarding finns
+    // 404 = onboarding finns inte
+    return response.ok;
+  } catch (err) {
+    console.error(`[Admin Portal] Error checking onboarding existence:`, err);
+    // Vid fel, antag att onboarding inte finns (fail-safe)
+    return false;
+  }
+}
+
+/**
  * PATCH till admin-portalens onboarding-API (maskin-till-maskin).
  * Admin kräver x-admin-secret. Använd för code/contact-uppdateringar.
  */

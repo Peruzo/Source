@@ -260,6 +260,11 @@ export function CodeUploadForm() {
         setSubmitting(false);
         return;
       }
+      if (result?.error === 'ONBOARDING_NOT_INITIALIZED') {
+        setError('Onboarding-sessionen är inte korrekt initierad. Ladda om sidan eller starta onboarding på nytt.');
+        setSubmitting(false);
+        return;
+      }
       setError(result.error ?? 'Unexpected error');
       setSubmitting(false);
       return;
