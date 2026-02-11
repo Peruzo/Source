@@ -39,7 +39,7 @@ const TRANSITIONS: TransitionRule[] = [
   {
     eventType: 'github_repo_verified',
     allowedStatuses: ['code_pending'],
-    newStatus: 'github_verified',
+    newStatus: null, // GitHub-verifiering är INTE längre en FSM-status
   },
   {
     eventType: 'code_submitted',
