@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
-import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { listOnboardingEvents, isGithubRepoVerified } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 export async function POST(request: Request) {
@@ -54,16 +54,17 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File | null;
 
     // HÅRD BLOCKERING: Om repoLink finns måste github_repo_verified event existera
+    // github_repo_verified är INTE ett FSM-event - läser direkt från events
     // Detta stoppar ALLT: ingen ZIP, ingen code_submitted, ingen processing
     if (repoLink) {
       const events = await listOnboardingEvents(onboardingId);
-      const state = reduceOnboarding(events, onboardingId, userSub);
+      const githubVerification = isGithubRepoVerified(events);
       
-      if (state.github?.verified !== true) {
+      if (!githubVerification.verified) {
         console.warn('[Onboarding Code] HARD BLOCK: repoLink provided but github_repo_verified missing', {
           onboardingId,
           repoLink,
-          githubVerified: state.github?.verified,
+          githubVerified: false,
         });
         
         return NextResponse.json(
@@ -106,15 +107,18 @@ export async function POST(request: Request) {
           hasCodeSubmitted: events.some(e => e.type === 'code_submitted')
         });
         const state = reduceOnboarding(events, onboardingId, userSub);
-        console.log('[Onboarding Code] State after reduce:', {
+        // github_repo_verified är INTE ett FSM-event - läser direkt från events
+        const githubVerification = isGithubRepoVerified(events);
+        
+        console.log('[Onboarding Code] GitHub verification check:', {
           onboardingId,
           sessionId: userSub,
           stateStatus: state.status,
           stateCode: state.code,
-          stateGithub: state.github
+          githubVerified: githubVerification.verified
         });
         
-        if (!state.github?.verified) {
+        if (!githubVerification.verified) {
           return NextResponse.json(
             {
               success: false,

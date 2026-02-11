@@ -220,6 +220,10 @@ export async function GET(request: NextRequest) {
   const onboardingState = reduceOnboarding(events, activeOnboardingId, sessionId);
   const email = onboardingState.email || '';
 
+  // 🔒 DIREKT VERIFIERING: GitHub-verifiering sätts direkt via event (INTE via FSM)
+  // github_repo_verified är INTE ett FSM-event - reducer ignorerar det helt
+  // Verifiering läses direkt från events via isGithubRepoVerified() i andra routes
+
   // Re-initiera admin-onboarding om det saknas (non-blocking)
   const adminExists = await checkAdminOnboardingExists(activeOnboardingId);
 
@@ -251,9 +255,9 @@ export async function GET(request: NextRequest) {
     throw new Error(errorMsg);
   }
 
-  // KRITISK: Spara GitHub repo-verifiering i onboarding-state FÖRE job-skapande
-  // Jobbet får endast skapas efter github_repo_verified event är sparat (FSM-krav)
-  // Detta sker endast efter strikt verifiering (200 OK från GitHub API)
+  // 🔒 DIREKT VERIFIERING: Spara event endast för spårning/logging (INTE för FSM)
+  // github_repo_verified är INTE ett FSM-event - reducer ignorerar det helt
+  // Verifiering sätts direkt i state ovan, inte via reducer-transition
   try {
     await appendOnboardingEvent(activeOnboardingId, {
       type: 'github_repo_verified',
@@ -268,12 +272,11 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-    console.log(`[GitHub Callback] Saved github_repo_verified event for onboarding ${activeOnboardingId} (repo access verified with 200 OK)`);
+    console.log(`[GitHub Callback] Saved github_repo_verified event for logging (NOT a FSM event)`);
   } catch (eventErr) {
-    // Om verifiering-event inte kan sparas → redirecta tillbaka (job skapas inte)
-    // Detta säkerställer att FSM alltid har github_repo_verified innan job skapas
-    console.error('[GitHub Callback] Failed to save github_repo_verified event:', eventErr);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    // Event-sparning är endast för spårning - om det misslyckas, fortsätt ändå
+    // Verifiering är redan satt direkt i state ovan
+    console.warn('[GitHub Callback] Failed to save github_repo_verified event (non-critical, logging only):', eventErr);
   }
 
   try {

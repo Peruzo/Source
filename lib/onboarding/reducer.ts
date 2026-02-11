@@ -9,7 +9,6 @@ export type OnboardingStatus =
   | 'started'
   | 'questions_completed'
   | 'code_pending'
-  | 'github_verified'
   | 'code_completed'
   | 'stripe_started'
   | 'stripe_completed'
@@ -59,7 +58,7 @@ const TRANSITIONS: TransitionRule[] = [
   },
   {
     eventType: 'plan_selected',
-    allowedStatuses: ['started', 'questions_completed', 'code_pending', 'github_verified', 'code_completed', 'stripe_started', 'stripe_completed', 'ready_for_review'],
+    allowedStatuses: ['started', 'questions_completed', 'code_pending', 'code_completed', 'stripe_started', 'stripe_completed', 'ready_for_review'],
     newStatus: null, // Ingen statusändring
   },
 ];
@@ -268,27 +267,13 @@ export function reduceOnboarding(
         };
         break;
 
-      case 'github_repo_verified': {
-        // 🔒 HÅRD LÅSNING: github_repo_verified får ENDAST komma från GitHub OAuth callback
-        if (
-          event.payload?.source !== 'github_oauth_callback' ||
-          !event.payload?.oauth?.accessTokenPresent ||
-          !event.payload?.oauth?.codeExchangeCompleted
-        ) {
-          throw new Error(
-            `[SECURITY] Invalid github_repo_verified event rejected. ` +
-            `This event may only be created via /api/github/callback after OAuth.`
-          );
-        }
-
-        state.github = {
-          repoUrl: event.payload.repoUrl,
-          repoSlug: event.payload.repoSlug,
-          verified: true,
-          verifiedAt: event.payload.verifiedAt,
-        };
+      // github_repo_verified är INTE ett FSM-event
+      // Reducer ignorerar det helt - verifiering sätts direkt i /api/github/callback
+      // Eventet skapas endast för spårning/logging, inte för FSM-transition
+      case 'github_repo_verified':
+        // Ignorera helt - detta är INTE ett FSM-event
+        console.log('[reduceOnboarding] Ignoring github_repo_verified event (not a FSM event)');
         break;
-      }
 
       case 'stripe_started':
         state.stripe = {

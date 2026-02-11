@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
-import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerified } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
               // Markera som notifierat INNAN vi skickar (förhindrar race condition)
               await updateJobStatus(jobId, job.status, { adminNotifiedAt: notifyTime });
               
-              // 🔥 ENDA stället FSM-event skickas för github_verified
+              // 🔥 Skicka GitHub-verifiering till admin (github_repo_verified är INTE ett FSM-event)
               sendToAdminPortal('onboarding', {
                 idempotencyKey: `onboarding-${job.onboardingId}-github-verified`,
                 publicOnboardingId: job.onboardingId,
@@ -143,8 +143,8 @@ export async function GET(request: NextRequest) {
                 onboardingStatus: state.status, // Använd formell status från FSM
                 data: {
                   repoUrl: job.repoUrl,
-                  repoSlug: state.github.repoSlug,
-                  verifiedAt: state.github.verifiedAt,
+                  repoSlug: githubVerification.repoSlug || job.repo,
+                  verifiedAt: githubVerification.verifiedAt,
                 },
                 submittedAt: notifyTime,
                 source: 'public_onboarding',
