@@ -261,6 +261,11 @@ export async function GET(request: NextRequest) {
         repoUrl,
         repoSlug,
         verifiedAt,
+        source: 'github_oauth_callback',
+        oauth: {
+          codeExchangeCompleted: true,
+          accessTokenPresent: true,
+        },
       },
     });
     console.log(`[GitHub Callback] Saved github_repo_verified event for onboarding ${activeOnboardingId} (repo access verified with 200 OK)`);

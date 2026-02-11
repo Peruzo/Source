@@ -268,7 +268,19 @@ export function reduceOnboarding(
         };
         break;
 
-      case 'github_repo_verified':
+      case 'github_repo_verified': {
+        // 🔒 HÅRD LÅSNING: github_repo_verified får ENDAST komma från GitHub OAuth callback
+        if (
+          event.payload?.source !== 'github_oauth_callback' ||
+          !event.payload?.oauth?.accessTokenPresent ||
+          !event.payload?.oauth?.codeExchangeCompleted
+        ) {
+          throw new Error(
+            `[SECURITY] Invalid github_repo_verified event rejected. ` +
+            `This event may only be created via /api/github/callback after OAuth.`
+          );
+        }
+
         state.github = {
           repoUrl: event.payload.repoUrl,
           repoSlug: event.payload.repoSlug,
@@ -276,6 +288,7 @@ export function reduceOnboarding(
           verifiedAt: event.payload.verifiedAt,
         };
         break;
+      }
 
       case 'stripe_started':
         state.stripe = {
