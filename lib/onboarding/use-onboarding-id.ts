@@ -40,9 +40,22 @@ export function useOnboardingId(): {
           setUserSub(currentUserSub);
         }
 
+        // KRITISK FIX: Kolla först om det är en ny signup - i så fall rensa sessionStorage
+        const isCustomSignup =
+          typeof window !== 'undefined' &&
+          (window.location.search.includes('signup=true') || sessionStorage.getItem('customSignup') === 'true');
+
+        // Om det är en ny signup → rensa onboarding-relaterad sessionStorage för att förhindra återanvändning
+        if (isCustomSignup && typeof window !== 'undefined') {
+          console.log('[useOnboardingId] New signup detected - clearing onboarding sessionStorage');
+          sessionStorage.removeItem('onboarding_id');
+          // customSignup, onboarding_signup_email, onboarding_signup_name rensas senare efter start
+        }
+
         // ARKITEKTURREGEL: onboardingId är write-once per session.
         // Om onboardingId redan finns i sessionStorage → använd den (förhindrar "hoppa bak")
-        const existingOnboardingId = typeof window !== 'undefined' 
+        // MEN: Inte om det är en ny signup (då har vi precis rensat det ovan)
+        const existingOnboardingId = typeof window !== 'undefined' && !isCustomSignup
           ? sessionStorage.getItem('onboarding_id') 
           : null;
         
@@ -55,10 +68,6 @@ export function useOnboardingId(): {
           }
           return;
         }
-
-        const isCustomSignup =
-          typeof window !== 'undefined' &&
-          (window.location.search.includes('signup=true') || sessionStorage.getItem('customSignup') === 'true');
 
         // KRITISK FIX: Vid custom signup anrop ALLTID POST start med forceNew.
         if (isCustomSignup) {
