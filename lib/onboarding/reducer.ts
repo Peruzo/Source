@@ -33,7 +33,7 @@ const TRANSITIONS: TransitionRule[] = [
   },
   {
     eventType: 'email_set',
-    allowedStatuses: ['started', 'questions_completed', 'code_pending', 'github_verified', 'code_completed'],
+    allowedStatuses: ['started', 'questions_completed', 'code_pending', 'code_completed'],
     newStatus: null, // Ingen statusändring
   },
   {
