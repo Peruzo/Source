@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { listAllOnboardingIds, listOnboardingEvents, OnboardingEvent } from '@/lib/storage/onboarding-events';
 import { Storage } from '@google-cloud/storage';
 
-const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
 
 /**
@@ -17,6 +16,20 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID;
  * - orsak (varför OAuth inte kan verifieras)
  */
 export async function GET(request: NextRequest) {
+  const BUCKET =
+    process.env.GCS_BUCKET_CODE_PACKAGES ??
+    process.env.GCS_BUCKET_ONBOARDING;
+
+  if (!BUCKET) {
+    return NextResponse.json(
+      {
+        error: 'GCS bucket not configured',
+        detail: 'Neither GCS_BUCKET_CODE_PACKAGES nor GCS_BUCKET_ONBOARDING is set',
+      },
+      { status: 500 }
+    );
+  }
+
   try {
     // Hämta alla onboardingId
     const allOnboardingIds = await listAllOnboardingIds();
