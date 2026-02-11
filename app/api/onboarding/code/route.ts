@@ -53,6 +53,31 @@ export async function POST(request: Request) {
     const codeText = String(formData.get('codeText') || '');
     const file = formData.get('file') as File | null;
 
+    // HÅRD BLOCKERING: Om repoLink finns måste github_repo_verified event existera
+    // Detta stoppar ALLT: ingen ZIP, ingen code_submitted, ingen processing
+    if (repoLink) {
+      const events = await listOnboardingEvents(onboardingId);
+      const state = reduceOnboarding(events, onboardingId, userSub);
+      
+      if (state.github?.verified !== true) {
+        console.warn('[Onboarding Code] HARD BLOCK: repoLink provided but github_repo_verified missing', {
+          onboardingId,
+          repoLink,
+          githubVerified: state.github?.verified,
+        });
+        
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'GITHUB_OAUTH_REQUIRED',
+            message: 'GitHub-repo kräver OAuth-auktorisering innan kod kan laddas upp.',
+            nextStep: 'github_auth',
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // /api/onboarding/code ska ALDRIG blockeras av FSM-status
     // FSM-transition sker senare i GitHub-jobbet
 
