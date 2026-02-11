@@ -119,3 +119,37 @@ export async function listOnboardingEvents(onboardingId: string): Promise<Onboar
     return [];
   }
 }
+
+/**
+ * Listar alla onboardingId som finns i GCS.
+ * READ-ONLY funktion för analys.
+ */
+export async function listAllOnboardingIds(): Promise<string[]> {
+  if (!BUCKET) return [];
+
+  try {
+    const storage = new Storage(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
+    const bucket = storage.bucket(BUCKET);
+    const prefix = 'onboarding-events/';
+
+    const [files] = await bucket.getFiles({ prefix });
+
+    // Extrahera unika onboardingId från filnamn: onboarding-events/{onboardingId}/...
+    const onboardingIds = new Set<string>();
+
+    for (const file of files) {
+      const parts = file.name.split('/');
+      if (parts.length >= 2 && parts[0] === 'onboarding-events') {
+        const id = parts[1];
+        if (id) {
+          onboardingIds.add(id);
+        }
+      }
+    }
+
+    return Array.from(onboardingIds);
+  } catch (error) {
+    console.error('[Onboarding Events] Error listing all onboarding IDs:', error);
+    return [];
+  }
+}

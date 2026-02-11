@@ -239,6 +239,18 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  // HÅRD GUARD: OAuth MÅSTE vara genomförd innan github_repo_verified kan skapas
+  // Detta är den ENDA platsen där github_repo_verified event får skapas
+  if (!code || !token) {
+    const errorMsg = 'OAuth not completed – cannot verify GitHub repo';
+    console.error(`[GitHub Callback] HARD GUARD FAILED: ${errorMsg}`, {
+      hasCode: !!code,
+      hasToken: !!token,
+      onboardingId: activeOnboardingId,
+    });
+    throw new Error(errorMsg);
+  }
+
   // KRITISK: Spara GitHub repo-verifiering i onboarding-state FÖRE job-skapande
   // Jobbet får endast skapas efter github_repo_verified event är sparat (FSM-krav)
   // Detta sker endast efter strikt verifiering (200 OK från GitHub API)
@@ -297,7 +309,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Redirecta omedelbart - ingen repo-data laddas här
-    // Worker kommer att processera jobbet async utanför request-livscykeln
+    // Worker kommer att processa jobbet async utanför request-livscykeln
     return NextResponse.redirect(buildUrl(`/onboarding/code?github=processing&jobId=${jobId}`));
   } catch (jobError) {
     // Om job-skapande misslyckas → logga och redirecta tillbaka
