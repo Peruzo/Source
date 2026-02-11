@@ -323,11 +323,10 @@ export function CodeUploadForm() {
     if (repoLink && !codeText && !file) {
       // Detta är en GitHub-repo (ingen kod eller fil)
       // Kolla om GitHub redan är verifierat
-      if (!state.github?.verified) {
-        // GitHub är inte verifierat → användaren måste klicka på "Auktorisera GitHub" först
+      if (!state || !state.github?.verified) {
         setError(
           'Detta är ett privat GitHub-repo.\n\n' +
-          'Du måste först auktorisera GitHub för att vi ska kunna läsa repot.'
+          'Klicka på "Auktorisera GitHub" för att fortsätta.'
         );
         setShowGithubAuthButton(true);
         setSubmitting(false);
