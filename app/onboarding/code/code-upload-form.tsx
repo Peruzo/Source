@@ -39,6 +39,7 @@ export function CodeUploadForm() {
   const [githubJobStatus, setGithubJobStatus] = useState<'processing' | 'completed' | 'failed' | null>(null);
   /** Sätt när GitHub-job completed (innan state har refetch:ats) så att vi aldrig POST:ar och knappen är klickbar. */
   const [codePersistedByBackend, setCodePersistedByBackend] = useState(false);
+  const [connectingGithub, setConnectingGithub] = useState(false);
 
   /** När true: backend har redan code (GitHub/ZIP/tidigare POST). POST /api/onboarding/code får ALDRIG anropas. */
   const codeAlreadyInBackendRef = useRef(false);
@@ -226,6 +227,62 @@ export function CodeUploadForm() {
     );
   }
 
+  const handleGithubConnect = async (repoSlug: string) => {
+    if (!onboardingId) {
+      setError('Onboarding är inte initierat. Ladda om sidan.');
+      return;
+    }
+
+    setConnectingGithub(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/github/connect?repo=${encodeURIComponent(repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`, {
+        method: 'GET',
+        redirect: 'manual', // Hantera redirects manuellt
+      });
+
+      // Om response är en redirect (status 307/308), följ den
+      if (response.status === 307 || response.status === 308 || response.status === 302) {
+        const location = response.headers.get('location');
+        if (location) {
+          window.location.href = location;
+          return;
+        }
+      }
+
+      // Om response är JSON (fel), hantera det
+      if (response.headers.get('content-type')?.includes('application/json')) {
+        const data = await response.json();
+        
+        if (data.error === 'AUTH0_REQUIRED') {
+          // Redirecta till Auth0 login med returnTo tillbaka till code-sidan
+          const returnTo = `/onboarding/code?onboardingId=${encodeURIComponent(onboardingId)}`;
+          window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+          return;
+        }
+
+        setError(data.message || data.error || 'Kunde inte koppla GitHub-repo.');
+        setConnectingGithub(false);
+        return;
+      }
+
+      // Om response är OK men inte redirect, försök följ location header
+      const location = response.headers.get('location');
+      if (location) {
+        window.location.href = location;
+        return;
+      }
+
+      // Fallback: om inget av ovanstående, visa generiskt fel
+      setError('Kunde inte koppla GitHub-repo. Försök igen.');
+      setConnectingGithub(false);
+    } catch (err) {
+      setError(normalizeError(err));
+      setConnectingGithub(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     console.log('[handleSubmit] fired', { 
       stateStatus: state?.status, 
@@ -392,12 +449,14 @@ export function CodeUploadForm() {
           <div className="rounded-md bg-red-50 p-3 text-red-800" role="alert">
             <p className="whitespace-pre-line">{typeof error === 'string' ? error : normalizeError(error)}</p>
             {showGithubAuthButton && onboardingId && repoLink && state?.status === 'code_pending' && (
-              <a
-                href={`/api/github/connect?repo=${encodeURIComponent(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''))}&onboardingId=${encodeURIComponent(onboardingId)}`}
-                className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              <button
+                type="button"
+                onClick={() => handleGithubConnect(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''))}
+                disabled={connectingGithub}
+                className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Auktorisera GitHub
-              </a>
+                {connectingGithub ? 'Ansluter...' : 'Auktorisera GitHub'}
+              </button>
             )}
           </div>
         )}
@@ -432,12 +491,14 @@ export function CodeUploadForm() {
             <p className="mt-1 text-sm">
               För att vi ska kunna granska koden behöver du ge tillfällig läsåtkomst.
             </p>
-            <a
-              href={`/api/github/connect?repo=${encodeURIComponent(privateRepoPrompt.repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`}
-              className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            <button
+              type="button"
+              onClick={() => handleGithubConnect(privateRepoPrompt.repoSlug)}
+              disabled={connectingGithub}
+              className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Koppla GitHub-konto
-            </a>
+              {connectingGithub ? 'Ansluter...' : 'Koppla GitHub-konto'}
+            </button>
           </div>
         )}
 
