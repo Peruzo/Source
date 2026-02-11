@@ -5,7 +5,6 @@ import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
-import { auth0 } from '@/lib/auth0';
 
 /**
  * GET /api/github/connect?repo=owner/repo&onboardingId=...
@@ -88,24 +87,6 @@ export async function GET(request: NextRequest) {
       },
       { status: 400 }
     );
-  }
-
-  const isPrivateRepo = access.private || !access.ok;
-
-  // Kräv Auth0 för privata repon (innan redirect)
-  if (isPrivateRepo) {
-    const session = await auth0.getSession();
-
-    if (!session?.user?.sub) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'AUTH0_REQUIRED',
-          message: 'You must be logged in to connect a private GitHub repository.',
-        },
-        { status: 401 }
-      );
-    }
   }
 
   const clientId = process.env.GITHUB_CLIENT_ID;
