@@ -67,7 +67,8 @@ export function StripeStart() {
       router.replace('/onboarding/questions');
       return;
     }
-    if (state.status === 'code_pending' || state.status === 'github_verified') {
+    // Stripe får endast starta efter att code är färdigt
+    if (state.status !== 'code_completed') {
       router.replace('/onboarding/code');
       return;
     }
