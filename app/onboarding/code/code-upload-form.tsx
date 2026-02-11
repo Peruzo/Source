@@ -318,6 +318,23 @@ export function CodeUploadForm() {
       return;
     }
 
+    // KRITISK GUARD: Om repoLink finns men GitHub inte är verifierat → blockera POST
+    // Privata repon kräver GitHub OAuth innan code-submission
+    if (repoLink && !codeText && !file) {
+      // Detta är en GitHub-repo (ingen kod eller fil)
+      // Kolla om GitHub redan är verifierat
+      if (!state.github?.verified) {
+        // GitHub är inte verifierat → användaren måste klicka på "Auktorisera GitHub" först
+        setError(
+          'Detta är ett privat GitHub-repo.\n\n' +
+          'Du måste först auktorisera GitHub för att vi ska kunna läsa repot.'
+        );
+        setShowGithubAuthButton(true);
+        setSubmitting(false);
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     // KRITISKT: Hämta sessionId från anonym onboarding-session (samma källa som onboardingId)
@@ -451,7 +468,7 @@ export function CodeUploadForm() {
             {showGithubAuthButton && onboardingId && repoLink && state?.status === 'code_pending' && (
               <button
                 type="button"
-                onClick={() => handleGithubConnect(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''))}
+                onClick={(e) => handleGithubConnect(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''), e)}
                 disabled={connectingGithub}
                 className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -493,7 +510,7 @@ export function CodeUploadForm() {
             </p>
             <button
               type="button"
-              onClick={() => handleGithubConnect(privateRepoPrompt.repoSlug)}
+              onClick={(e) => handleGithubConnect(privateRepoPrompt.repoSlug, e)}
               disabled={connectingGithub}
               className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
