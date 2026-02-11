@@ -3,6 +3,7 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { checkRepoAccess } from '@/lib/github/repo-utils';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -120,6 +121,36 @@ export async function POST(request: Request) {
           });
         }
       } else if (currentStep === 'code') {
+        // KRITISK SÄKERHET: Om repoLink finns, verifiera att privata repon är OAuth-verifierade
+        // code_submitted får ALDRIG skapas för privata repon utan github_repo_verified-event
+        if (payloadData.repoLink) {
+          const access = await checkRepoAccess(payloadData.repoLink);
+          
+          // Om repot är privat, kräv github_repo_verified event
+          if (access.private === true) {
+            const events = await listOnboardingEvents(onboardingId);
+            const state = reduceOnboarding(events, onboardingId, userSub);
+            
+            if (state.github?.verified !== true) {
+              console.warn('[Onboarding Step] Private repo requires OAuth verification', {
+                onboardingId,
+                repoLink: payloadData.repoLink,
+                githubVerified: state.github?.verified,
+              });
+              
+              return NextResponse.json(
+                {
+                  success: false,
+                  error: 'GITHUB_OAUTH_REQUIRED',
+                  message: 'Privata GitHub-repon kräver OAuth-auktorisering innan kod kan laddas upp.',
+                  nextStep: 'github_auth',
+                },
+                { status: 403 }
+              );
+            }
+          }
+        }
+        
         await appendOnboardingEvent(onboardingId, {
           type: 'code_submitted',
           payload: {
