@@ -227,60 +227,17 @@ export function CodeUploadForm() {
     );
   }
 
-  const handleGithubConnect = async (repoSlug: string) => {
+  const handleGithubConnect = (repoSlug: string) => {
     if (!onboardingId) {
       setError('Onboarding är inte initierat. Ladda om sidan.');
       return;
     }
 
+    // Disable knappen för att förhindra dubbelklick
     setConnectingGithub(true);
-    setError('');
 
-    try {
-      const response = await fetch(`/api/github/connect?repo=${encodeURIComponent(repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`, {
-        method: 'GET',
-        redirect: 'manual', // Hantera redirects manuellt
-      });
-
-      // Om response är en redirect (status 307/308), följ den
-      if (response.status === 307 || response.status === 308 || response.status === 302) {
-        const location = response.headers.get('location');
-        if (location) {
-          window.location.href = location;
-          return;
-        }
-      }
-
-      // Om response är JSON (fel), hantera det
-      if (response.headers.get('content-type')?.includes('application/json')) {
-        const data = await response.json();
-        
-        if (data.error === 'AUTH0_REQUIRED') {
-          // Redirecta till Auth0 login med returnTo tillbaka till code-sidan
-          const returnTo = `/onboarding/code?onboardingId=${encodeURIComponent(onboardingId)}`;
-          window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
-          return;
-        }
-
-        setError(data.message || data.error || 'Kunde inte koppla GitHub-repo.');
-        setConnectingGithub(false);
-        return;
-      }
-
-      // Om response är OK men inte redirect, försök följ location header
-      const location = response.headers.get('location');
-      if (location) {
-        window.location.href = location;
-        return;
-      }
-
-      // Fallback: om inget av ovanstående, visa generiskt fel
-      setError('Kunde inte koppla GitHub-repo. Försök igen.');
-      setConnectingGithub(false);
-    } catch (err) {
-      setError(normalizeError(err));
-      setConnectingGithub(false);
-    }
+    // Direkt navigation till GitHub OAuth (backend redirectar till GitHub)
+    window.location.href = `/api/github/connect?repo=${encodeURIComponent(repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
