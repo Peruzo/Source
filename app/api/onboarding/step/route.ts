@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
-import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerified } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
           // github_repo_verified är INTE ett FSM-event - läser direkt från events
           if (access.private === true) {
             const events = await listOnboardingEvents(onboardingId);
-            const githubVerification = isGithubRepoVerified(events);
+            const githubVerification = isGithubRepoVerifiedFromEvents(events);
             
             if (!githubVerification.verified) {
               console.warn('[Onboarding Step] Private repo requires OAuth verification', {

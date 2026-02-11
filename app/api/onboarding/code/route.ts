@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
-import { listOnboardingEvents, isGithubRepoVerified } from '@/lib/storage/onboarding-events';
+import { listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 
 export async function POST(request: Request) {
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     // Detta stoppar ALLT: ingen ZIP, ingen code_submitted, ingen processing
     if (repoLink) {
       const events = await listOnboardingEvents(onboardingId);
-      const githubVerification = isGithubRepoVerified(events);
+      const githubVerification = isGithubRepoVerifiedFromEvents(events);
       
       if (!githubVerification.verified) {
         console.warn('[Onboarding Code] HARD BLOCK: repoLink provided but github_repo_verified missing', {
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
         });
         const state = reduceOnboarding(events, onboardingId, userSub);
         // github_repo_verified är INTE ett FSM-event - läser direkt från events
-        const githubVerification = isGithubRepoVerified(events);
+        const githubVerification = isGithubRepoVerifiedFromEvents(events);
         
         console.log('[Onboarding Code] GitHub verification check:', {
           onboardingId,

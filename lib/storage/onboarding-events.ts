@@ -158,8 +158,10 @@ export async function listAllOnboardingIds(): Promise<string[]> {
  * Kontrollerar om GitHub-repo är verifierat genom att läsa events direkt.
  * github_repo_verified är INTE ett FSM-event - reducer ignorerar det helt.
  * Denna funktion läser eventet direkt för att kontrollera verifiering.
+ * 
+ * @param events - Array av onboarding events, eller onboardingId som string
  */
-export function isGithubRepoVerified(events: OnboardingEvent[]): {
+export function isGithubRepoVerifiedFromEvents(events: OnboardingEvent[]): {
   verified: boolean;
   repoUrl?: string;
   repoSlug?: string;
@@ -182,4 +184,18 @@ export function isGithubRepoVerified(events: OnboardingEvent[]): {
     repoSlug: verifiedEvent.payload.repoSlug,
     verifiedAt: verifiedEvent.payload.verifiedAt,
   };
+}
+
+/**
+ * Async funktion som tar onboardingId och kontrollerar OAuth-verifiering.
+ * github_repo_verified är INTE ett FSM-event - reducer ignorerar det helt.
+ */
+export async function isGithubRepoVerified(onboardingId: string): Promise<{
+  verified: boolean;
+  repoUrl?: string;
+  repoSlug?: string;
+  verifiedAt?: string;
+}> {
+  const events = await listOnboardingEvents(onboardingId);
+  return isGithubRepoVerifiedFromEvents(events);
 }

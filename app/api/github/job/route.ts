@@ -85,32 +85,18 @@ export async function GET(request: NextRequest) {
               console.error('[GitHub Job] Failed to append code_submitted for onboarding:', eventErr);
             }
 
-            // Hämta state för att kontrollera status och verifiering
+            // Hämta state för att kontrollera FSM-status
             const events = await listOnboardingEvents(job.onboardingId);
             const state = reduceOnboarding(events, job.onboardingId, job.userSub);
 
-            // FSM: Verifiera att onboarding är i korrekt status (github_verified eller code_completed)
-            // Endast om repo är verifierat och status är korrekt ska vi synka till admin
-            try {
-              assertStatus(state, ['github_verified', 'code_completed']);
-              
-              // Ytterligare kontroll: GitHub-repo måste vara verifierat
-              if (!state.github?.verified) {
-                throw new Error('GitHub repo not verified');
-              }
-            } catch (statusError) {
-              console.warn(`[GitHub Job] Skipping admin sync: Invalid status or unverified repo for onboarding ${job.onboardingId}:`, statusError);
-              // Hoppa över admin-sync om status eller verifiering saknas
-              job = await getGitHubJob(jobId);
-              if (!job) {
-                return NextResponse.json({ error: 'Job not found after update' }, { status: 404 });
-              }
-              const { githubToken: _githubToken, ...safeJob } = job;
-              return NextResponse.json({
-                job: safeJob,
-                progress: safeJob.progress,
-                status: safeJob.status,
-              });
+            // FSM-krav: Jobbet får endast köras när code är färdigt
+            assertStatus(state, 'code_completed');
+
+            // SÄKERHET: GitHub-repo MÅSTE vara OAuth-verifierat (event-baserat)
+            const isVerified = await isGithubRepoVerified(job.onboardingId);
+
+            if (!isVerified.verified) {
+              throw new Error('GitHub repo is not OAuth-verified');
             }
 
             // Synka till admin-portalen så att onboarding visar "har kod" (admin läser från MongoDB, inte events)
@@ -143,8 +129,8 @@ export async function GET(request: NextRequest) {
                 onboardingStatus: state.status, // Använd formell status från FSM
                 data: {
                   repoUrl: job.repoUrl,
-                  repoSlug: githubVerification.repoSlug || job.repo,
-                  verifiedAt: githubVerification.verifiedAt,
+                  repoSlug: isVerified.repoSlug || job.repo,
+                  verifiedAt: isVerified.verifiedAt,
                 },
                 submittedAt: notifyTime,
                 source: 'public_onboarding',
@@ -166,7 +152,7 @@ export async function GET(request: NextRequest) {
                 onboardingStatus: 'code_completed',
                 data: {
                   repoUrl: job.repoUrl,
-                  repoSlug: state.github.repoSlug,
+                  repoSlug: isVerified.repoSlug || job.repo,
                   storageObjectUrl: gcsPath,
                   completedAt: notifyTime,
                 },
