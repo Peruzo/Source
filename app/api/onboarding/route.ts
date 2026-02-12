@@ -53,24 +53,42 @@ export async function GET(request: NextRequest) {
     console.log('[Onboarding GET] sessionId =', sessionId, 'onboardingId =', onboardingId);
     
     const events = await listOnboardingEvents(onboardingId);
-    
-    console.log('[Onboarding GET] RAW Events from GCS:', {
+
+    console.log(
+      '[DEBUG RAW EVENTS]',
+      JSON.stringify(
+        events.map((e, i) => ({
+          index: i,
+          type: e.type,
+          at: e.at,
+          payload: e.payload,
+        })),
+        null,
+        2
+      )
+    );
+
+    // EVENT-SEKVENSVERIFIERING
+    // - listOnboardingEvents(): sorterar på filnamn (prefix timestamp), inte på at. Filnamn = timestamp_eventtype.json → kronologisk ordning efter skrivtid.
+    // - Reducer: sorterar om på at (sortedEvents = [...events].sort((a,b) => a.at.localeCompare(b.at))). at sätts alltid i appendOnboardingEvent (at: now).
+    // - Risk: GCS write är async; om GET körs innan en nyss skriven fil är synlig (eventual consistency) kan reducer få en lista utan senaste event.
+    // - Loggen nedan visar om github_repo_verified finns före code_submitted (githubVerifiedFöreCodeSubmitted). Om nej → race eller fel ordning.
+    const eventSequenceLog = {
       onboardingId,
       sessionId,
-      eventsCount: events.length,
-      firstEvent: events.length > 0 ? events[0] : null,
-      lastEvent: events.length > 0 ? events[events.length - 1] : null,
+      antalEvents: events.length,
+      sorteringsordning: events.map((e, i) => ({ index: i, type: e.type, at: e.at })),
       eventTypes: events.map(e => e.type),
-      hasCodeSubmitted: events.some(e => e.type === 'code_submitted'),
-      hasGithubVerified: events.some(e => e.type === 'github_repo_verified'),
-      allEvents: events.map(e => ({ 
-        type: e.type, 
-        at: e.at, 
-        payload: e.payload,
-        fullEvent: e
-      }))
-    });
-    
+      hasAtPåAlla: events.every(e => e.at != null),
+      indexGithubRepoVerified: events.findIndex(e => e.type === 'github_repo_verified'),
+      indexCodeSubmitted: events.findIndex(e => e.type === 'code_submitted'),
+      githubVerifiedFöreCodeSubmitted:
+        events.findIndex(e => e.type === 'github_repo_verified') >= 0 &&
+        events.findIndex(e => e.type === 'code_submitted') >= 0 &&
+        events.findIndex(e => e.type === 'github_repo_verified') < events.findIndex(e => e.type === 'code_submitted'),
+    };
+    console.log('[Onboarding GET] EVENT-SEKVENS (precis innan reduceOnboarding):', JSON.stringify(eventSequenceLog, null, 2));
+
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
     // Inga auto-create-logik här - GET-endpoint är read-only
     const state = reduceOnboarding(events, onboardingId, sessionId);

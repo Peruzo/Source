@@ -1,4 +1,5 @@
 import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
+import { isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
 
 /**
  * Formell onboarding-status (FSM - Finite State Machine).
@@ -193,7 +194,8 @@ export function reduceOnboarding(
   let eventsProcessed = 0;
   let eventsSkipped = 0;
 
-  for (const event of sortedEvents) {
+  for (let i = 0; i < sortedEvents.length; i++) {
+    const event = sortedEvents[i];
     eventsProcessed++;
     updatedAt = event.at;
     if (!createdAt) {
@@ -204,7 +206,7 @@ export function reduceOnboarding(
 
     // FSM: Verifiera och uppdatera status baserat på event
     let nextStatus = getNextStatus(state.status, event.type);
-    
+
     // KRITISKT: För questions_submitted, om hasExistingSite === 'Ja', sätt code_pending istället för questions_completed
     if (event.type === 'questions_submitted' && event.payload.hasExistingSite === 'Ja' && nextStatus === 'questions_completed') {
       // Validera att transition är tillåten (från 'started')
@@ -212,7 +214,21 @@ export function reduceOnboarding(
         nextStatus = 'code_pending';
       }
     }
-    
+
+    // HÅRD LÅSNING: code_completed med repoLink kräver OAuth-verifiering
+    // Om repoLink finns men github_repo_verified (med korrekt metadata) saknas → blockera transition
+    if (event.type === 'code_submitted' && nextStatus === 'code_completed' && event.payload?.repoLink) {
+      const eventsSoFar = sortedEvents.slice(0, i + 1);
+      const githubVerified = isGithubRepoVerifiedFromEvents(eventsSoFar);
+      if (!githubVerified.verified) {
+        nextStatus = null;
+        console.warn('[reduceOnboarding] BLOCKED code_completed: repoLink present but github_repo_verified (OAuth) missing', {
+          onboardingId,
+          repoLink: event.payload.repoLink,
+        });
+      }
+    }
+
     if (nextStatus !== null) {
       state.status = nextStatus;
     }
