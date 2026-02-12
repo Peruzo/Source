@@ -240,21 +240,11 @@ export function CodeUploadForm() {
     window.location.href = `/api/github/connect?repo=${encodeURIComponent(repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`;
   };
 
-  const handleStripeClick = async () => {
-    try {
-      const res = await fetch('/api/auth/me');
-
-      if (res.ok) {
-        const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
-        router.push(getStripeOnboardingUrl(planId));
-      } else {
-        const stripeUrl = getStripeOnboardingUrl(typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null);
-        window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(stripeUrl)}`;
-      }
-    } catch {
-      const stripeUrl = getStripeOnboardingUrl(typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null);
-      window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(stripeUrl)}`;
-    }
+  const handleStripeClick = () => {
+    const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
+    const stripeUrl = getStripeOnboardingUrl(planId);
+    const returnTo = stripeUrl + (stripeUrl.includes('?') ? '&' : '?') + 'autostart=true';
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -268,15 +258,15 @@ export function CodeUploadForm() {
     event.preventDefault();
     setError('');
 
-    // FSM: När code redan är färdigt → kräv Auth0, sedan Stripe
+    // FSM: När code redan är färdigt → Auth0 login med returnTo Stripe (autostart)
     if (state?.status === 'code_completed') {
-      await handleStripeClick();
+      handleStripeClick();
       return;
     }
 
-    // När backend redan har code (oavsett källa) – aldrig POST. Endast navigera (med auth-check).
+    // När backend redan har code (oavsett källa) – aldrig POST. Endast redirect till login → Stripe.
     if (state?.code || codeAlreadyInBackendRef.current) {
-      await handleStripeClick();
+      handleStripeClick();
       return;
     }
 
@@ -370,7 +360,7 @@ export function CodeUploadForm() {
       }
     }
 
-    await handleStripeClick();
+    handleStripeClick();
   };
 
   return (
@@ -507,7 +497,7 @@ export function CodeUploadForm() {
           disabled={submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file)}
           onClick={state?.status === 'code_completed' ? handleStripeClick : undefined}
         >
-          {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : 'Fortsätt till Stripe'}
+          {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : state?.status === 'code_completed' ? 'Fortsätt till Stripe onboarding' : 'Fortsätt till Stripe'}
         </button>
       </form>
     </section>

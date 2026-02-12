@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
@@ -10,11 +10,14 @@ import { normalizeError } from '@/lib/utils/normalize-error';
 export function StripeStart() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const shouldAutoStart = searchParams.get('autostart') === 'true';
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const autoStartedRef = useRef(false);
 
   const loadingState = onboardingIdLoading || stateLoading;
 
@@ -36,6 +39,14 @@ export function StripeStart() {
       setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
     }
   }, [onboardingIdError]);
+
+  // Auto-start Stripe efter återkomst från Auth0 (returnTo med ?autostart=true)
+  useEffect(() => {
+    if (shouldAutoStart && !loadingState && onboardingId && !autoStartedRef.current) {
+      autoStartedRef.current = true;
+      startStripe();
+    }
+  }, [shouldAutoStart, loadingState, onboardingId]);
 
   // FSM: Backend-driven guards baserat på formell status
   // Status är enda sanningskällan - inga heuristiska kontroller
