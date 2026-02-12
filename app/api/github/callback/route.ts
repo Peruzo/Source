@@ -15,6 +15,12 @@ import { reduceOnboarding } from '@/lib/onboarding/reducer';
  * Token sparas temporärt i jobbet för worker-användning.
  */
 export async function GET(request: NextRequest) {
+  console.log('[DEBUG] GitHub callback route triggered', {
+    url: request.url,
+    searchParams: request.nextUrl?.searchParams?.toString?.(),
+    timestamp: new Date().toISOString(),
+  });
+
   const code = request.nextUrl.searchParams.get('code');
   const stateRaw = request.nextUrl.searchParams.get('state');
   const errorParam = request.nextUrl.searchParams.get('error');
