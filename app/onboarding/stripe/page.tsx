@@ -1,5 +1,7 @@
 import { StripeStart } from './stripe-start';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * KRITISK: Stripe-steget kräver Auth0 för Stripe Connect onboarding.
  * Men questions och code ska fungera anonymt.
