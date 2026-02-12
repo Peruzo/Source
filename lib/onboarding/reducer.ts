@@ -43,7 +43,7 @@ const TRANSITIONS: TransitionRule[] = [
   },
   {
     eventType: 'code_submitted',
-    allowedStatuses: ['github_verified', 'questions_completed'], // github_verified för GitHub, questions_completed för manual
+    allowedStatuses: ['code_pending', 'questions_completed'],
     newStatus: 'code_completed',
   },
   {
