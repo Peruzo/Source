@@ -240,6 +240,23 @@ export function CodeUploadForm() {
     window.location.href = `/api/github/connect?repo=${encodeURIComponent(repoSlug)}&onboardingId=${encodeURIComponent(onboardingId)}`;
   };
 
+  const handleStripeClick = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+
+      if (res.ok) {
+        const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
+        router.push(getStripeOnboardingUrl(planId));
+      } else {
+        const stripeUrl = getStripeOnboardingUrl(typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null);
+        window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(stripeUrl)}`;
+      }
+    } catch {
+      const stripeUrl = getStripeOnboardingUrl(typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null);
+      window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(stripeUrl)}`;
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     console.log('[handleSubmit] fired', { 
       stateStatus: state?.status, 
@@ -251,17 +268,15 @@ export function CodeUploadForm() {
     event.preventDefault();
     setError('');
 
-    // FSM: När code redan är färdigt → gå DIREKT till Stripe
+    // FSM: När code redan är färdigt → kräv Auth0, sedan Stripe
     if (state?.status === 'code_completed') {
-      const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
-      router.push(getStripeOnboardingUrl(planId));
+      await handleStripeClick();
       return;
     }
 
-    // När backend redan har code (oavsett källa) – aldrig POST. Endast navigera.
+    // När backend redan har code (oavsett källa) – aldrig POST. Endast navigera (med auth-check).
     if (state?.code || codeAlreadyInBackendRef.current) {
-      const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
-      router.push(getStripeOnboardingUrl(planId));
+      await handleStripeClick();
       return;
     }
 
@@ -355,8 +370,7 @@ export function CodeUploadForm() {
       }
     }
 
-    const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
-    router.push(getStripeOnboardingUrl(planId));
+    await handleStripeClick();
   };
 
   return (
@@ -488,23 +502,10 @@ export function CodeUploadForm() {
         )}
 
         <button
-          type="submit"
+          type={state?.status === 'code_completed' ? 'button' : 'submit'}
           className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
           disabled={submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file)}
-          onClick={() => {
-            const isDisabled = submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file);
-            console.log('[Submit Button] clicked', {
-              isDisabled,
-              submitting,
-              githubJobStatus,
-              onboardingId: !!onboardingId,
-              codeFromBackend,
-              repoLink: !!repoLink,
-              codeText: !!codeText,
-              file: !!file,
-              stateStatus: state?.status
-            });
-          }}
+          onClick={state?.status === 'code_completed' ? handleStripeClick : undefined}
         >
           {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : 'Fortsätt till Stripe'}
         </button>

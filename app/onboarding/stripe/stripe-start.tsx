@@ -15,27 +15,8 @@ export function StripeStart() {
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [hasAuth0Session, setHasAuth0Session] = useState<boolean | null>(null);
 
   const loadingState = onboardingIdLoading || stateLoading;
-
-  // Kontrollera Auth0-session
-  useEffect(() => {
-    async function checkAuth0Session() {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setHasAuth0Session(!!data.user);
-        } else {
-          setHasAuth0Session(false);
-        }
-      } catch {
-        setHasAuth0Session(false);
-      }
-    }
-    checkAuth0Session();
-  }, []);
 
   useEffect(() => {
     // Använd userSub från hook (Auth0 eller anonym sessionId)
@@ -116,27 +97,6 @@ export function StripeStart() {
     }
   };
 
-  // Blockera hela sidan utan Auth0
-  if (hasAuth0Session === false) {
-    return (
-      <section className="max-w-2xl mx-auto px-6 py-16">
-        <div className="p-6">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-4">Stripe onboarding</h1>
-          <p className="text-gray-600 mb-4">
-            Du måste logga in för att fortsätta till Stripe.
-          </p>
-          <button
-            type="button"
-            onClick={() => loginWithRedirect({ appState: { returnTo: pathname } })}
-            className="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Logga in
-          </button>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="max-w-2xl mx-auto px-6 py-16">
       <h1 className="text-3xl font-semibold text-gray-900 mb-4">Stripe onboarding</h1>
@@ -148,7 +108,7 @@ export function StripeStart() {
         type="button"
         onClick={startStripe}
         className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
-        disabled={loading || hasAuth0Session === null}
+        disabled={loading}
       >
         {loading ? 'Förbereder...' : 'Starta Stripe onboarding'}
       </button>
