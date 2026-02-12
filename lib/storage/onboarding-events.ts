@@ -178,11 +178,17 @@ export function isGithubRepoVerifiedFromEvents(events: OnboardingEvent[]): {
     return { verified: false };
   }
 
+  const payload = verifiedEvent.payload as {
+    repoUrl: string;
+    repoSlug: string;
+    verifiedAt: string;
+  };
+
   return {
     verified: true,
-    repoUrl: verifiedEvent.payload.repoUrl,
-    repoSlug: verifiedEvent.payload.repoSlug,
-    verifiedAt: verifiedEvent.payload.verifiedAt,
+    repoUrl: payload.repoUrl,
+    repoSlug: payload.repoSlug,
+    verifiedAt: payload.verifiedAt,
   };
 }
 
