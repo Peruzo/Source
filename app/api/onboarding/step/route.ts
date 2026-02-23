@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
-import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
+import { auth0 } from '@/lib/auth0';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -17,13 +17,30 @@ const statusMap: Record<string, string> = {
  * POST /api/onboarding/step
  * Uppdaterar onboarding-steg.
  * 
- * KRITISK: Stödjer både Auth0-autentiserade och anonyma sessioner.
- * För anonyma sessioner används sessionId från request body som userSub.
+ * KRITISK: Kräver Auth0-autentisering.
+ * Användaren måste vara inloggad för att uppdatera onboarding-steg.
  */
 export async function POST(request: Request) {
   try {
+    // KRITISK: Kräv Auth0-autentisering
+    const session = await auth0.getSession();
+    
+    if (!session?.user?.sub) {
+      console.warn('[Onboarding Step] POST called without Auth0 authentication');
+      return NextResponse.json(
+        {
+          error: 'AUTH_REQUIRED',
+          message: 'User must be authenticated to update onboarding steps',
+        },
+        { status: 401 }
+      );
+    }
+    
+    const userSub = session.user.sub;
+    console.log('[Onboarding Step] Using Auth0 userSub:', userSub);
+
     const body = await request.json();
-    const { onboardingId: providedOnboardingId, step, nextStep, answers, data, sessionId } = body || {};
+    const { onboardingId: providedOnboardingId, step, nextStep, answers, data } = body || {};
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
     // 400 får ENDAST ske om onboardingId saknas
@@ -42,7 +59,7 @@ export async function POST(request: Request) {
     let currentStep = step;
     if (!currentStep) {
       const events = await listOnboardingEvents(onboardingId);
-      const tempState = reduceOnboarding(events, onboardingId, 'temp');
+      const tempState = reduceOnboarding(events, onboardingId, userSub);
       // Inferera step från status
       if (tempState.status === 'started') {
         currentStep = 'questions';
@@ -55,25 +72,6 @@ export async function POST(request: Request) {
       }
       console.log(`[Onboarding Step] Inferred step from FSM state: ${currentStep} (status: ${tempState.status})`);
     }
-
-    // Hämta sessionId från cookie om det inte finns i payload (bakåtkompatibilitet)
-    let userSub: string | null = null;
-    if (sessionId && isAnonymousSessionId(sessionId)) {
-      userSub = sessionId;
-    } else {
-      // Försök hämta från cookie (för bakåtkompatibilitet)
-      userSub = await getAnonymousSessionId();
-    }
-
-    if (!userSub) {
-      console.warn('[Onboarding Step] No valid sessionId found');
-      return NextResponse.json(
-        { success: false, message: 'Missing sessionId' },
-        { status: 400 }
-      );
-    }
-
-    console.log('[Onboarding Step] Using anonymous sessionId:', userSub);
 
     // Använd answers om det finns, annars data (bakåtkompatibilitet)
     const payloadData = answers || data;

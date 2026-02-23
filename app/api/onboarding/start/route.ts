@@ -3,7 +3,7 @@ import { getActiveOnboardingIdForSession, createNewOnboardingSession, bindOnboar
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
-import { getOrCreateAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { auth0 } from '@/lib/auth0';
 
 /**
  * POST /api/onboarding/start
@@ -12,19 +12,32 @@ import { getOrCreateAnonymousSessionId, isAnonymousSessionId } from '@/lib/onboa
  * Detta är ENDA platsen som får skapa onboarding-sessioner.
  * Anropas från frontend när GET /api/onboarding/id returnerar 404.
  * 
- * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
- * Auth0-init får INTE ske för onboarding-start.
+ * KRITISK: Kräver Auth0-autentisering.
+ * Användaren måste vara inloggad innan onboarding kan startas.
  * 
  * @param forceNew - Om true, skapar alltid ny onboarding även om befintlig finns (för custom signup)
  * 
- * Returnerar { onboardingId, userSub, isAnonymous } (userSub = anonym sessionId).
+ * Returnerar { onboardingId, userSub, isAnonymous } (userSub = Auth0 user.sub, isAnonymous = false).
  */
 export async function POST(request: NextRequest) {
   try {
-    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
-    // Auth0-init får INTE ske för onboarding-start
-    const userSub = await getOrCreateAnonymousSessionId();
-    console.log(`[Onboarding Start] Using anonymous sessionId: ${userSub}`);
+    // KRITISK: Kräv Auth0-autentisering
+    const session = await auth0.getSession();
+    
+    if (!session?.user?.sub) {
+      console.warn('[Onboarding Start] POST called without Auth0 authentication');
+      return NextResponse.json(
+        {
+          error: 'AUTH_REQUIRED',
+          message: 'User must be authenticated before starting onboarding',
+        },
+        { status: 401 }
+      );
+    }
+    
+    const userSub = session.user.sub;
+    const isAnonymous = false;
+    console.log(`[Onboarding Start] Using Auth0 userSub: ${userSub}`);
     
     // Läs forceNew och email från request body (email kommer från signup-context)
     let forceNew = false;
@@ -40,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // KRITISKT: Kontrollera först om befintlig onboarding finns (utom vid forceNew)
-    // Samma anon_<uuid> → samma onboardingId
+    // Samma Auth0 userSub → samma onboardingId
     let onboardingId = await getActiveOnboardingIdForSession(userSub);
     
     if (!onboardingId || forceNew) {
@@ -99,7 +112,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       onboardingId, 
       userSub,
-      isAnonymous: isAnonymousSessionId(userSub),
+      isAnonymous,
     });
   } catch (error) {
     console.error('[Onboarding Start] Error:', error);

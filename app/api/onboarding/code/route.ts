@@ -1,42 +1,30 @@
 import { NextResponse } from 'next/server';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
-import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { auth0 } from '@/lib/auth0';
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    let sessionId = String(formData.get('sessionId') || '').trim();
-    const providedOnboardingId = formData.get('onboardingId')?.toString();
-
-    // KRITISKT: I anonym onboarding måste backend:
-    // 1. Acceptera sessionId från FormData OM det finns
-    // 2. Annars läsa anon-session från cookie
-    // 3. Annars returnera 400
-    if (!sessionId) {
-      // Försök läsa från cookie
-      const cookieSessionId = await getAnonymousSessionId();
-      if (cookieSessionId) {
-        sessionId = cookieSessionId;
-        console.log('[Onboarding Code] Using sessionId from cookie:', sessionId);
-      } else {
-        return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
-      }
-    }
-
-    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based sessionId)
-    // Auth0-init får INTE ske för onboarding-code (förhindrar implicit Auth0-init)
-    // Verifiera att sessionId är anonym format
-    if (!isAnonymousSessionId(sessionId)) {
-      console.warn('[Onboarding Code] Invalid anonymous sessionId format:', sessionId);
+    // KRITISK: Kräv Auth0-autentisering
+    const session = await auth0.getSession();
+    
+    if (!session?.user?.sub) {
+      console.warn('[Onboarding Code] POST called without Auth0 authentication');
       return NextResponse.json(
-        { success: false, message: 'Invalid sessionId format' },
-        { status: 400 }
+        {
+          error: 'AUTH_REQUIRED',
+          message: 'User must be authenticated to submit code',
+        },
+        { status: 401 }
       );
     }
-    const userSub = sessionId;
-    console.log('[Onboarding Code] Using anonymous sessionId:', userSub);
+    
+    const userSub = session.user.sub;
+    console.log('[Onboarding Code] Using Auth0 userSub:', userSub);
+
+    const formData = await request.formData();
+    const providedOnboardingId = formData.get('onboardingId')?.toString();
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
     if (!providedOnboardingId) {
@@ -101,7 +89,7 @@ export async function POST(request: Request) {
         const events = await listOnboardingEvents(onboardingId);
         console.log('[Onboarding Code] Events before reduce:', {
           onboardingId,
-          sessionId: userSub,
+          userSub,
           eventsCount: events.length,
           eventTypes: events.map(e => e.type),
           hasCodeSubmitted: events.some(e => e.type === 'code_submitted')
@@ -112,7 +100,7 @@ export async function POST(request: Request) {
         
         console.log('[Onboarding Code] GitHub verification check:', {
           onboardingId,
-          sessionId: userSub,
+          userSub,
           stateStatus: state.status,
           stateCode: state.code,
           githubVerified: githubVerification.verified

@@ -5,7 +5,6 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
-import { isAnonymousSessionId, getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 
 /**
  * KRITISK: Stripe SDK-init sker på runtime (request scope), inte module scope.
@@ -32,56 +31,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false }, { status: 500 });
     }
 
-    const body = await request.json();
-    let sessionId = (body.sessionId || '').trim();
-    const providedOnboardingId = body.onboardingId;
-
-    // KRITISKT: I anonym onboarding måste backend:
-    // 1. Acceptera sessionId från body OM det finns
-    // 2. Annars läsa anon-session från cookie
-    // 3. Annars returnera 400
-    if (!sessionId) {
-      // Försök läsa från cookie
-      const cookieSessionId = await getAnonymousSessionId();
-      if (cookieSessionId) {
-        sessionId = cookieSessionId;
-        console.log('[Onboarding Stripe] Using sessionId from cookie:', sessionId);
-      } else {
-        return NextResponse.json({ success: false, message: 'Missing sessionId' }, { status: 400 });
-      }
-    }
-
-    // KRITISK: Stripe Connect kräver Auth0-autentisering
-    // Anonyma sessioner kan inte skapa Stripe Connect accounts
+    // KRITISK: Kräv Auth0-autentisering
     const session = await auth0.getSession();
     
     if (!session?.user?.sub) {
       console.warn('[Onboarding Stripe] POST called without Auth0 authentication');
       return NextResponse.json(
-        { 
-          error: 'AUTH0_REQUIRED',
-          message: 'Stripe Connect requires authentication. Please log in to continue.',
-          success: false 
+        {
+          error: 'AUTH_REQUIRED',
+          message: 'User must be authenticated to start Stripe onboarding',
         },
         { status: 401 }
       );
     }
     
     const userSub = session.user.sub;
-    console.log('[Onboarding Stripe] userSub =', userSub);
+    console.log('[Onboarding Stripe] Using Auth0 userSub:', userSub);
 
-    // Verifiera att sessionId matchar user.sub (eller är anonym sessionId från onboarding)
-    // Om sessionId är anonym, tillåt det men använd Auth0 userSub för Stripe
-    if (!isAnonymousSessionId(sessionId) && sessionId !== userSub) {
-      console.warn('[Onboarding Stripe] sessionId mismatch:', { sessionId, userSub });
-      return NextResponse.json(
-        { success: false, message: 'Onboarding session does not match current user' },
-        { status: 403 }
-      );
-    }
-    
-    // För anonyma sessioner: använd Auth0 userSub för Stripe (onboardingId är kopplat till anonym sessionId)
-    // Detta tillåter att användaren kan starta onboarding anonymt och logga in vid Stripe-steget
+    const body = await request.json();
+    const providedOnboardingId = body.onboardingId;
 
     // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
     if (!providedOnboardingId) {
@@ -122,7 +90,6 @@ export async function POST(request: Request) {
       type: 'express',
       email,
       metadata: {
-        sessionId,
         userSub,
       },
       capabilities: {
@@ -133,8 +100,8 @@ export async function POST(request: Request) {
 
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${baseUrl}/onboarding/stripe?sessionId=${sessionId}`,
-      return_url: `${baseUrl}/onboarding/success?account=${account.id}&sessionId=${sessionId}`,
+      refresh_url: `${baseUrl}/onboarding/stripe`,
+      return_url: `${baseUrl}/onboarding/success?account=${account.id}`,
       type: 'account_onboarding',
     });
 
@@ -161,10 +128,10 @@ export async function POST(request: Request) {
     sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-start`,
       onboardingId,
-      sessionId,
+      sessionId: userSub,
       step: 'stripe_started',
       onboardingStatus: updatedState.status, // Använd formell status från FSM
-      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
+      user: email ? { email, sub: userSub } : { sub: userSub },
       data: {
         accountId: account.id,
       },
