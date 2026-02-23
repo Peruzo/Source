@@ -41,6 +41,18 @@ export function CodeUploadForm() {
   const [codePersistedByBackend, setCodePersistedByBackend] = useState(false);
   const [connectingGithub, setConnectingGithub] = useState(false);
 
+  console.log('===== CODE UPLOAD DEBUG =====');
+  console.log('state:', state);
+  console.log('state.status:', state?.status);
+  console.log('state.github:', state?.github);
+  console.log('state.github?.verified:', state?.github?.verified);
+  console.log('onboardingId:', onboardingId);
+  console.log('repoLink:', repoLink);
+  console.log('privateRepoPrompt:', privateRepoPrompt);
+  console.log('showGithubAuthButton:', showGithubAuthButton);
+  console.log('error:', error);
+  console.log('================================');
+
   /** När true: backend har redan code (GitHub/ZIP/tidigare POST). POST /api/onboarding/code får ALDRIG anropas. */
   const codeAlreadyInBackendRef = useRef(false);
 
@@ -362,6 +374,18 @@ export function CodeUploadForm() {
 
     handleStripeClick();
   };
+
+  console.log('===== CODE UPLOAD DEBUG =====');
+  console.log('state:', state);
+  console.log('state.status:', state?.status);
+  console.log('state.github:', state?.github);
+  console.log('state.github?.verified:', state?.github?.verified);
+  console.log('onboardingId:', onboardingId);
+  console.log('repoLink:', repoLink);
+  console.log('privateRepoPrompt:', privateRepoPrompt);
+  console.log('showGithubAuthButton:', showGithubAuthButton);
+  console.log('error:', error);
+  console.log('================================');
 
   return (
     <section className="max-w-3xl mx-auto px-6 py-16">
