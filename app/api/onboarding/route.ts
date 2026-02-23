@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth0 } from '@/lib/auth0';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
@@ -17,11 +18,15 @@ import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
  */
 export async function GET(request: NextRequest) {
   try {
-    // KRITISK: Använd ENDAST anonyma sessioner (cookie-based)
-    // Auth0-init får INTE ske för onboarding GET
-    const anonymousSessionId = await getAnonymousSessionId();
-    const sessionId = anonymousSessionId;
-    
+    const session = await auth0.getSession();
+    let sessionId: string | null = null;
+
+    if (session?.user?.sub) {
+      sessionId = session.user.sub;
+    } else {
+      sessionId = await getAnonymousSessionId();
+    }
+
     // Om ingen session finns → returnera null state
     if (!sessionId) {
       return NextResponse.json({
