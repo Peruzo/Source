@@ -13,7 +13,9 @@ export function CodeUploadForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
-  const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
+  const hookResult = useOnboardingState(userSub || '', onboardingId);
+  console.log('HOOK RESULT OBJECT:', hookResult);
+  const { state, loading: stateLoading } = hookResult;
 
   // Debug: Logga state när den ändras
   useEffect(() => {

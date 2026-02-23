@@ -89,5 +89,10 @@ export function useOnboardingState(userSub: string | null | undefined, onboardin
     };
   }, [userSub, onboardingId]);
 
+  console.log('=== FINAL HOOK STATE ===');
+  console.log('hook state value:', state);
+  console.log('hook loading:', loading);
+  console.log('========================');
+
   return { state, loading, error };
 }
