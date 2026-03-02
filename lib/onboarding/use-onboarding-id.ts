@@ -52,17 +52,62 @@ export function useOnboardingId(): {
           // customSignup, onboarding_signup_email, onboarding_signup_name rensas senare efter start
         }
 
-        // ARKITEKTURREGEL: onboardingId är write-once per session.
-        // Om onboardingId redan finns i sessionStorage → använd den (förhindrar "hoppa bak")
-        // MEN: Inte om det är en ny signup (då har vi precis rensat det ovan)
-        const existingOnboardingId = typeof window !== 'undefined' && !isCustomSignup
-          ? sessionStorage.getItem('onboarding_id') 
+        // ARKITEKTURREGEL: Ny Auth0-user ska alltid få ny onboarding-session.
+        // SessionStorage kan innehålla onboarding_id från tidigare användare – validera mot backend.
+        const storedOnboardingId = typeof window !== 'undefined' && !isCustomSignup
+          ? sessionStorage.getItem('onboarding_id')
           : null;
-        
-        if (existingOnboardingId) {
-          console.log('[useOnboardingId] Using existing onboardingId from sessionStorage:', existingOnboardingId);
+
+        if (storedOnboardingId) {
+          // Validera: backend returnerar onboardingId för nuvarande session (Auth0 sub eller anonym).
+          const idRes = await fetch('/api/onboarding/id');
+          if (!idRes.ok) {
+            throw new Error(`Failed to get onboarding ID: ${idRes.status}`);
+          }
+          const idData = await idRes.json();
+
+          if (idData.onboardingId === null || idData.onboardingId === undefined) {
+            // Nuvarande användare har ingen onboarding (t.ex. ny Auth0-user) → rensa och skapa ny session.
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('onboarding_id');
+            }
+            console.log('[useOnboardingId] Stored onboarding_id does not belong to current user – cleared, creating new');
+            const startRes = await fetch('/api/onboarding/start', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ forceNew: false }),
+            });
+            if (!startRes.ok) {
+              throw new Error(`Failed to start onboarding: ${startRes.status}`);
+            }
+            const startData = await startRes.json();
+            if (!cancelled && startData.onboardingId) {
+              setOnboardingId(startData.onboardingId);
+              setUserSub(startData.userSub ?? currentUserSub);
+              setError(null);
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('onboarding_id', startData.onboardingId);
+              }
+            }
+            if (!cancelled) setLoading(false);
+            return;
+          } else if (idData.onboardingId !== storedOnboardingId) {
+            // Backend har annan onboardingId för denna användare → använd backend och uppdatera sessionStorage.
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('onboarding_id', idData.onboardingId);
+            }
+            if (!cancelled) {
+              setOnboardingId(idData.onboardingId);
+              setUserSub(idData.userSub ?? currentUserSub);
+              setError(null);
+              setLoading(false);
+            }
+            return;
+          }
+          // idData.onboardingId === storedOnboardingId → samma användare, använd den.
           if (!cancelled) {
-            setOnboardingId(existingOnboardingId);
+            setOnboardingId(storedOnboardingId);
+            setUserSub(idData.userSub ?? currentUserSub);
             setError(null);
             setLoading(false);
           }
