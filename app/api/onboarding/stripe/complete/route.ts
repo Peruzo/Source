@@ -77,7 +77,10 @@ export async function POST(request: Request) {
     // Hämta uppdaterad state efter event-append
     const updatedEvents = await listOnboardingEvents(onboardingId);
     const updatedState = reduceOnboarding(updatedEvents, onboardingId, userSub);
-    const email = updatedState.email || '';
+    const authEmail =
+      typeof session.user.email === 'string'
+        ? session.user.email.trim().toLowerCase()
+        : '';
 
     // KRITISK: FSM-transitionen är klar (event append lyckades)
     // Returnera 200 omedelbart - admin-sync är best effort och får inte påverka FSM
@@ -89,7 +92,10 @@ export async function POST(request: Request) {
       sessionId: userSub,
       step: 'stripe_completed',
       onboardingStatus: updatedState.status, // Använd formell status från FSM (inte heuristik)
-      user: email ? { email, sub: session.user.sub } : { sub: session.user.sub },
+      user: {
+        email: authEmail,
+        sub: session.user.sub,
+      },
       data: {
         accountId,
       },
