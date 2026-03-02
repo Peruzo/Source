@@ -73,14 +73,17 @@ export async function POST(request: Request) {
 
     // FSM: Verifiera att onboarding är i korrekt status för att starta Stripe
     try {
-      assertStatus(state, 'code_completed');
+      assertStatus(state, ['questions_completed', 'code_completed', 'stripe_started']);
     } catch (statusError) {
       console.warn(`[Onboarding Stripe] Invalid status for onboarding ${onboardingId}:`, statusError);
       return NextResponse.json(
         {
           success: false,
           error: 'INVALID_ONBOARDING_STATE',
-          message: statusError instanceof Error ? statusError.message : 'Onboarding must be in code_completed status to start Stripe',
+          message:
+            statusError instanceof Error
+              ? statusError.message
+              : 'Onboarding must be in questions_completed or code_completed status to start Stripe',
         },
         { status: 403 }
       );
