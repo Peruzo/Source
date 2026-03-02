@@ -207,12 +207,15 @@ export function reduceOnboarding(
     // FSM: Verifiera och uppdatera status baserat på event
     let nextStatus = getNextStatus(state.status, event.type);
 
-    // KRITISKT: För questions_submitted, om hasExistingSite === 'Ja', sätt code_pending istället för questions_completed
-    if (event.type === 'questions_submitted' && event.payload.hasExistingSite === 'Ja' && nextStatus === 'questions_completed') {
-      // Validera att transition är tillåten (från 'started')
-      if (state.status === 'started') {
+    // KRITISKT: För questions_submitted – endast exakt strängen "Ja" → code_pending, annars questions_completed
+    if (event.type === 'questions_submitted') {
+      const hasExistingSite = event.payload?.hasExistingSite;
+      console.log('[reduceOnboarding] questions_submitted hasExistingSite:', hasExistingSite, 'type:', typeof hasExistingSite, 'nextStatus (before override):', nextStatus);
+      if (hasExistingSite === 'Ja' && nextStatus === 'questions_completed' && state.status === 'started') {
         nextStatus = 'code_pending';
+        console.log('[reduceOnboarding] Override: status → code_pending (hasExistingSite === "Ja")');
       }
+      // "Nej" eller annat → behåll questions_completed (ingen override)
     }
 
     // HÅRD LÅSNING: code_completed med repoLink kräver OAuth-verifiering

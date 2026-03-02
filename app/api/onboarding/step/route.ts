@@ -184,14 +184,17 @@ export async function POST(request: Request) {
     const state = reduceOnboarding(events, onboardingId, userSub);
     const email = state.email || '';
 
-    // Bestäm nextStep: använd explicit nextStep från payload, annars inferera från questions-data
+    // För questions: nextStep bestäms ALLTID från hasExistingSite på backend (strikt 'Ja' → code)
+    const hasExistingSiteRaw = currentStep === 'questions' ? payloadData.hasExistingSite : undefined;
+    console.log('[Onboarding Step] hasExistingSite (raw):', hasExistingSiteRaw, 'type:', typeof hasExistingSiteRaw, 'state.status:', state.status);
+
     let determinedNextStep: string | undefined;
-    if (nextStep) {
-      // nextStep = "code" måste accepteras
+    if (currentStep === 'questions') {
+      // Strikt: endast exakt strängen "Ja" → code, annars (Nej, undefined, annan casing) → stripe
+      determinedNextStep = hasExistingSiteRaw === 'Ja' ? 'code' : 'stripe';
+      console.log('[Onboarding Step] determinedNextStep (from hasExistingSite):', determinedNextStep);
+    } else if (nextStep) {
       determinedNextStep = nextStep;
-    } else if (currentStep === 'questions') {
-      // Atomiskt: om hasExistingSite === 'Ja' → 'code', annars → 'stripe'
-      determinedNextStep = payloadData.hasExistingSite === 'Ja' ? 'code' : 'stripe';
     }
 
     // KRITISKT: För admin-sync, skicka nextStep (inte currentStep) när questions_submitted
