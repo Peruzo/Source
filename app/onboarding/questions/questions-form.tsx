@@ -111,23 +111,22 @@ export function QuestionsForm() {
 
       // Vänta på 200 OK innan navigation
       const result = await response.json();
-      
-      // KRITISKT: Redirect ENDAST baserat på response.nextStep (inte gissa)
+
+      // KRITISKT: Navigation sker ENBART baserat på backendens nextStep från response
       if (!result.success) {
         setError('Kunde inte spara onboarding-steg.');
         setSubmitting(false);
         return;
       }
-      
-      // Navigera baserat på nextStep från backend (atomiskt bestämt)
-      if (result.nextStep === 'code') {
+
+      const backendNextStep = result.nextStep;
+      if (backendNextStep === 'code') {
         router.push('/onboarding/code');
-      } else if (result.nextStep === 'stripe') {
+      } else if (backendNextStep === 'stripe') {
         const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
         router.push(getStripeOnboardingUrl(planId));
       } else {
-        // Fallback om nextStep saknas (bör inte hända efter questions)
-        console.error('[Questions Form] Missing nextStep in response:', result);
+        console.error('[Questions Form] Missing or unknown nextStep in response:', result);
         setError('Kunde inte bestämma nästa steg.');
         setSubmitting(false);
       }

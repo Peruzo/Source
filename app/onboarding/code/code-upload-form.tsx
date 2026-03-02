@@ -223,19 +223,48 @@ export function CodeUploadForm() {
   const isReadOnly = codeFromBackend;
 
   // ARKITEKTURREGEL: Visa loader endast när state.status === 'started'
-  // state === undefined är normalt initialt tillstånd vid RSC → client hydration och ska INTE blockera
-  // code-sidan ska rendera när state.status === 'code_pending' ELLER 'code_completed' ELLER när state saknas
   const isWaitingForStateUpdate =
     !loading &&
     state !== null &&
     state !== undefined &&
     state.status === 'started';
 
+  // ROUTING GUARD: URL och state ska alltid vara synkroniserade.
+  // Om användaren hamnar på /onboarding/code med fel status → redirect till rätt steg.
+  useEffect(() => {
+    if (loading || state === null || state === undefined) return;
+
+    const status = state.status;
+    if (status === 'code_pending' || status === 'code_completed') return;
+
+    const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
+    const stripeUrl = getStripeOnboardingUrl(planId);
+
+    if (status === 'started') {
+      router.replace('/onboarding/questions');
+    } else if (status === 'questions_completed' || status === 'stripe_started') {
+      router.replace(stripeUrl);
+    } else if (status === 'stripe_completed' || status === 'ready_for_review') {
+      router.replace('/onboarding/success');
+    }
+  }, [loading, state?.status, router]);
+
   if (loading || isWaitingForStateUpdate) {
     return (
       <section className="max-w-3xl mx-auto px-6 py-16">
         <div className="text-center">
           <p className="text-gray-600">Laddar...</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Efter guard: om state inte är code_pending/code_completed visas redirect i useEffect; visa loader under omdirigering
+  if (state && state.status !== 'code_pending' && state.status !== 'code_completed') {
+    return (
+      <section className="max-w-3xl mx-auto px-6 py-16">
+        <div className="text-center">
+          <p className="text-gray-600">Omdirigerar...</p>
         </div>
       </section>
     );
