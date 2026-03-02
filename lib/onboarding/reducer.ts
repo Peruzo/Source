@@ -49,7 +49,7 @@ const TRANSITIONS: TransitionRule[] = [
   },
   {
     eventType: 'stripe_started',
-    allowedStatuses: ['code_completed'],
+    allowedStatuses: ['questions_completed', 'code_completed'],
     newStatus: 'stripe_started',
   },
   {
