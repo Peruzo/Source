@@ -54,22 +54,26 @@ export function StripeStart() {
     if (loadingState) return;
     if (!state) return;
 
-    // Redirecta baserat på status (FSM-driven)
     if (state.status === 'started') {
       router.replace('/onboarding/questions');
       return;
     }
-    // Stripe får endast starta efter att code är färdigt
-    if (state.status !== 'code_completed') {
+
+    if (state.status === 'code_pending') {
       router.replace('/onboarding/code');
       return;
     }
-    // Stripe tillåts först efter code_completed
-    // MEN vi får aldrig redirecta bakåt över questions
-    // Om status inte är code_completed eller senare, vänta (gör ingenting)
-    if (state.status !== 'code_completed' && state.status !== 'stripe_started' && state.status !== 'stripe_completed' && state.status !== 'ready_for_review') {
-      return; // gör ingenting, vänta på korrekt status
+
+    if (state.status === 'ready_for_review') {
+      router.replace('/onboarding/success');
+      return;
     }
+
+    // Tillåt:
+    // questions_completed
+    // code_completed
+    // stripe_started
+    // stripe_completed
   }, [state, loadingState, router]);
 
   const startStripe = async () => {
