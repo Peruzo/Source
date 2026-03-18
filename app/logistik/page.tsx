@@ -13,34 +13,68 @@ export default function LogistikPage() {
 
     if (!section || !video) return;
 
-    // Stop at end when video finishes
-    const handleEnded = () => {
-      video.pause();
-      if (!Number.isNaN(video.duration)) {
-        video.currentTime = video.duration;
+    // Reverse segment playback: start at 0:03 and stop at 0:00.
+    const reverseEndTime = 0;
+    const reverseStartTimeRequested = 3; // seconds
+
+    let rafId: number | null = null;
+    let lastTs: number | null = null;
+
+    const stopReversePlayback = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
-      console.log('[hero] reverse stop');
+      lastTs = null;
+      video.pause();
     };
 
-    // Start playback when section becomes visible
-    const startPlayback = () => {
+    const startReversePlayback = () => {
       if (hasPlayedRef.current || video.readyState < 2) return;
 
-      video.currentTime = 0;
-      const playPromise = video.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log('[hero] reverse start');
-            hasPlayedRef.current = true;
-          })
-          .catch(() => {
-            hasPlayedRef.current = true;
-          });
-      } else {
-        hasPlayedRef.current = true;
-      }
+      stopReversePlayback();
+
+      const duration = Number.isNaN(video.duration) ? 0 : video.duration;
+      const reverseStartTime = Math.min(
+        reverseStartTimeRequested,
+        duration > 0 ? duration : reverseStartTimeRequested
+      );
+
+      // Seek to the requested reverse start frame and manually "seek backwards".
+      video.currentTime = reverseStartTime;
+      video.pause();
+
+      hasPlayedRef.current = true;
+
+      const tick = (ts: number) => {
+        if (!section || !video) return;
+
+        if (lastTs === null) {
+          lastTs = ts;
+        }
+
+        const dtSeconds = (ts - lastTs) / 1000;
+        lastTs = ts;
+
+        const nextTime = Math.max(
+          reverseEndTime,
+          // 1x reverse speed
+          video.currentTime - dtSeconds
+        );
+
+        video.currentTime = nextTime;
+
+        if (nextTime <= reverseEndTime + 0.001) {
+          // Stop at 0:00 and keep the last frame.
+          stopReversePlayback();
+          hasPlayedRef.current = true;
+          return;
+        }
+
+        rafId = requestAnimationFrame(tick);
+      };
+
+      rafId = requestAnimationFrame(tick);
     };
 
     // IntersectionObserver
@@ -48,10 +82,20 @@ export default function LogistikPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayedRef.current && video.readyState >= 2) {
-            console.log('[hero] intersect');
-            startPlayback();
-          } else if (!entry.isIntersecting && hasPlayedRef.current) {
+            startReversePlayback();
+          }
+
+          if (!entry.isIntersecting) {
+            // When leaving viewport: reset so scrolling back restarts from 0:03.
             hasPlayedRef.current = false;
+            stopReversePlayback();
+
+            if (video.readyState >= 2) {
+              video.currentTime = Math.min(
+                reverseStartTimeRequested,
+                Number.isNaN(video.duration) ? reverseStartTimeRequested : video.duration
+              );
+            }
           }
         });
       },
@@ -62,36 +106,43 @@ export default function LogistikPage() {
     const setup = () => {
       if (video.readyState >= 2) {
         video.pause();
-        video.currentTime = 0;
+        const duration = Number.isNaN(video.duration) ? 0 : video.duration;
+        video.currentTime = Math.min(
+          reverseStartTimeRequested,
+          duration > 0 ? duration : reverseStartTimeRequested
+        );
         observer.observe(section);
         
         // Check if already visible
         const rect = section.getBoundingClientRect();
         const isVisible = rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
         if (isVisible && !hasPlayedRef.current) {
-          startPlayback();
+          startReversePlayback();
         }
       } else {
         video.addEventListener('loadedmetadata', () => {
           video.pause();
-          video.currentTime = 0;
+          const duration = Number.isNaN(video.duration) ? 0 : video.duration;
+          video.currentTime = Math.min(
+            reverseStartTimeRequested,
+            duration > 0 ? duration : reverseStartTimeRequested
+          );
           observer.observe(section);
           
           const rect = section.getBoundingClientRect();
           const isVisible = rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
           if (isVisible && !hasPlayedRef.current) {
-            startPlayback();
+            startReversePlayback();
           }
         }, { once: true });
       }
     };
 
-    video.addEventListener('ended', handleEnded);
     setup();
 
     return () => {
       observer.disconnect();
-      video.removeEventListener('ended', handleEnded);
+      stopReversePlayback();
       video.pause();
     };
   }, []);
@@ -114,7 +165,7 @@ export default function LogistikPage() {
           ref={videoRef}
           id="logistik-hero-video"
           data-logistik-video="true"
-          src="/logistik-reversed.mp4"
+          src="/logiformotion.mp4"
           muted
           playsInline
           preload="auto"
