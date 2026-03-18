@@ -6,7 +6,7 @@ export default function CampaignsPage() {
     <section className="bg-white text-gray-900">
       <Container className="min-h-[100svh] py-24 lg:py-0">
         <div className="grid min-h-[100svh] grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          <FadeIn className="max-w-xl space-y-6">
+          <FadeIn className="max-w-[500px] space-y-6">
             <p className="text-xs uppercase tracking-[0.4em] text-gray-500">
               TJÄNSTER
             </p>
@@ -19,7 +19,7 @@ export default function CampaignsPage() {
             </p>
           </FadeIn>
 
-          <div className="flex w-full items-center justify-end lg:min-h-[760px]">
+          <div className="flex w-full items-center justify-end lg:min-h-[760px] lg:pr-[5%]">
             <video
               src="/3dvidoforkampanj.mp4"
               autoPlay
@@ -27,7 +27,7 @@ export default function CampaignsPage() {
               loop
               playsInline
               preload="auto"
-              className="w-full max-w-[600px] h-auto"
+              className="w-full h-auto mix-blend-normal drop-shadow-[0_40px_80px_rgba(0,0,0,0.15)] lg:w-[800px] lg:max-w-[55vw]"
             />
           </div>
         </div>
