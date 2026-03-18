@@ -668,6 +668,22 @@ export default function ServicesPage() {
                   </motion.p>
 
                   <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}
+                    className="pt-4"
+                  >
+                    <AnimatedButton
+                      href="/tjanster/betalningar-hosting"
+                      variant="primary"
+                      size="lg"
+                    >
+                      Utforska
+                    </AnimatedButton>
+                  </motion.div>
+
+                  <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
