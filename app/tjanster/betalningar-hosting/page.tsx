@@ -69,7 +69,7 @@ export default function PaymentsHostingPage() {
             video.currentTime = video.duration;
           }
         }}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:object-right lg:origin-right lg:scale-90 lg:translate-x-[8%]"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:inset-y-0 lg:right-[-5%] lg:left-auto lg:w-[120%] lg:object-contain lg:object-right lg:origin-right lg:scale-75 lg:translate-x-[10%]"
       />
 
       {/* Subtle left fade for text readability (no dark filter over video). */}
