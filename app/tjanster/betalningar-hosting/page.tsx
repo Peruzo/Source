@@ -13,11 +13,12 @@ export default function PaymentsHostingPage() {
         loop
         playsInline
         preload="auto"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center lg:object-right"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:inset-y-0 lg:right-0 lg:left-auto lg:w-[120%] lg:object-contain lg:object-right lg:origin-right lg:scale-90"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/10" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,191,166,0.18),transparent_60%)]" />
+      {/* Subtle left fade for text readability (no dark filter over video). */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/10 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,191,166,0.08),transparent_60%)]" />
 
       <Container className="relative z-10 flex min-h-[100svh] items-center">
         <div className="grid w-full grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-20">
