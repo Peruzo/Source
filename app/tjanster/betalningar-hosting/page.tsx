@@ -1,19 +1,75 @@
+ 'use client';
+
 import Link from 'next/link';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
+import { useEffect, useRef } from 'react';
 
 export default function PaymentsHostingPage() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const sectionEl = sectionRef.current;
+    const videoEl = videoRef.current;
+
+    if (!sectionEl || !videoEl) {
+      return;
+    }
+
+    const resetToStart = () => {
+      videoEl.pause();
+      videoEl.currentTime = 0;
+    };
+
+    const playFromStart = async () => {
+      resetToStart();
+      try {
+        await videoEl.play();
+      } catch {
+        // Autoplay can be blocked in some contexts; keep first frame.
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            void playFromStart();
+          } else {
+            resetToStart();
+          }
+        });
+      },
+      { threshold: 0.55 }
+    );
+
+    observer.observe(sectionEl);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="relative min-h-[100svh] overflow-hidden bg-black text-white">
+    <section
+      ref={sectionRef}
+      className="relative min-h-[100svh] overflow-hidden bg-black text-white"
+    >
       <video
+        ref={videoRef}
         src="/videoforpayments.mp4"
         autoPlay
         muted
-        loop
         playsInline
         preload="auto"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:inset-y-0 lg:right-0 lg:left-auto lg:w-[120%] lg:object-contain lg:object-right lg:origin-right lg:scale-90"
+        onEnded={(e) => {
+          const video = e.currentTarget;
+          video.pause();
+          if (!Number.isNaN(video.duration)) {
+            video.currentTime = video.duration;
+          }
+        }}
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:object-right lg:origin-right lg:scale-90 lg:translate-x-[8%]"
       />
 
       {/* Subtle left fade for text readability (no dark filter over video). */}
