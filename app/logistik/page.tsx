@@ -17,16 +17,9 @@ export default function LogistikPage() {
     const reverseEndTime = 0;
     const reverseStartTimeRequested = 3; // seconds
 
-    let rafId: number | null = null;
-    let lastTs: number | null = null;
-
     const stopReversePlayback = () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      lastTs = null;
       video.pause();
+      video.playbackRate = 1;
     };
 
     const startReversePlayback = () => {
@@ -40,43 +33,18 @@ export default function LogistikPage() {
         duration > 0 ? duration : reverseStartTimeRequested
       );
 
-      // Seek to the requested reverse start frame and manually "seek backwards".
+      // Native reverse playback: seek to 0:03 then run backwards.
       video.currentTime = reverseStartTime;
+      video.playbackRate = -1;
       video.play().catch(() => {});
-      // Disable native playback advancement; we only move the timeline manually.
-      video.playbackRate = 0;
-
       hasPlayedRef.current = true;
+    };
 
-      const tick = (ts: number) => {
-        if (!section || !video) return;
-
-        if (lastTs === null) {
-          lastTs = ts;
-        }
-
-        const dtSeconds = (ts - lastTs) / 1000;
-        lastTs = ts;
-
-        const nextTime = Math.max(
-          reverseEndTime,
-          // 1x reverse speed
-          video.currentTime - dtSeconds
-        );
-
-        video.currentTime = nextTime;
-
-        if (nextTime <= reverseEndTime + 0.001) {
-          // Stop at 0:00 and keep the last frame.
-          stopReversePlayback();
-          hasPlayedRef.current = true;
-          return;
-        }
-
-        rafId = requestAnimationFrame(tick);
-      };
-
-      rafId = requestAnimationFrame(tick);
+    const handleTimeUpdate = () => {
+      if (video.currentTime <= reverseEndTime + 0.001) {
+        video.currentTime = reverseEndTime;
+        stopReversePlayback();
+      }
     };
 
     // IntersectionObserver
@@ -140,10 +108,12 @@ export default function LogistikPage() {
       }
     };
 
+    video.addEventListener('timeupdate', handleTimeUpdate);
     setup();
 
     return () => {
       observer.disconnect();
+      video.removeEventListener('timeupdate', handleTimeUpdate);
       stopReversePlayback();
       video.pause();
     };
