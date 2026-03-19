@@ -3,118 +3,46 @@
 import { useEffect, useRef } from 'react';
 
 export default function LogistikPage() {
-  const heroSectionRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const hasPlayedRef = useRef(false);
 
   useEffect(() => {
-    const section = heroSectionRef.current;
     const video = videoRef.current;
 
-    if (!section || !video) return;
-
-    // Reverse segment playback: start at 0:03 and stop at 0:00.
-    const reverseEndTime = 0;
-    const reverseStartTimeRequested = 3; // seconds
-
-    const stopReversePlayback = () => {
-      video.pause();
-      video.playbackRate = 1;
-    };
-
-    const startReversePlayback = () => {
-      if (hasPlayedRef.current || video.readyState < 2) return;
-
-      stopReversePlayback();
-
-      const duration = Number.isNaN(video.duration) ? 0 : video.duration;
-      const reverseStartTime = Math.min(
-        reverseStartTimeRequested,
-        duration > 0 ? duration : reverseStartTimeRequested
-      );
-
-      // Native reverse playback: seek to 0:03 then run backwards.
-      video.currentTime = reverseStartTime;
-      video.playbackRate = -1;
-      video.play().catch(() => {});
-      hasPlayedRef.current = true;
-    };
+    if (!video) return;
+    let hasPlayed = false;
 
     const handleTimeUpdate = () => {
-      if (video.currentTime <= reverseEndTime + 0.001) {
-        video.currentTime = reverseEndTime;
-        stopReversePlayback();
+      if (video.currentTime >= 4) {
+        video.pause();
+        video.currentTime = 4;
       }
     };
 
-    // IntersectionObserver
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasPlayedRef.current && video.readyState >= 2) {
-            startReversePlayback();
-          }
-
-          if (!entry.isIntersecting) {
-            // When leaving viewport: reset so scrolling back restarts from 0:03.
-            hasPlayedRef.current = false;
-            stopReversePlayback();
-
-            if (video.readyState >= 2) {
-              video.currentTime = Math.min(
-                reverseStartTimeRequested,
-                Number.isNaN(video.duration) ? reverseStartTimeRequested : video.duration
-              );
+          if (entry.isIntersecting) {
+            if (!hasPlayed) {
+              video.currentTime = 0;
+              video.play().catch(() => {});
+              hasPlayed = true;
             }
+          } else {
+            hasPlayed = false;
+            video.pause();
+            video.currentTime = 0;
           }
         });
       },
       { threshold: 0.6 }
     );
 
-    // Setup
-    const setup = () => {
-      if (video.readyState >= 2) {
-        video.pause();
-        const duration = Number.isNaN(video.duration) ? 0 : video.duration;
-        video.currentTime = Math.min(
-          reverseStartTimeRequested,
-          duration > 0 ? duration : reverseStartTimeRequested
-        );
-        observer.observe(section);
-        
-        // Check if already visible
-        const rect = section.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
-        if (isVisible && !hasPlayedRef.current) {
-          startReversePlayback();
-        }
-      } else {
-        video.addEventListener('loadedmetadata', () => {
-          video.pause();
-          const duration = Number.isNaN(video.duration) ? 0 : video.duration;
-          video.currentTime = Math.min(
-            reverseStartTimeRequested,
-            duration > 0 ? duration : reverseStartTimeRequested
-          );
-          observer.observe(section);
-          
-          const rect = section.getBoundingClientRect();
-          const isVisible = rect.top < window.innerHeight * 0.4 && rect.bottom > window.innerHeight * 0.6;
-          if (isVisible && !hasPlayedRef.current) {
-            startReversePlayback();
-          }
-        }, { once: true });
-      }
-    };
-
+    observer.observe(video);
     video.addEventListener('timeupdate', handleTimeUpdate);
-    setup();
 
     return () => {
       observer.disconnect();
       video.removeEventListener('timeupdate', handleTimeUpdate);
-      stopReversePlayback();
       video.pause();
     };
   }, []);
@@ -122,7 +50,6 @@ export default function LogistikPage() {
   return (
     <>
       <section
-        ref={heroSectionRef}
         className="relative min-h-screen flex items-center overflow-hidden"
         style={{
           background: `
@@ -135,9 +62,9 @@ export default function LogistikPage() {
         {/* Unique ID to prevent conflicts with other video controllers */}
         <video
           ref={videoRef}
-          id="logistik-hero-video"
+          id="logistikVideo"
           data-logistik-video="true"
-          src="/logiformotion.mp4"
+          src="/logbilfor.mp4"
           muted
           playsInline
           preload="auto"
