@@ -24,9 +24,9 @@ const menuContent: Record<string, MenuContent> = {
       'Bokningssystem',
     ],
     featureLinks: [
-      { label: 'Inventarier', href: '/inventarier' },
-      { label: 'Kampanjer', href: '/kampanjer' },
-      { label: 'Betalning & Hosting', href: '/betalning-hosting' },
+      { label: 'Inventarier', href: '/tjanster/inventarier' },
+      { label: 'Kampanjer', href: '/tjanster/kampanjer' },
+      { label: 'Betalning & Hosting', href: '/tjanster/betalningar-hosting' },
       { label: 'Bokföring', href: '/bokforing' },
       { label: 'Bokningssystem', href: '/bokningssystem' },
     ],
