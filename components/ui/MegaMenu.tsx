@@ -18,6 +18,7 @@ const menuContent: Record<string, MenuContent> = {
     description: 'Allt du behöver för att växa online – på ett ställe',
     features: [
       'Inventarier',
+      'Logistik',
       'Kampanjer',
       'Betalning & Hosting',
       'Bokföring',
@@ -25,6 +26,7 @@ const menuContent: Record<string, MenuContent> = {
     ],
     featureLinks: [
       { label: 'Inventarier', href: '/tjanster/inventarier' },
+      { label: 'Logistik', href: '/logistik' },
       { label: 'Kampanjer', href: '/tjanster/kampanjer' },
       { label: 'Betalning & Hosting', href: '/tjanster/betalningar-hosting' },
       { label: 'Bokföring', href: '/bokforing' },
