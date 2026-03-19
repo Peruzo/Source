@@ -19,6 +19,7 @@ const menuContent: Record<string, MenuContent> = {
     features: [
       'Inventarier',
       'Logistik',
+      'Analys',
       'Kampanjer',
       'Betalning & Hosting',
       'Bokföring',
@@ -27,6 +28,7 @@ const menuContent: Record<string, MenuContent> = {
     featureLinks: [
       { label: 'Inventarier', href: '/tjanster/inventarier' },
       { label: 'Logistik', href: '/logistik' },
+      { label: 'Analys', href: '/analys' },
       { label: 'Kampanjer', href: '/tjanster/kampanjer' },
       { label: 'Betalning & Hosting', href: '/tjanster/betalningar-hosting' },
       { label: 'Bokföring', href: '/bokforing' },
