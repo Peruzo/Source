@@ -42,7 +42,9 @@ export default function LogistikPage() {
 
       // Seek to the requested reverse start frame and manually "seek backwards".
       video.currentTime = reverseStartTime;
-      video.pause();
+      video.play().catch(() => {});
+      // Disable native playback advancement; we only move the timeline manually.
+      video.playbackRate = 0;
 
       hasPlayedRef.current = true;
 
