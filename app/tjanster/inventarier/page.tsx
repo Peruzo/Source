@@ -1,13 +1,64 @@
+'use client';
+
 import { Container } from '@/components/ui/Container';
+import { useEffect, useRef } from 'react';
 
 export default function InventarierPage() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const video = videoRef.current;
+
+    if (!section || !video) return;
+    let hasPlayed = false;
+
+    const handleEnded = () => {
+      video.pause();
+      if (!Number.isNaN(video.duration)) {
+        video.currentTime = video.duration;
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (!hasPlayed) {
+              video.currentTime = 0;
+              video.play().catch(() => {});
+              hasPlayed = true;
+            }
+          } else {
+            hasPlayed = false;
+            video.pause();
+            video.currentTime = 0;
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(section);
+    video.addEventListener('ended', handleEnded);
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener('ended', handleEnded);
+      video.pause();
+    };
+  }, []);
+
   return (
-    <section className="relative min-h-[100svh] overflow-hidden bg-black text-white">
+    <section
+      ref={sectionRef}
+      className="relative min-h-[100svh] overflow-hidden bg-black text-white"
+    >
       <video
+        ref={videoRef}
         src="/inventarier.mp4"
-        autoPlay
         muted
-        loop
         playsInline
         preload="auto"
         className="absolute inset-0 h-full w-full object-cover object-center"

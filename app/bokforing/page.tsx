@@ -1,11 +1,60 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+
 export default function BokforingPage() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const video = videoRef.current;
+
+    if (!section || !video) return;
+    let hasPlayed = false;
+
+    const handleEnded = () => {
+      video.pause();
+      if (!Number.isNaN(video.duration)) {
+        video.currentTime = video.duration;
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (!hasPlayed) {
+              video.currentTime = 0;
+              video.play().catch(() => {});
+              hasPlayed = true;
+            }
+          } else {
+            hasPlayed = false;
+            video.pause();
+            video.currentTime = 0;
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(section);
+    video.addEventListener('ended', handleEnded);
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener('ended', handleEnded);
+      video.pause();
+    };
+  }, []);
+
   return (
-    <section className="relative h-[100svh] w-full overflow-hidden">
+    <section ref={sectionRef} className="relative h-[100svh] w-full overflow-hidden">
       <video
+        ref={videoRef}
         src="/bokfaringvid.mp4"
-        autoPlay
         muted
-        loop
         playsInline
         preload="auto"
         className="absolute inset-0 h-full w-full object-cover"
