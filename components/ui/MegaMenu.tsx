@@ -8,6 +8,7 @@ type MenuContent = {
   title: string;
   description: string;
   features: string[];
+  featureLinks?: { label: string; href: string }[];
   href: string;
 };
 
@@ -16,12 +17,18 @@ const menuContent: Record<string, MenuContent> = {
     title: 'Tjänster',
     description: 'Allt du behöver för att växa online – på ett ställe',
     features: [
-      'AI-driven design anpassad för din bransch',
-      'E-handel med Stripe och inventory management',
-      'Mikroanalys som ger konkreta handlingsråd',
-      'Support från team med kundservice-DNA',
-      'Hosting, SSL och säkerhet inkluderat',
-      'Månatlig prenumeration utan bindningstid',
+      'Inventarier',
+      'Kampanjer',
+      'Betalning & Hosting',
+      'Bokföring',
+      'Bokningssystem',
+    ],
+    featureLinks: [
+      { label: 'Inventarier', href: '/inventarier' },
+      { label: 'Kampanjer', href: '/kampanjer' },
+      { label: 'Betalning & Hosting', href: '/betalning-hosting' },
+      { label: 'Bokföring', href: '/bokforing' },
+      { label: 'Bokningssystem', href: '/bokningssystem' },
     ],
     href: '/tjanster',
   },
@@ -120,13 +127,25 @@ export function MegaMenu({
               {/* Features - Two column layout on larger screens */}
               <ul className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-x-8 lg:gap-y-4 mb-10">
                 {content.features.map((feature, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-3 text-sm text-gray-700"
-                  >
-                    <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                    <span>{feature}</span>
-                  </li>
+                  content.featureLinks?.[i] ? (
+                    <li key={i}>
+                      <a
+                        href={content.featureLinks[i].href}
+                        className="flex items-start gap-3 text-sm text-gray-700 transition-colors duration-200 hover:text-emerald-700 rounded-lg px-3 py-2 -mx-3 -my-2 hover:bg-emerald-50"
+                      >
+                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
+                        <span>{content.featureLinks[i].label}</span>
+                      </a>
+                    </li>
+                  ) : (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-sm text-gray-700"
+                    >
+                      <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>{feature}</span>
+                    </li>
+                  )
                 ))}
               </ul>
 
