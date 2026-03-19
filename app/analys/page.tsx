@@ -10,14 +10,14 @@ export default function AnalysisPage() {
         loop
         playsInline
         preload="auto"
-        className="absolute inset-0 h-full w-full object-cover [object-position:70%_center]"
+        className="absolute inset-0 z-0 h-full w-full object-cover [object-position:60%_center]"
       />
 
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.85)_0%,rgba(0,0,0,0.65)_35%,rgba(0,0,0,0.3)_55%,rgba(0,0,0,0)_75%)]" />
+      <div className="absolute inset-0 z-[1] bg-[linear-gradient(to_right,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.9)_20%,rgba(0,0,0,0.75)_40%,rgba(0,0,0,0.4)_60%,rgba(0,0,0,0)_80%)]" />
 
-      <div className="relative z-10 flex h-full items-center px-6 md:px-10 lg:px-0">
+      <div className="relative z-[2] flex h-full items-center px-6 md:px-10 lg:px-0">
         <div className="mx-auto w-full max-w-[1280px]">
-          <div className="max-w-[600px] lg:ml-[80px]">
+          <div className="max-w-[520px] lg:ml-[96px]">
             <p className="text-[12px] uppercase tracking-[2px] text-white/60">Analys</p>
 
             <h1 className="mt-5 text-[42px] font-semibold leading-[1.1] tracking-tight text-white sm:text-[50px] lg:text-[60px] xl:text-[64px]">
