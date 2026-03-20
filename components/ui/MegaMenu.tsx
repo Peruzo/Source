@@ -71,7 +71,7 @@ const menuContent: Record<string, MenuContent> = {
         title: 'Privat',
         items: [
           { label: 'Start', href: '/privat-start' },
-          { label: 'Växande', href: '/for-dig/privat/vaxande' },
+          { label: 'Växande', href: '/privat-vaxande' },
           { label: 'Avancerade', href: '/for-dig/privat/avancerade' },
         ],
       },
