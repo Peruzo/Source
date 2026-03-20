@@ -24,7 +24,7 @@ export default function PrivatStartPage() {
       </div>
 
       <div
-        className="absolute right-[8%] bottom-[12%] z-20 flex w-[380px] max-w-[92vw] flex-col gap-5 rounded-[20px] border border-white/10 px-6 pt-6 pb-7 backdrop-blur-[25px]"
+        className="absolute right-[8%] bottom-[12%] z-20 flex min-h-[340px] w-[340px] max-w-[92vw] flex-col justify-between rounded-[20px] border border-white/10 px-6 pt-6 pb-7 backdrop-blur-[25px]"
         style={{
           background:
             'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
@@ -35,6 +35,8 @@ export default function PrivatStartPage() {
           <p className="mt-1 text-[30px] font-semibold leading-none">349 SEK</p>
           <p className="mt-2 text-sm font-medium text-emerald-600">0 ordrar</p>
         </div>
+
+        <div className="flex-1" />
 
         <div className="rounded-[14px] bg-black/35 p-3.5 text-white">
           <p className="text-sm font-normal leading-relaxed text-white/90">
@@ -48,7 +50,7 @@ export default function PrivatStartPage() {
           </button>
         </div>
 
-        <div className="absolute -top-[14px] -right-[14px] flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-[20px]">
+        <div className="absolute -top-[18px] -right-[18px] flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-[20px]">
           <svg
             viewBox="0 0 24 24"
             fill="none"
