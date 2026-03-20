@@ -164,7 +164,7 @@ export function ComingSoonCarousel() {
       <div className="relative w-full px-4 md:px-12 lg:px-24">
         <div
           ref={carouselRef}
-          className="flex gap-10 md:gap-14 overflow-x-auto scroll-smooth scrollbar-hide"
+          className="flex gap-6 md:gap-8 overflow-x-auto scroll-smooth scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -179,9 +179,9 @@ export function ComingSoonCarousel() {
             const distance = Math.min(rawDistance, total - rawDistance);
 
             const scale =
-              distance === 0 ? 1 :
-              distance === 1 ? 0.82 :
-              distance === 2 ? 0.72 : 0.65;
+              distance === 0 ? 1.05 :
+              distance === 1 ? 0.9 :
+              distance === 2 ? 0.8 : 0.7;
 
             const opacity =
               distance === 0 ? 1 :
@@ -191,12 +191,11 @@ export function ComingSoonCarousel() {
             return (
               <div
                 key={`${card.id}-${index}`}
-                className="flex-shrink-0 w-[310px] md:w-[375px] lg:w-[420px] h-[430px] md:h-[520px] lg:h-[560px] rounded-[24px] overflow-hidden cursor-pointer relative"
+                className="flex-shrink-0 w-[260px] md:w-[300px] lg:w-[320px] h-[430px] md:h-[520px] lg:h-[560px] rounded-[24px] overflow-hidden cursor-pointer relative"
                 style={{
                   backgroundColor: card.backgroundColor,
                   flex: '0 0 auto',
-                  transform: `scale(${scale}) translateY(${distance === 0 ? '-10px' : '10px'})`,
-                  marginRight: distance === 0 ? '10px' : '0px',
+                  transform: `scale(${scale}) translateY(${distance === 0 ? '-6px' : '6px'})`,
                   opacity,
                   zIndex: distance === 0 ? 10 : 1,
                   transition: 'transform 0.45s ease, opacity 0.45s ease',
