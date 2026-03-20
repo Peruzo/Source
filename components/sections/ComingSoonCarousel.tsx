@@ -151,8 +151,8 @@ export function ComingSoonCarousel() {
   };
 
   return (
-    <section className="w-full py-14 md:py-18 lg:py-24">
-      <div className="mx-auto mb-12 max-w-[700px] px-6 text-center md:mb-14 lg:mb-16">
+    <section className="w-full py-24 md:py-32 bg-transparent">
+      <div className="mx-auto mb-20 max-w-[700px] px-6 text-center md:mb-24">
         <h2 className="text-4xl font-semibold tracking-tight text-black md:text-5xl lg:text-5xl">
           Våra projekt
         </h2>
@@ -161,10 +161,10 @@ export function ComingSoonCarousel() {
         </p>
       </div>
 
-      <div className="relative w-full px-6 md:px-10 lg:px-20">
+      <div className="relative w-full px-4 md:px-12 lg:px-24">
         <div
           ref={carouselRef}
-          className="flex gap-8 overflow-x-auto scroll-smooth scrollbar-hide"
+          className="flex gap-10 md:gap-14 overflow-x-auto scroll-smooth scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -180,8 +180,8 @@ export function ComingSoonCarousel() {
 
             const scale =
               distance === 0 ? 1 :
-              distance === 1 ? 0.88 :
-              distance === 2 ? 0.79 : 0.75;
+              distance === 1 ? 0.82 :
+              distance === 2 ? 0.72 : 0.65;
 
             const opacity =
               distance === 0 ? 1 :
@@ -195,7 +195,8 @@ export function ComingSoonCarousel() {
                 style={{
                   backgroundColor: card.backgroundColor,
                   flex: '0 0 auto',
-                  transform: `translateY(${distance === 0 ? '-10px' : '6px'}) scale(${scale})`,
+                  transform: `scale(${scale}) translateY(${distance === 0 ? '-10px' : '10px'})`,
+                  marginRight: distance === 0 ? '10px' : '0px',
                   opacity,
                   zIndex: distance === 0 ? 10 : 1,
                   transition: 'transform 0.45s ease, opacity 0.45s ease',

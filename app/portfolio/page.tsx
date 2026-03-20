@@ -55,11 +55,11 @@ export default function PortfolioPage() {
       </section>
 
       {/* Portfolio Grid */}
-      <section className="py-16 md:py-24 bg-[#F4F7F6]">
-        <Container>
+      <section className="py-24 md:py-32 bg-transparent">
+        <div className="w-full">
           {/* Coming Soon Carousel Section */}
           <ComingSoonCarousel />
-        </Container>
+        </div>
       </section>
 
       {/* Capabilities */}
