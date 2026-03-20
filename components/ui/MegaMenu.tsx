@@ -70,7 +70,7 @@ const menuContent: Record<string, MenuContent> = {
       {
         title: 'Privat',
         items: [
-          { label: 'Start', href: '/for-dig/privat/start' },
+          { label: 'Start', href: '/privat-start' },
           { label: 'Växande', href: '/for-dig/privat/vaxande' },
           { label: 'Avancerade', href: '/for-dig/privat/avancerade' },
         ],
