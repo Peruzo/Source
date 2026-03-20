@@ -30,13 +30,13 @@ export default function PrivatStartPage() {
             'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
         }}
       >
-        <div className="rounded-[14px] bg-white/90 px-[18px] pt-[18px] pb-5 text-[#111]">
+        <div className="flex-1" />
+
+        <div className="mb-3 rounded-[14px] bg-white/90 px-[18px] pt-[18px] pb-5 text-[#111]">
           <p className="text-xs font-medium text-black/55">Dagens ordervärde</p>
           <p className="mt-1 text-[30px] font-semibold leading-none">349 SEK</p>
           <p className="mt-2 text-sm font-medium text-emerald-600">0 ordrar</p>
         </div>
-
-        <div className="flex-1" />
 
         <div className="rounded-[14px] bg-black/35 p-3.5 text-white">
           <p className="text-sm font-normal leading-relaxed text-white/90">
