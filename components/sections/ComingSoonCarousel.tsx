@@ -52,7 +52,8 @@ export function ComingSoonCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const duplicatedCards = [...carouselCards, ...carouselCards];
 
   // Detect which card is centered based on scroll position
   useEffect(() => {
@@ -63,6 +64,7 @@ export function ComingSoonCarousel() {
       const scrollLeft = container.scrollLeft;
       const containerWidth = container.clientWidth;
       const centerX = scrollLeft + containerWidth / 2;
+      const originalCount = carouselCards.length;
 
       // Find which card is closest to center
       let closestIndex = 0;
@@ -74,10 +76,11 @@ export function ComingSoonCarousel() {
         const cardWidth = card.offsetWidth;
         const cardCenter = cardLeft + cardWidth / 2;
         const distance = Math.abs(centerX - cardCenter);
+        const normalizedIndex = index % originalCount;
 
         if (distance < closestDistance) {
           closestDistance = distance;
-          closestIndex = index;
+          closestIndex = normalizedIndex;
         }
       });
 
@@ -107,55 +110,37 @@ export function ComingSoonCarousel() {
     return () => container.removeEventListener('scroll', throttledHandleScroll);
   }, []);
 
-  // Auto-scroll functionality
+  // Continuous auto-scroll functionality
   useEffect(() => {
-    if (isPaused) return;
+    const container = carouselRef.current;
+    if (!container) return;
 
-    intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const nextIndex = (prev + 1) % carouselCards.length;
-        // Scroll to next card
-        if (carouselRef.current) {
-          const card = carouselRef.current.children[nextIndex] as HTMLElement;
-          if (card) {
-            const cardLeft = card.offsetLeft;
-            const cardWidth = card.offsetWidth;
-            const containerWidth = carouselRef.current.clientWidth;
-            const scrollPosition = cardLeft - (containerWidth - cardWidth) / 2;
+    const speed = 0.26; // px per frame
 
-            carouselRef.current.scrollTo({
-              left: scrollPosition,
-              behavior: 'smooth',
-            });
-          }
+    const animate = () => {
+      if (!isPaused) {
+        container.scrollLeft += speed;
+        container.scrollLeft = Math.round(container.scrollLeft * 1000) / 1000;
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft -= container.scrollWidth / 2;
         }
-        return nextIndex;
-      });
-    }, 5000);
+      }
+
+      rafRef.current = window.requestAnimationFrame(animate);
+    };
+
+    rafRef.current = window.requestAnimationFrame(animate);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
       }
     };
   }, [isPaused]);
 
-  // Scroll to current card on index change
+  // Keep index state for center-weighted visual styling
   useEffect(() => {
-    if (!carouselRef.current) return;
-
-    const card = carouselRef.current.children[currentIndex] as HTMLElement;
-    if (!card) return;
-
-    const cardLeft = card.offsetLeft;
-    const cardWidth = card.offsetWidth;
-    const containerWidth = carouselRef.current.clientWidth;
-    const scrollPosition = cardLeft - (containerWidth - cardWidth) / 2;
-
-    carouselRef.current.scrollTo({
-      left: scrollPosition,
-      behavior: 'smooth',
-    });
+    // intentionally no scrollTo; continuous motion handled by RAF loop
   }, [currentIndex]);
 
 
@@ -188,25 +173,38 @@ export function ComingSoonCarousel() {
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
-            scrollSnapType: 'x mandatory',
           }}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {carouselCards.map((card, index) => {
-            const isActive = index === currentIndex;
+          {duplicatedCards.map((card, index) => {
+            const total = carouselCards.length;
+            const normalizedIndex = index % total;
+            const rawDistance = Math.abs(normalizedIndex - currentIndex);
+            const distance = Math.min(rawDistance, total - rawDistance);
+
+            const scale =
+              distance === 0 ? 1 :
+              distance === 1 ? 0.93 :
+              distance === 2 ? 0.88 : 0.85;
+
+            const opacity =
+              distance === 0 ? 1 :
+              distance === 1 ? 0.8 :
+              distance === 2 ? 0.7 : 0.6;
+
             return (
               <div
                 key={card.id}
                 className="flex-shrink-0 w-[280px] md:w-[340px] lg:w-[380px] h-[390px] md:h-[470px] lg:h-[520px] rounded-[24px] overflow-hidden cursor-pointer relative hover:shadow-xl"
                 style={{
                   backgroundColor: card.backgroundColor,
-                  transform: isActive ? 'scale(1.08)' : 'scale(1)',
-                  zIndex: isActive ? 10 : 1,
-                  scrollSnapAlign: 'center',
-                  scrollSnapStop: 'always',
-                  transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease',
-                  boxShadow: isActive ? '0 20px 40px -15px rgba(0,0,0,0.2)' : '0 4px 12px -2px rgba(0,0,0,0.08)',
+                  flex: '0 0 auto',
+                  transform: `scale(${scale})`,
+                  opacity,
+                  zIndex: distance === 0 ? 10 : 1,
+                  transition: 'transform 0.4s ease, opacity 0.4s ease',
+                  willChange: 'transform, opacity',
                 }}
               >
               {/* Background Image */}
