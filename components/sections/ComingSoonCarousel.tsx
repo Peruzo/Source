@@ -161,10 +161,10 @@ export function ComingSoonCarousel() {
         </p>
       </div>
 
-      <div className="relative w-full overflow-visible px-4 md:px-12 lg:px-24">
+      <div className="relative left-1/2 w-screen -translate-x-1/2 px-6 md:px-16 lg:px-32" style={{ overflow: 'visible' }}>
         <div
           ref={carouselRef}
-          className="flex gap-6 md:gap-8 overflow-x-auto scroll-smooth scrollbar-hide"
+          className="flex justify-center gap-6 md:gap-8 overflow-x-auto scroll-smooth scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
