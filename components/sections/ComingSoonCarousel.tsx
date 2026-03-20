@@ -161,7 +161,7 @@ export function ComingSoonCarousel() {
         </p>
       </div>
 
-      <div className="relative w-full px-4 md:px-12 lg:px-24">
+      <div className="relative w-full overflow-visible px-4 md:px-12 lg:px-24">
         <div
           ref={carouselRef}
           className="flex gap-6 md:gap-8 overflow-x-auto scroll-smooth scrollbar-hide"
@@ -179,9 +179,9 @@ export function ComingSoonCarousel() {
             const distance = Math.min(rawDistance, total - rawDistance);
 
             const scale =
-              distance === 0 ? 1.05 :
-              distance === 1 ? 0.9 :
-              distance === 2 ? 0.8 : 0.7;
+              distance === 0 ? 1 :
+              distance === 1 ? 0.88 :
+              distance === 2 ? 0.78 : 0.7;
 
             const opacity =
               distance === 0 ? 1 :
@@ -191,7 +191,7 @@ export function ComingSoonCarousel() {
             return (
               <div
                 key={`${card.id}-${index}`}
-                className="flex-shrink-0 w-[260px] md:w-[300px] lg:w-[320px] h-[430px] md:h-[520px] lg:h-[560px] rounded-[24px] overflow-hidden cursor-pointer relative"
+                className="flex-shrink-0 w-[320px] md:w-[360px] lg:w-[420px] h-[420px] md:h-[480px] lg:h-[560px] rounded-[24px] overflow-hidden cursor-pointer relative"
                 style={{
                   backgroundColor: card.backgroundColor,
                   flex: '0 0 auto',
