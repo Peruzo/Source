@@ -2,13 +2,16 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
 
 type MenuContent = {
   title: string;
   description: string;
   features: string[];
   featureLinks?: { label: string; href: string }[];
+  groupedFeatures?: {
+    title: string;
+    items: { label: string; href: string }[];
+  }[];
   href: string;
 };
 
@@ -50,6 +53,30 @@ const menuContent: Record<string, MenuContent> = {
       'Läs om vår process och metodik',
     ],
     href: '/portfolio',
+  },
+  'for-dig': {
+    title: 'För dig',
+    description: 'Välj ett upplägg som passar där du är just nu',
+    features: [],
+    groupedFeatures: [
+      {
+        title: 'Företag',
+        items: [
+          { label: 'Nya inom e-handel', href: '/for-dig/foretag/nya' },
+          { label: 'Växande e-handel', href: '/for-dig/foretag/vaxande' },
+          { label: 'Etablerade e-handelsbolag', href: '/for-dig/foretag/etablerade' },
+        ],
+      },
+      {
+        title: 'Privat',
+        items: [
+          { label: 'Start', href: '/for-dig/privat/start' },
+          { label: 'Växande', href: '/for-dig/privat/vaxande' },
+          { label: 'Avancerade', href: '/for-dig/privat/avancerade' },
+        ],
+      },
+    ],
+    href: '/for-dig',
   },
   'om-oss': {
     title: 'Om oss',
@@ -130,30 +157,55 @@ export function MegaMenu({
                 </p>
               </div>
 
-              {/* Features - Two column layout on larger screens */}
-              <ul className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-x-8 lg:gap-y-4 mb-10">
-                {content.features.map((feature, i) => (
-                  content.featureLinks?.[i] ? (
-                    <li key={i}>
-                      <a
-                        href={content.featureLinks[i].href}
-                        className="flex items-start gap-3 text-sm text-gray-700 transition-colors duration-200 hover:text-emerald-700 rounded-lg px-3 py-2 -mx-3 -my-2 hover:bg-emerald-50"
+              {content.groupedFeatures?.length ? (
+                <div className="relative z-10 grid grid-cols-1 gap-8 lg:grid-cols-2 mb-10">
+                  {content.groupedFeatures.map((group) => (
+                    <div key={group.title}>
+                      <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-900">
+                        {group.title}
+                      </h4>
+                      <ul className="space-y-1">
+                        {group.items.map((item) => (
+                          <li key={item.label}>
+                            <a
+                              href={item.href}
+                              className="flex items-start gap-3 text-sm text-gray-700 transition-colors duration-200 hover:text-emerald-700 rounded-lg px-3 py-2 -mx-3 -my-2 hover:bg-emerald-50"
+                            >
+                              <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
+                              <span>{item.label}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Features - Two column layout on larger screens */
+                <ul className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-x-8 lg:gap-y-4 mb-10">
+                  {content.features.map((feature, i) => (
+                    content.featureLinks?.[i] ? (
+                      <li key={i}>
+                        <a
+                          href={content.featureLinks[i].href}
+                          className="flex items-start gap-3 text-sm text-gray-700 transition-colors duration-200 hover:text-emerald-700 rounded-lg px-3 py-2 -mx-3 -my-2 hover:bg-emerald-50"
+                        >
+                          <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
+                          <span>{content.featureLinks[i].label}</span>
+                        </a>
+                      </li>
+                    ) : (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-sm text-gray-700"
                       >
                         <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                        <span>{content.featureLinks[i].label}</span>
-                      </a>
-                    </li>
-                  ) : (
-                    <li
-                      key={i}
-                      className="flex items-start gap-3 text-sm text-gray-700"
-                    >
-                      <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>{feature}</span>
-                    </li>
-                  )
-                ))}
-              </ul>
+                        <span>{feature}</span>
+                      </li>
+                    )
+                  ))}
+                </ul>
+              )}
 
               {/* CTA */}
               <div className="relative z-10">

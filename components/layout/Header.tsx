@@ -45,6 +45,7 @@ export function Header() {
     { href: '/', label: 'Hem', hasMenu: false },
     { href: '/tjanster', label: 'Tjänster', hasMenu: true, menuKey: 'tjanster' },
     { href: '/portfolio', label: 'Portfolio', hasMenu: false },
+    { href: '/for-dig', label: 'För dig', hasMenu: true, menuKey: 'for-dig' },
     { href: '/om-oss', label: 'Om oss', hasMenu: false },
     { href: '/priser', label: 'Priser', hasMenu: true, menuKey: 'priser' },
     { href: '/kontakt', label: 'Kontakt', hasMenu: true, menuKey: 'kontakt' },
