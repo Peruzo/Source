@@ -44,8 +44,8 @@ export function Header() {
   const navLinks = [
     { href: '/', label: 'Hem', hasMenu: false },
     { href: '/tjanster', label: 'Tjänster', hasMenu: true, menuKey: 'tjanster' },
-    { href: '/portfolio', label: 'Portfolio', hasMenu: true, menuKey: 'portfolio' },
-    { href: '/om-oss', label: 'Om oss', hasMenu: true, menuKey: 'om-oss' },
+    { href: '/portfolio', label: 'Portfolio', hasMenu: false },
+    { href: '/om-oss', label: 'Om oss', hasMenu: false },
     { href: '/priser', label: 'Priser', hasMenu: true, menuKey: 'priser' },
     { href: '/kontakt', label: 'Kontakt', hasMenu: true, menuKey: 'kontakt' },
   ];
