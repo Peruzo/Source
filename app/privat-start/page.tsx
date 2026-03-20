@@ -23,15 +23,26 @@ export default function PrivatStartPage() {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-[10%] bottom-[15%] z-20 w-[min(92vw,420px)] rounded-2xl border border-white/10 bg-white/5 backdrop-blur-[20px]">
-        <div className="px-4 py-3 text-sm text-white/90 border-b border-white/10 md:px-5 md:py-4">
-          Ny betalning 349 SEK
-        </div>
-        <div className="px-4 py-3 text-sm text-white/90 border-b border-white/10 md:px-5 md:py-4">
-          Ny kund
-        </div>
-        <div className="px-4 py-3 text-sm text-white/90 md:px-5 md:py-4">
-          Hej, hur kan jag komma igång med er prenumeration
+      <div
+        className="pointer-events-none absolute right-[10%] bottom-[15%] z-20 w-[320px] max-w-[92vw] rounded-[20px] border border-white/10 p-5 backdrop-blur-[25px]"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div className="space-y-3 md:space-y-4">
+          <p className="text-xs font-light tracking-wide text-white/80">
+            Ny betalning 349 SEK
+          </p>
+          <p className="text-base font-medium text-white/95">
+            Ny kund
+          </p>
+          <div className="rounded-xl bg-black/25 p-3">
+            <p className="text-sm font-normal leading-relaxed text-white/90">
+              Hej, hur kan jag komma igång med er prenumeration
+            </p>
+          </div>
         </div>
       </div>
     </section>
