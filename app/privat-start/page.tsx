@@ -24,15 +24,15 @@ export default function PrivatStartPage() {
       </div>
 
       <div
-        className="absolute right-[8%] bottom-[12%] z-20 flex w-[380px] max-w-[92vw] flex-col gap-4 rounded-[20px] border border-white/10 p-5 backdrop-blur-[25px]"
+        className="absolute right-[8%] bottom-[12%] z-20 flex w-[380px] max-w-[92vw] flex-col gap-5 rounded-[20px] border border-white/10 px-6 pt-6 pb-7 backdrop-blur-[25px]"
         style={{
           background:
             'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
         }}
       >
-        <div className="rounded-[14px] bg-white/90 p-4 text-[#111]">
+        <div className="rounded-[14px] bg-white/90 px-[18px] pt-[18px] pb-5 text-[#111]">
           <p className="text-xs font-medium text-black/55">Dagens ordervärde</p>
-          <p className="mt-1 text-[30px] font-semibold leading-none">0 kr</p>
+          <p className="mt-1 text-[30px] font-semibold leading-none">349 SEK</p>
           <p className="mt-2 text-sm font-medium text-emerald-600">0 ordrar</p>
         </div>
 
@@ -48,7 +48,7 @@ export default function PrivatStartPage() {
           </button>
         </div>
 
-        <div className="absolute -top-[10px] -right-[10px] flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-[20px]">
+        <div className="absolute -top-[14px] -right-[14px] flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-[20px]">
           <svg
             viewBox="0 0 24 24"
             fill="none"
