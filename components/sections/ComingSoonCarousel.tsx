@@ -151,25 +151,20 @@ export function ComingSoonCarousel() {
   };
 
   return (
-    <div className="w-full">
-      {/* Two-column layout matching Revolut design */}
-      <div className="flex flex-col md:flex-row gap-12 md:gap-16 items-start mb-12">
-        {/* Text Section (Left) - Moved more to the left */}
-        <div className="flex-1 text-center md:text-left md:-ml-6 lg:-ml-10">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6">
-            Mer projekt kommer
-          </h2>
-          <p className="text-lg md:text-xl text-gray-700 mb-8">
-            Vi bygger just nu åt riktiga kunder. Portfolio uppdateras löpande.
-          </p>
-        </div>
+    <section className="w-full py-14 md:py-18 lg:py-24">
+      <div className="mx-auto mb-12 max-w-[700px] px-6 text-center md:mb-14 lg:mb-16">
+        <h2 className="text-4xl font-semibold tracking-tight text-black md:text-5xl lg:text-5xl">
+          Våra projekt
+        </h2>
+        <p className="mx-auto mt-5 max-w-[640px] text-base leading-relaxed text-gray-600 md:text-lg">
+          Vi bygger moderna digitala lösningar för e-handel, SaaS och tillväxtbolag. Utforska några av våra senaste projekt nedan.
+        </p>
       </div>
 
-      {/* Full-width Carousel Container - Revolut-style: horizontal scroll, rounded corners, center scale */}
-      <div className="relative -mx-6 md:-mx-10 lg:-mx-20 px-6 md:px-10 lg:px-20">
+      <div className="relative w-full px-6 md:px-10 lg:px-20">
         <div
           ref={carouselRef}
-          className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide"
+          className="flex gap-8 overflow-x-auto scroll-smooth scrollbar-hide"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -185,8 +180,8 @@ export function ComingSoonCarousel() {
 
             const scale =
               distance === 0 ? 1 :
-              distance === 1 ? 0.93 :
-              distance === 2 ? 0.88 : 0.85;
+              distance === 1 ? 0.88 :
+              distance === 2 ? 0.79 : 0.75;
 
             const opacity =
               distance === 0 ? 1 :
@@ -195,15 +190,15 @@ export function ComingSoonCarousel() {
 
             return (
               <div
-                key={card.id}
-                className="flex-shrink-0 w-[280px] md:w-[340px] lg:w-[380px] h-[390px] md:h-[470px] lg:h-[520px] rounded-[24px] overflow-hidden cursor-pointer relative hover:shadow-xl"
+                key={`${card.id}-${index}`}
+                className="flex-shrink-0 w-[310px] md:w-[375px] lg:w-[420px] h-[430px] md:h-[520px] lg:h-[560px] rounded-[24px] overflow-hidden cursor-pointer relative"
                 style={{
                   backgroundColor: card.backgroundColor,
                   flex: '0 0 auto',
-                  transform: `scale(${scale})`,
+                  transform: `translateY(${distance === 0 ? '-10px' : '6px'}) scale(${scale})`,
                   opacity,
                   zIndex: distance === 0 ? 10 : 1,
-                  transition: 'transform 0.4s ease, opacity 0.4s ease',
+                  transition: 'transform 0.45s ease, opacity 0.45s ease',
                   willChange: 'transform, opacity',
                 }}
               >
@@ -255,6 +250,9 @@ export function ComingSoonCarousel() {
           ))}
         </div>
       </div>
-    </div>
+      <p className="mt-8 text-center text-sm font-medium text-gray-500 md:mt-10">
+        Fler projekt kommer
+      </p>
+    </section>
   );
 }
