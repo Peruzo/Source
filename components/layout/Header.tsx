@@ -94,11 +94,11 @@ export function Header() {
                 className="transition-all duration-300"
               >
                 <Image
-                  src="/source-logo.png"
+                  src={isScrolled || isBookingsystemPage || isLogistikPage ? '/source-logo-dark.png' : '/source-logo-light.png'}
                   alt="Source - Everything You Need in One Place"
                   width={120}
                   height={48}
-                  className={`logo-img ${isScrolled || isBookingsystemPage || isLogistikPage ? 'logo-dark' : 'logo-light'}`}
+                  className="logo-img"
                   priority
                   unoptimized
                 />

@@ -44,17 +44,6 @@
   }
 }
 
-/* Logo color variants */
-.logo-light {
-  filter: none;
-  transition: filter 0.3s ease;
-}
-
-.logo-dark {
-  filter: invert(1);
-  transition: filter 0.3s ease;
-}
-
 .logo-footer {
   width: clamp(150px, 20vw, 250px);
   height: auto;
