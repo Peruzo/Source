@@ -47,8 +47,8 @@ export function Header() {
     { href: '/portfolio', label: 'Portfolio', hasMenu: false },
     { href: '/for-dig', label: 'För dig', hasMenu: true, menuKey: 'for-dig' },
     { href: '/om-oss', label: 'Om oss', hasMenu: false },
-    { href: '/priser', label: 'Priser', hasMenu: true, menuKey: 'priser' },
-    { href: '/kontakt', label: 'Kontakt', hasMenu: true, menuKey: 'kontakt' },
+    { href: '/priser', label: 'Priser', hasMenu: false },
+    { href: '/kontakt', label: 'Kontakt', hasMenu: false },
   ];
 
   const handleMenuEnter = useCallback((menuKey: string | null) => {
