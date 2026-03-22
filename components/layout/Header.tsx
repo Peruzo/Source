@@ -19,8 +19,8 @@ export function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 50);  // Trigger background at 50px
-      handleMenuLeave(); // Close dropdown on scroll
+      const next = scrollY > 50;
+      setIsScrolled((prev) => (prev === next ? prev : next));
     };
 
     const handleClickOutside = (e: MouseEvent) => {
@@ -30,7 +30,7 @@ export function Header() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
 
@@ -76,14 +76,18 @@ export function Header() {
     return null;
   }
 
+  const showSolidBg =
+    isScrolled || isBookingsystemPage || isLogistikPage;
+
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isBookingsystemPage || isLogistikPage
-          ? 'bg-white/95 backdrop-blur-md shadow-sm'
-          : 'bg-transparent'
-      }`}
-    >
+    <header className="header-root">
+      {showSolidBg && (
+        <div
+          aria-hidden
+          className="header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300"
+        />
+      )}
+      <div className="header-content">
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="flex justify-between items-center h-12 md:h-14 lg:h-16">
           {/* Logo */}
@@ -94,7 +98,7 @@ export function Header() {
                 className="transition-all duration-300"
               >
                 <Image
-                  src={isScrolled || isBookingsystemPage || isLogistikPage ? '/source-logo-dark.png' : '/source-logo-light.png'}
+                  src={showSolidBg ? '/source-logo-dark.png' : '/source-logo-light.png'}
                   alt="Source - Everything You Need in One Place"
                   width={120}
                   height={48}
@@ -131,7 +135,7 @@ export function Header() {
                       <Link
                         href={link.href}
                         className={`relative text-sm lg:text-base font-medium transition-colors duration-200 ${
-                          isScrolled || isBookingsystemPage || isLogistikPage
+                          showSolidBg
                             ? 'text-gray-900 hover:text-emerald-600'
                             : 'text-white hover:text-emerald-300'
                         }`}
@@ -192,7 +196,7 @@ export function Header() {
           <button
             onClick={handleMenuToggle}
             className={`md:hidden w-11 h-11 flex items-center justify-center transition-colors ${
-              isScrolled || isBookingsystemPage || isLogistikPage ? 'text-gray-900' : 'text-white'
+              showSolidBg ? 'text-gray-900' : 'text-white'
             }`}
             aria-label="Toggle menu"
           >
@@ -213,7 +217,7 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden fixed inset-0 top-12 bg-white/95 backdrop-blur-lg"
+            className="md:hidden fixed inset-0 top-12 z-[100] bg-white/95 backdrop-blur-lg"
           >
             <nav className="px-6 py-8 h-full overflow-y-auto" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-6">
@@ -253,6 +257,7 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </header>
   );
 }

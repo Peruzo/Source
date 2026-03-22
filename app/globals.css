@@ -61,6 +61,33 @@
   backface-visibility: hidden;
 }
 
+/* Header: blur layer separated from content (cheaper repaints on scroll) */
+.header-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  transform: translateZ(0);
+  z-index: 50;
+  isolation: isolate;
+  contain: layout;
+}
+
+.header-blur-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  will-change: backdrop-filter;
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+  transform: translateZ(0);
+  width: 100%;
+}
+
 :root {
   /* Source Design System Colors */
   --color-black: #000000;
@@ -128,6 +155,7 @@
 
 * {
   scroll-behavior: smooth;
+  backface-visibility: hidden;
 }
 
 body {

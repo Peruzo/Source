@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -35,82 +35,10 @@ export function Hero() {
   // OVERLAY CONTENT (text) – keep it readable on top of the image.
   const overlayGradientOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.85]);
 
-  // Fullpage-like scroll locking between section 1 (Hero) and section 2
-  // Optimized for Windows performance with throttling and requestAnimationFrame
-  useEffect(() => {
-    let isScrolling = false;
-    let rafId: number | null = null;
-    let lastScrollTime = 0;
-    const scrollThrottle = 100; // Throttle scroll events to max once per 100ms
-
-    const handleWheel = (event: WheelEvent) => {
-      const now = Date.now();
-      
-      // Throttle scroll events to prevent lag
-      if (now - lastScrollTime < scrollThrottle) {
-        event.preventDefault();
-        return;
-      }
-      lastScrollTime = now;
-
-      // Prevent handling if already scrolling to avoid lag
-      if (isScrolling) {
-        event.preventDefault();
-        return;
-      }
-
-      const hero = sectionRef.current;
-      const valueSection = document.getElementById('value-proposition');
-      if (!hero || !valueSection) return;
-
-      const scrollY = window.scrollY || window.pageYOffset;
-      const section2Top = valueSection.offsetTop;
-      const tolerance = 5; // Small tolerance to prevent jitter
-
-      // Only intercept scroll while we're in the hero section range (before section 2)
-      // This ensures users only see full sections: either Hero (at top) or ValueProposition (at section2Top)
-      if (scrollY < section2Top - tolerance && scrollY >= -tolerance) {
-        event.preventDefault();
-
-        // Cancel any pending scroll animation
-        if (rafId !== null) {
-          cancelAnimationFrame(rafId);
-        }
-
-        // Use requestAnimationFrame for smooth, performant scrolling
-        rafId = requestAnimationFrame(() => {
-          isScrolling = true;
-
-          // Scroll direction: down → snap to section 2, up → snap to top of page
-          if (event.deltaY > 0) {
-            window.scrollTo({ top: section2Top, behavior: 'smooth' });
-          } else if (event.deltaY < 0) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-
-          // Reset scrolling flag after animation completes
-          setTimeout(() => {
-            isScrolling = false;
-          }, 1000);
-        });
-      }
-    };
-
-    // Add wheel event listener with passive: false for preventDefault
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-      }
-    };
-  }, []);
-
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-screen overflow-hidden bg-white"
+      className="relative min-h-screen overflow-hidden bg-white will-change-transform transform-gpu"
     >
       {/* Dark gradient mesh at the very top, fades away as we move into the white 2nd section */}
       <motion.div
