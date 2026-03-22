@@ -8,10 +8,16 @@ import { motion } from 'framer-motion';
 export function ValueProposition() {
   return (
     <section
-      id="value-proposition"
+      id="next-section"
       className="relative bg-white pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible"
       style={{ minHeight: '100vh' }}
     >
+      {/* Behåll #value-proposition för befintliga länkar / SEO */}
+      <span
+        id="value-proposition"
+        className="sr-only"
+        aria-hidden
+      />
 
       {/* Content scales in slightly from a smaller size, to feel like it grows
           out of the small hero box, but it now sits directly on the white page.

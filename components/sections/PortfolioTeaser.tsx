@@ -84,15 +84,26 @@ export function PortfolioTeaser() {
 
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (container) {
-      checkScrollButtons();
-      container.addEventListener('scroll', checkScrollButtons);
-      window.addEventListener('resize', checkScrollButtons);
-      return () => {
-        container.removeEventListener('scroll', checkScrollButtons);
-        window.removeEventListener('resize', checkScrollButtons);
-      };
-    }
+    if (!container) return;
+
+    checkScrollButtons();
+    container.addEventListener('scroll', checkScrollButtons);
+    window.addEventListener('resize', checkScrollButtons);
+
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        container.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('scroll', checkScrollButtons);
+      window.removeEventListener('resize', checkScrollButtons);
+      container.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -158,11 +169,14 @@ export function PortfolioTeaser() {
           {/* Scrollable Carousel */}
           <div
             ref={scrollContainerRef}
-            className="flex flex-row gap-8 overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory pb-4 px-6 md:px-10 lg:px-20"
+            className="flex flex-row gap-8 overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth snap-x snap-mandatory pb-4 px-6 md:px-10 lg:px-20"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
               WebkitOverflowScrolling: 'touch',
+              overscrollBehaviorX: 'contain',
+              overscrollBehaviorY: 'none',
+              touchAction: 'pan-x',
             }}
           >
             {projects.map((project, index) => {

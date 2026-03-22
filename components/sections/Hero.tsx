@@ -3,10 +3,64 @@
 import Image from 'next/image';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+
+  // Smooth snap: hero ↔ nästa sektion. passive: true; isSnapping + riktningslås
+  // minskar dubbla wheel-events; timeout rensar state.
+  useEffect(() => {
+    let isSnapping = false;
+    let lastDirection: 'down' | 'up' | null = null;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (isSnapping) return;
+
+      const direction = e.deltaY > 0 ? 'down' : 'up';
+
+      // Ignorera snabba upprepningar i samma riktning (samma “tick” av gesten)
+      if (direction === lastDirection) return;
+
+      lastDirection = direction;
+
+      const scrollY = window.scrollY;
+      const heroHeight = window.innerHeight;
+
+      // SCROLL NER (Hero → Next)
+      if (direction === 'down' && scrollY < heroHeight * 0.2) {
+        isSnapping = true;
+        document.getElementById('next-section')?.scrollIntoView({
+          behavior: 'smooth',
+        });
+        window.setTimeout(() => {
+          isSnapping = false;
+          lastDirection = null;
+        }, 900);
+        return;
+      }
+
+      // SCROLL UPP (Next → Hero)
+      if (direction === 'up' && scrollY > heroHeight * 0.2 && scrollY < heroHeight * 1.1) {
+        isSnapping = true;
+        document.getElementById('hero')?.scrollIntoView({
+          behavior: 'smooth',
+        });
+        window.setTimeout(() => {
+          isSnapping = false;
+          lastDirection = null;
+        }, 900);
+        return;
+      }
+
+      // Ingen snap: återställ så normal scroll inte låses av lastDirection
+      lastDirection = null;
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -37,6 +91,7 @@ export function Hero() {
 
   return (
     <section
+      id="hero"
       ref={sectionRef}
       className="relative min-h-screen overflow-hidden bg-white will-change-transform transform-gpu"
     >
@@ -136,7 +191,7 @@ export function Hero() {
               <AnimatedButton href="/kontakt" variant="primary" size="lg">
                 Boka demo
               </AnimatedButton>
-              <AnimatedButton href="#value-proposition" variant="secondary" size="lg">
+              <AnimatedButton href="#next-section" variant="secondary" size="lg">
                 Se hur det fungerar ↓
               </AnimatedButton>
             </motion.div>
