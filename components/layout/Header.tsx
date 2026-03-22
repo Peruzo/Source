@@ -127,6 +127,8 @@ export function Header() {
                     onMouseEnter={() => {
                       if (link.hasMenu) {
                         handleMenuEnter(link.menuKey || null);
+                      } else {
+                        handleMenuLeave();
                       }
                     }}
                   >
