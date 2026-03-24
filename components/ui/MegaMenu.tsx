@@ -62,8 +62,7 @@ const menuContent: Record<string, MenuContent> = {
       {
         title: 'Företag',
         items: [
-          { label: 'Start', href: '/foretag-start' },
-          { label: 'Nya inom e-handel', href: '/for-dig/foretag/nya' },
+          { label: 'Nya inom e-handel', href: '/foretag-nya' },
           { label: 'Växande e-handel', href: '/for-dig/foretag/vaxande' },
           { label: 'Etablerade e-handelsbolag', href: '/for-dig/foretag/etablerade' },
         ],

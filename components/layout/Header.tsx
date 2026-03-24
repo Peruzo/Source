@@ -15,7 +15,7 @@ export function Header() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const isBookingsystemPage = pathname === '/bokningssystem';
   const isLogistikPage = pathname === '/logistik';
-  const isForetagStartPage = pathname.includes('foretag-start');
+  const isForetagNyaPage = pathname.includes('foretag-nya');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,7 +78,7 @@ export function Header() {
   }
 
   const showSolidBg =
-    isScrolled || isBookingsystemPage || isLogistikPage || isForetagStartPage;
+    isScrolled || isBookingsystemPage || isLogistikPage || isForetagNyaPage;
 
   return (
     <header className="header-root">
