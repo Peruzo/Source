@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function ForetagNyaPage() {
   return (
-    <section className="relative h-screen w-full overflow-hidden">
+    <section className="relative h-screen w-full overflow-hidden -mt-[80px] pt-[80px]">
       <Image
         src="/foretagstart.png"
         alt="Företag start"
