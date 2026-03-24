@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function ForetagNyaPage() {
   return (
-    <section className="relative h-screen w-full overflow-hidden -mt-[80px] pt-[80px]">
+    <section className="relative min-h-[100svh] w-full overflow-hidden bg-black text-white">
       <Image
         src="/foretagstart.png"
         alt="Företag start"
@@ -15,7 +15,7 @@ export default function ForetagNyaPage() {
 
       <div className="absolute inset-0 bg-black/30" />
 
-      <div className="relative z-10 flex items-center justify-center h-full text-center px-6">
+      <div className="relative z-10 flex items-center justify-center min-h-[100svh] text-center px-6">
         <div className="max-w-[700px]">
           <h1 className="text-white text-4xl md:text-6xl font-semibold">
             Ta ditt företag till nästa nivå
