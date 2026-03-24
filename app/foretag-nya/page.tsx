@@ -6,7 +6,7 @@ export default function ForetagNyaPage() {
   return (
     <section className="relative min-h-[100svh] w-full overflow-hidden bg-black text-white">
       <Image
-        src="/foretagstart.png"
+        src="/fortegatillvaxt.png"
         alt="Företag start"
         fill
         priority
