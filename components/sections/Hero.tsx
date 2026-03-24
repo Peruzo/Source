@@ -8,11 +8,31 @@ import { useEffect, useRef } from 'react';
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
-  // Smooth snap: hero ↔ nästa sektion. passive: true; isSnapping + riktningslås
-  // minskar dubbla wheel-events; timeout rensar state.
+  // Smooth snap: hero ↔ nästa sektion. Vid snap: passive: false + preventDefault
+  // så native wheel inte tävlar med scrollIntoView; scroll-end (debounce) ersätter fast timeout.
   useEffect(() => {
     let isSnapping = false;
     let lastDirection: 'down' | 'up' | null = null;
+    let scrollEndCleanup: (() => void) | null = null;
+
+    function waitForScrollEnd(callback: () => void): () => void {
+      let timeout: ReturnType<typeof setTimeout>;
+
+      const check = () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          window.removeEventListener('scroll', check);
+          callback();
+        }, 120);
+      };
+
+      window.addEventListener('scroll', check, { passive: true });
+
+      return () => {
+        clearTimeout(timeout);
+        window.removeEventListener('scroll', check);
+      };
+    }
 
     const handleWheel = (e: WheelEvent) => {
       if (isSnapping) return;
@@ -29,27 +49,33 @@ export function Hero() {
 
       // SCROLL NER (Hero → Next)
       if (direction === 'down' && scrollY < heroHeight * 0.2) {
+        e.preventDefault();
         isSnapping = true;
+        scrollEndCleanup?.();
+        scrollEndCleanup = waitForScrollEnd(() => {
+          isSnapping = false;
+          lastDirection = null;
+          scrollEndCleanup = null;
+        });
         document.getElementById('next-section')?.scrollIntoView({
           behavior: 'smooth',
         });
-        window.setTimeout(() => {
-          isSnapping = false;
-          lastDirection = null;
-        }, 900);
         return;
       }
 
       // SCROLL UPP (Next → Hero)
       if (direction === 'up' && scrollY > heroHeight * 0.2 && scrollY < heroHeight * 1.1) {
+        e.preventDefault();
         isSnapping = true;
+        scrollEndCleanup?.();
+        scrollEndCleanup = waitForScrollEnd(() => {
+          isSnapping = false;
+          lastDirection = null;
+          scrollEndCleanup = null;
+        });
         document.getElementById('hero')?.scrollIntoView({
           behavior: 'smooth',
         });
-        window.setTimeout(() => {
-          isSnapping = false;
-          lastDirection = null;
-        }, 900);
         return;
       }
 
@@ -57,9 +83,12 @@ export function Hero() {
       lastDirection = null;
     };
 
-    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: false });
 
-    return () => window.removeEventListener('wheel', handleWheel);
+    return () => {
+      scrollEndCleanup?.();
+      window.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   const { scrollYProgress } = useScroll({
