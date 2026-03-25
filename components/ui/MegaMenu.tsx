@@ -64,7 +64,7 @@ const menuContent: Record<string, MenuContent> = {
         items: [
           { label: 'Nya inom e-handel', href: '/foretag-nya' },
           { label: 'Växande e-handel', href: '/foretag-vaxande' },
-          { label: 'Etablerade e-handelsbolag', href: '/for-dig/foretag/etablerade' },
+          { label: 'Etablerad e-handel', href: '/foretag-etablerad' },
         ],
       },
       {
@@ -72,7 +72,7 @@ const menuContent: Record<string, MenuContent> = {
         items: [
           { label: 'Start', href: '/privat-start' },
           { label: 'Växande', href: '/privat-vaxande' },
-          { label: 'Avancerade', href: '/for-dig/privat/avancerade' },
+          { label: 'Etablerad', href: '/privat-etablerad' },
         ],
       },
     ],
