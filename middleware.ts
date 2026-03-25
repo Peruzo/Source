@@ -13,6 +13,12 @@ import { auth0 } from '@/lib/auth0';
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
+  // Skip Auth0 middleware for static assets in /public (e.g. videos/images)
+  // so large media files aren't intercepted by Auth0 initialization.
+  if (/\.[a-zA-Z0-9]+$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // KRITISK: Onboarding-routes får INTE köra Auth0 middleware
   // Auth0-init får INTE ske för onboarding-routes (förhindrar implicit Auth0-init)
   if (

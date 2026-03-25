@@ -76,7 +76,7 @@ const menuContent: Record<string, MenuContent> = {
         ],
       },
     ],
-    href: '/for-dig',
+    href: '/foretag-nya',
   },
   'om-oss': {
     title: 'Om oss',
