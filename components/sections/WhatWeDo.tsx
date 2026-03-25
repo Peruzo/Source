@@ -221,10 +221,10 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass relative rounded-[32px] p-4 md:p-6 aspect-[16/10] flex items-center justify-center border border-white/20 overflow-hidden">
+                      <div className="glass relative rounded-[44px] p-4 md:p-6 aspect-[5/4] flex items-center justify-center border border-white/20 overflow-hidden">
                         {/* Placeholder content - replace with actual screenshots */}
                         {service.imageSrc ? (
-                          <div className="absolute inset-0">
+                          <div className="absolute inset-0 rounded-[44px] overflow-hidden">
                             <Image
                               src={service.imageSrc}
                               alt={service.title}
@@ -244,11 +244,11 @@ export function WhatWeDo() {
                         )}
 
                         {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 rounded-[44px] bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       </div>
 
                       {/* Glow effect on hover */}
-                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 rounded-[44px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                     </motion.div>
                   </motion.div>
                 </div>
