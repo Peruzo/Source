@@ -221,7 +221,7 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass relative rounded-3xl p-6 md:p-8 aspect-[4/3] flex items-center justify-center border border-white/20 overflow-hidden">
+                      <div className="glass relative rounded-[32px] p-4 md:p-6 aspect-[16/10] flex items-center justify-center border border-white/20 overflow-hidden">
                         {/* Placeholder content - replace with actual screenshots */}
                         {service.imageSrc ? (
                           <div className="absolute inset-0">
@@ -248,7 +248,7 @@ export function WhatWeDo() {
                       </div>
 
                       {/* Glow effect on hover */}
-                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                     </motion.div>
                   </motion.div>
                 </div>
