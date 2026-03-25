@@ -4,7 +4,7 @@ export default function ForetagEtableradPage() {
   return (
     <section className="relative min-h-[100svh] w-full overflow-hidden bg-black text-white">
       <video
-        src="/etablerade.mp4"
+        src="https://storage.googleapis.com/source-hero-videos/etablerade.mp4"
         autoPlay
         muted
         loop
