@@ -1,9 +1,12 @@
- 'use client';
+'use client';
 
 import Link from 'next/link';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
+import { PaymentCarousel } from '@/components/sections/PaymentCarousel';
+import { PaymentLinkFeatureSection } from '@/components/sections/PaymentLinkFeatureSection';
+import { HostingDnsShowcase } from '@/components/sections/HostingDnsShowcase';
 import { useEffect, useRef } from 'react';
 
 export default function PaymentsHostingPage() {
@@ -51,6 +54,7 @@ export default function PaymentsHostingPage() {
   }, []);
 
   return (
+    <>
     <section
       ref={sectionRef}
       className="relative min-h-[100svh] overflow-hidden bg-black text-white"
@@ -118,6 +122,10 @@ export default function PaymentsHostingPage() {
         </div>
       </Container>
     </section>
+    <PaymentCarousel />
+    <PaymentLinkFeatureSection />
+    <HostingDnsShowcase />
+    </>
   );
 }
 
