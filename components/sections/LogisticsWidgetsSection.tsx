@@ -48,7 +48,7 @@ export function LogisticsWidgetsSection() {
   const currentView = tabViews[activeTab];
 
   return (
-    <section className="relative overflow-hidden bg-black text-white py-28 md:py-36 lg:py-40">
+    <section className="relative overflow-hidden bg-white text-[#111111] py-28 md:py-36 lg:py-40">
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-[0.42fr_0.58fr] gap-12 lg:gap-16 items-start">
           {/* Left Column - Widgets Display Area */}
@@ -59,7 +59,7 @@ export function LogisticsWidgetsSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="relative rounded-[32px] bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border border-white/10 p-8 min-h-[600px] overflow-hidden"
+              className="relative min-h-[600px] overflow-hidden rounded-[32px] border border-black/10 bg-[#f7f8fb] p-8"
             >
               {/* Widgets Grid - Visual representation */}
               <div className="grid grid-cols-2 gap-6 h-full">
@@ -69,13 +69,13 @@ export function LogisticsWidgetsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6 }}
-                  className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
+                  className="flex flex-col items-center justify-center rounded-2xl border border-black/10 bg-white p-6 text-center transition-colors hover:bg-gray-50"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
-                    <CubeIcon className="w-10 h-10 text-[#FF6B35]" />
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal/15">
+                    <CubeIcon className="h-10 w-10 text-teal" />
                   </div>
-                  <h3 className="text-base font-semibold text-white mb-2">Ny beställning</h3>
-                  <p className="text-xs text-white/60">Skapa ny</p>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Ny beställning</h3>
+                  <p className="text-xs text-gray-500">Skapa ny</p>
                 </motion.div>
 
                 {/* Widget 2: Frakta med PostNord */}
@@ -84,13 +84,13 @@ export function LogisticsWidgetsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.1 }}
-                  className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
+                  className="flex flex-col items-center justify-center rounded-2xl border border-black/10 bg-white p-6 text-center transition-colors hover:bg-gray-50"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
-                    <TruckIcon className="w-10 h-10 text-[#FF6B35]" />
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal/15">
+                    <TruckIcon className="h-10 w-10 text-teal" />
                   </div>
-                  <h3 className="text-base font-semibold text-white mb-2">Frakta med PostNord</h3>
-                  <p className="text-xs text-white/60">Integrerad</p>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Frakta med PostNord</h3>
+                  <p className="text-xs text-gray-500">Integrerad</p>
                 </motion.div>
 
                 {/* Widget 3: Express/Standard */}
@@ -99,13 +99,13 @@ export function LogisticsWidgetsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
+                  className="flex flex-col items-center justify-center rounded-2xl border border-black/10 bg-white p-6 text-center transition-colors hover:bg-gray-50"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
-                    <BoltIcon className="w-10 h-10 text-[#FF6B35]" />
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal/15">
+                    <BoltIcon className="h-10 w-10 text-teal" />
                   </div>
-                  <h3 className="text-base font-semibold text-white mb-2">Express/Standard</h3>
-                  <p className="text-xs text-white/60">Välj leverans</p>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Express/Standard</h3>
+                  <p className="text-xs text-gray-500">Välj leverans</p>
                 </motion.div>
 
                 {/* Widget 4: Status påväg */}
@@ -114,13 +114,13 @@ export function LogisticsWidgetsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.3 }}
-                  className="rounded-2xl bg-[#1a1a1a]/50 border border-white/5 p-6 flex flex-col items-center justify-center text-center hover:bg-[#1a1a1a]/70 transition-colors"
+                  className="flex flex-col items-center justify-center rounded-2xl border border-black/10 bg-white p-6 text-center transition-colors hover:bg-gray-50"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#FF6B35]/20 flex items-center justify-center mb-4">
-                    <MapPinIcon className="w-10 h-10 text-[#FF6B35]" />
+                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal/15">
+                    <MapPinIcon className="h-10 w-10 text-teal" />
                   </div>
-                  <h3 className="text-base font-semibold text-white mb-2">Status påväg</h3>
-                  <p className="text-xs text-white/60">Realtid</p>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Status påväg</h3>
+                  <p className="text-xs text-gray-500">Realtid</p>
                 </motion.div>
               </div>
             </motion.div>
@@ -131,7 +131,7 @@ export function LogisticsWidgetsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="absolute -bottom-6 -left-6 w-full max-w-[280px] rounded-2xl bg-[#1a1a1a] border border-white/10 p-5 shadow-2xl z-10"
+              className="absolute -bottom-6 -left-6 z-10 w-full max-w-[280px] rounded-2xl border border-black/10 bg-white p-5 shadow-2xl"
             >
               <div className="space-y-4">
                 {currentView.map((item, index) => {
@@ -141,10 +141,7 @@ export function LogisticsWidgetsSection() {
                       key={index}
                       className="flex items-center gap-3"
                     >
-                      <div
-                        className="relative w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: '#FF6B35' }}
-                      >
+                      <div className="relative h-12 w-12 flex-shrink-0 rounded-full bg-teal flex items-center justify-center">
                         {item.active ? (
                           <CheckIcon className="w-6 h-6 text-white" />
                         ) : (
@@ -152,8 +149,8 @@ export function LogisticsWidgetsSection() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-white">{item.name}</div>
-                        <div className="text-xs text-white/60">{item.amount}</div>
+                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                        <div className="text-xs text-gray-500">{item.amount}</div>
                       </div>
                     </div>
                   );
@@ -175,8 +172,8 @@ export function LogisticsWidgetsSection() {
                   px-5 py-2.5 rounded-full font-medium text-sm transition-all duration-300
                   ${
                     activeTab === 'orders'
-                      ? 'bg-white text-black'
-                      : 'bg-[#1a1a1a] text-white'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700'
                   }
                 `}
               >
@@ -188,8 +185,8 @@ export function LogisticsWidgetsSection() {
                   px-5 py-2.5 rounded-full font-medium text-sm transition-all duration-300
                   ${
                     activeTab === 'shipping'
-                      ? 'bg-white text-black'
-                      : 'bg-[#1a1a1a] text-white'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700'
                   }
                 `}
               >
@@ -201,8 +198,8 @@ export function LogisticsWidgetsSection() {
                   px-5 py-2.5 rounded-full font-medium text-sm transition-all duration-300
                   ${
                     activeTab === 'status'
-                      ? 'bg-white text-black'
-                      : 'bg-[#1a1a1a] text-white'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700'
                   }
                 `}
               >
@@ -214,13 +211,13 @@ export function LogisticsWidgetsSection() {
           {/* Right Column - Text Content */}
           <div className="space-y-6 lg:pt-0">
             <FadeIn>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Full kontroll över din logistik
               </h2>
             </FadeIn>
 
             <FadeIn delay={0.1}>
-              <p className="text-lg md:text-xl text-white leading-relaxed">
+              <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
                 Ge ditt team verktygen som krävs för att organisera leveranser med våra logistikwidgets. 
                 Med dessa anpassade funktioner kan ni hantera beställningar, frakt och leveransstatus – 
                 oavsett om det handlar om en ny beställning eller att spåra en expressleverans.
@@ -228,13 +225,13 @@ export function LogisticsWidgetsSection() {
             </FadeIn>
 
             <FadeIn delay={0.15}>
-              <p className="text-base md:text-lg text-white/70">
+              <p className="text-base md:text-lg text-gray-500">
                 Alla logistikwidgets är integrerade i realtid och synkar automatiskt med dina partners.
               </p>
             </FadeIn>
 
             <FadeIn delay={0.2}>
-              <Link href="/logistik" className="inline-block mt-6 px-8 py-4 bg-white text-black rounded-full font-semibold text-base hover:bg-white/90 transition-colors">
+              <Link href="/logistik" className="inline-block mt-6 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-gray-800">
                 Kom igång med logistik
               </Link>
             </FadeIn>

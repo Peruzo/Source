@@ -36,8 +36,8 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'E-commerce UI',
     imageSrc: '/tillvarhemsida.png',
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
+    imageClassName: '',
     bgColor: 'from-white to-beige-light',
   },
   {
@@ -53,9 +53,8 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'Analytics Dashboard',
     imageSrc: '/marketingone.png',
-    // Show full image within the square, slightly scaled down so nothing is cut off
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
+    imageClassName: '',
     bgColor: 'from-beige-light to-white',
   },
   {
@@ -71,8 +70,8 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'Payment Systems',
     imageSrc: '/logositske.png',
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
+    imageClassName: '',
     bgColor: 'from-white to-gray-50',
   },
   {
@@ -88,8 +87,8 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'Support Portal',
     imageSrc: '/supportfordem.png',
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
+    imageClassName: '',
     bgColor: 'from-gray-50 to-white',
   },
 ];
@@ -221,18 +220,19 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass relative rounded-[44px] p-4 md:p-6 aspect-[5/4] flex items-center justify-center border border-white/20 overflow-hidden">
+                      <div className="glass relative aspect-[16/10] overflow-hidden rounded-[28px] border border-white/20 flex items-center justify-center">
                         {/* Placeholder content - replace with actual screenshots */}
                         {service.imageSrc ? (
-                          <div className="absolute inset-0 rounded-[44px] overflow-hidden">
+                          <div className="absolute inset-0 rounded-[28px] overflow-hidden">
                             <Image
                               src={service.imageSrc}
                               alt={service.title}
                               fill
-                              className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''}`}
+                              className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''} h-full w-full block`}
                               sizes="(min-width: 1024px) 480px, 100vw"
                               priority={index === 0}
                             />
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                           </div>
                         ) : (
                           <div className="text-center">
@@ -242,13 +242,10 @@ export function WhatWeDo() {
                             <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
                           </div>
                         )}
-
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 rounded-[44px] bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       </div>
 
                       {/* Glow effect on hover */}
-                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 rounded-[44px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                     </motion.div>
                   </motion.div>
                 </div>

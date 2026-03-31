@@ -6,7 +6,7 @@ import { AnimatedButton } from '@/components/ui/AnimatedButton';
 
 export function PaymentLinkFeatureSection() {
   return (
-    <section className="flex min-h-[100svh] flex-col justify-center overflow-x-clip bg-white py-[100px] md:py-28 lg:py-[140px]">
+    <section className="flex min-h-[100svh] flex-col justify-center overflow-x-clip bg-white pt-[100px] pb-[140px] md:pt-28 md:pb-44 lg:pt-[140px] lg:pb-[220px]">
       <Container size="lg" className="max-w-[min(100%,1560px)]">
         <div className="grid grid-cols-1 items-center gap-12 md:gap-16 lg:grid-cols-[minmax(0,86.5%)_minmax(0,13.5%)] lg:gap-20 xl:gap-[88px]">
           <FadeIn

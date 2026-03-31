@@ -88,6 +88,14 @@
   width: 100%;
 }
 
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
 :root {
   /* Source Design System Colors */
   --color-black: #000000;

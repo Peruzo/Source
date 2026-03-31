@@ -50,22 +50,24 @@ function SlideWidget({ index }: { index: number }) {
     return (
       <div className={widgetShell}>
         <div className={widgetCard}>
-          <div className="flex items-start gap-4">
-            <div
-              className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-600 to-emerald-800 shadow-inner md:h-[60px] md:w-[60px]"
-              aria-hidden
-            >
-              <span className="text-2xl drop-shadow-sm md:text-[1.65rem]">🛋️</span>
-            </div>
+          <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 space-y-1.5">
               <p className="text-base font-semibold leading-tight text-gray-900 md:text-[17px]">
                 Betalning mottagen
               </p>
               <p className="text-sm leading-snug text-gray-600 md:text-[15px]">Order 23xsdswe – Grön soffa</p>
+              <p className="pt-1 text-base font-semibold tabular-nums tracking-tight text-gray-900 md:text-lg">
+                2499 SEK
+              </p>
             </div>
-            <p className="flex-shrink-0 text-base font-semibold tabular-nums tracking-tight text-gray-900 md:text-lg">
-              2499 SEK
-            </p>
+            <div className="flex-shrink-0">
+              <div className="inline-flex h-12 items-center justify-center rounded-xl border border-black/10 bg-[#f3f4f6] px-3 shadow-[0_6px_18px_rgba(15,23,42,0.08)] md:h-11 md:px-2.5">
+                <span className="relative inline-block h-5 w-8" aria-label="Mastercard">
+                  <span className="absolute left-0 top-0 inline-block h-5 w-5 rounded-full bg-[#eb001b]" />
+                  <span className="absolute right-0 top-0 inline-block h-5 w-5 rounded-full bg-[#f79e1b]" />
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
