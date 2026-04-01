@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Container } from '@/components/ui/Container';
+import { BookingInPersonShowcaseSection } from '@/components/sections/BookingInPersonShowcaseSection';
 
 export default function BokningssystemPage() {
   const heroSectionRef = useRef<HTMLElement | null>(null);
@@ -100,6 +101,8 @@ export default function BokningssystemPage() {
           </div>
         </Container>
       </section>
+
+      <BookingInPersonShowcaseSection />
     </>
   );
 }

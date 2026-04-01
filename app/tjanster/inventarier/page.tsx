@@ -4,6 +4,7 @@ import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { CubeIcon, BanknotesIcon, TruckIcon } from '@heroicons/react/24/solid';
 import { useEffect, useRef } from 'react';
 
 export default function InventarierPage() {
@@ -183,19 +184,63 @@ export default function InventarierPage() {
 
         <div className="mt-12 md:mt-14 lg:mt-16">
           <motion.div
-            aria-hidden
             className="relative mx-auto w-full max-w-[960px] px-4 md:max-w-[1080px] lg:max-w-[1120px]"
             animate={{ x: [0, 10, 0] }}
             transition={{ duration: 12, ease: 'easeInOut', repeat: Infinity }}
           >
-    <div className="relative aspect-[16/8.4] overflow-hidden rounded-[28px] border border-black/5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            <div className="relative aspect-[16/8.4] overflow-hidden rounded-[28px] border border-black/5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
               <Image
                 src="/returinventory.png"
                 alt="Returflöde kopplat till inventarier"
-        fill
-        className="object-cover object-center"
+                fill
+                className="object-cover object-center"
                 priority={false}
               />
+              <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-3 md:bottom-6 md:px-6 lg:bottom-7">
+                <div className="flex w-full max-w-full gap-4 overflow-x-auto pb-1 md:w-auto md:overflow-visible">
+                  <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[285px] md:px-6 md:py-[18px]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal text-white">
+                        <TruckIcon className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
+                          Retur mottagen
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">Logistik registrerad</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[320px] md:px-6 md:py-[18px]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal text-white">
+                        <CubeIcon className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
+                          Inventarier matchat mot retur
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">Lagersaldo uppdaterat</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[330px] md:px-6 md:py-[18px]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal text-white">
+                        <BanknotesIcon className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
+                          Återbetalning genomfört för retur
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">Betalning synkroniserad</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

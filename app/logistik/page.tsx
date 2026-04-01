@@ -17,6 +17,7 @@ export default function LogistikPage() {
     let hasPlayed = false;
     let stopped = false;
     const STOP_TIME = 4.0;
+    const STOP_EARLY_OFFSET = 1 / 24;
 
     const handleLoadedMetadata = () => {
       video.currentTime = 0;
@@ -24,11 +25,11 @@ export default function LogistikPage() {
     };
 
     const handleTimeUpdate = () => {
-      if (!stopped && video.currentTime >= STOP_TIME) {
+      if (!stopped && video.currentTime >= STOP_TIME - STOP_EARLY_OFFSET) {
         stopped = true;
+        // Catch a little early, then clamp to exact target frame before pausing.
+        video.currentTime = STOP_TIME;
         video.pause();
-        // Freeze near the target frame to avoid end-frame jump.
-        video.currentTime = STOP_TIME - 0.05;
       }
     };
 
@@ -169,7 +170,7 @@ export default function LogistikPage() {
 
           <div className="pointer-events-none absolute inset-0 z-10 hidden items-center lg:flex">
             <div className="w-full px-6 md:px-10 lg:px-20">
-              <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
+              <div className="relative mx-auto grid max-w-[1440px] grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
                 <div className="self-center pr-8 xl:pr-14">
                   <ul className="space-y-6 text-left md:space-y-7">
                     {[
@@ -180,7 +181,7 @@ export default function LogistikPage() {
                     ].map((point, index) => (
                       <li
                         key={point}
-                        className={`text-[1.16rem] font-semibold leading-[1.62] tracking-[-0.012em] text-[#f7f6f2] [text-shadow:0_4px_14px_rgba(0,0,0,0.18)] transition-all duration-700 ease-out md:text-[1.28rem] md:leading-[1.68] ${
+                        className={`text-[1.34rem] font-semibold leading-[1.3] tracking-[-0.02em] text-[#d8d2c6] transition-all duration-700 ease-out md:text-[1.5rem] md:leading-[1.34] ${
                           isReturVideoEnded
                             ? 'translate-y-0 opacity-100 blur-0'
                             : 'translate-y-3 opacity-0 blur-[2px]'
@@ -198,13 +199,13 @@ export default function LogistikPage() {
 
           <div className="relative z-10 flex h-full w-full justify-center px-6 pb-14 pt-20 md:px-10 md:pb-20 md:pt-24 lg:px-20 lg:pb-24 lg:pt-28">
             <div className="mx-auto flex w-full max-w-[920px] flex-col items-center text-center">
-              <p className="text-xs font-medium uppercase tracking-[0.34em] text-white/90 [text-shadow:0_2px_16px_rgba(0,0,0,0.35)] md:text-sm">
+              <p className="text-xs font-medium uppercase tracking-[0.34em] text-white [text-shadow:0_3px_18px_rgba(0,0,0,0.40)] md:text-sm">
                 RETURHANTERING
               </p>
-              <h2 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white [text-shadow:0_6px_28px_rgba(0,0,0,0.38)] sm:text-5xl md:text-6xl">
+              <h2 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white [text-shadow:0_8px_30px_rgba(0,0,0,0.44)] sm:text-5xl md:text-6xl">
                 Hantera returer utan onödigt krångel
               </h2>
-              <p className="mt-6 max-w-[690px] text-base leading-relaxed text-white/88 [text-shadow:0_3px_18px_rgba(0,0,0,0.34)] md:text-lg">
+              <p className="mt-6 max-w-[690px] text-base leading-relaxed text-white/95 [text-shadow:0_4px_18px_rgba(0,0,0,0.38)] md:text-lg">
                 Ge kunderna en smidig returupplevelse samtidigt som ditt team får full kontroll över
                 varje steg i flödet — från mottagning till återbetalning.
               </p>
