@@ -2,6 +2,7 @@ substitutions:
   _REGION: europe-north1
 options:
   logging: CLOUD_LOGGING_ONLY
+  substitution_option: ALLOW_LOOSE
 steps:
   - id: configure-docker
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -17,11 +18,12 @@ steps:
     args:
       - -c
       - |
-        if [ "$BRANCH_NAME" = "main" ]; then SERVICE="source"; elif [ "$BRANCH_NAME" = "staging" ]; then SERVICE="source-staging"; else SERVICE="source-develop"; fi
-        IMAGE="europe-north1-docker.pkg.dev/sigma-future-479409-h9/source-services/${SERVICE}:${COMMIT_SHA}"
-        docker build -t $IMAGE -f Dockerfile .
-        docker push $IMAGE
-        echo $IMAGE > /workspace/image.txt
+        if [ "$BRANCH_NAME" = "main" ]; then svc="source"; elif [ "$BRANCH_NAME" = "staging" ]; then svc="source-staging"; else svc="source-develop"; fi
+        img="europe-north1-docker.pkg.dev/sigma-future-479409-h9/source-services/${svc}:${COMMIT_SHA}"
+        docker build -t $img -f Dockerfile .
+        docker push $img
+        echo $img > /workspace/image.txt
+        echo $svc > /workspace/svc.txt
     waitFor: ["configure-docker"]
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -29,12 +31,14 @@ steps:
     args:
       - -c
       - |
-        IMAGE=$(cat /workspace/image.txt)
+        img=$(cat /workspace/image.txt)
+        svc=$(cat /workspace/svc.txt)
         if [ "$BRANCH_NAME" = "main" ]; then
-          gcloud run deploy source --image=$IMAGE --region=europe-north1 --platform=managed --allow-unauthenticated --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com --update-secrets=AUTH0_CLIENT_ID=AUTH0_CLIENT_ID:latest,AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_SECRET=AUTH0_SECRET:latest,APP_BASE_URL=APP_BASE_URL:latest,ADMIN_PORTAL_URL=ADMIN_PORTAL_URL:latest,ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,MONGO_URI=MONGO_URI:latest,CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL:latest
+          secrets="AUTH0_CLIENT_ID=AUTH0_CLIENT_ID:latest,AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET:latest,AUTH0_DOMAIN=AUTH0_DOMAIN:latest,AUTH0_SECRET=AUTH0_SECRET:latest,APP_BASE_URL=APP_BASE_URL:latest,ADMIN_PORTAL_URL=ADMIN_PORTAL_URL:latest,ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,MONGO_URI=MONGO_URI:latest,CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL:latest"
         elif [ "$BRANCH_NAME" = "staging" ]; then
-          gcloud run deploy source-staging --image=$IMAGE --region=europe-north1 --platform=managed --allow-unauthenticated --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com --update-secrets=AUTH0_CLIENT_ID=AUTH0_CLIENT_ID_STAGING:latest,AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET_STAGING:latest,AUTH0_DOMAIN=AUTH0_DOMAIN_STAGING:latest,AUTH0_SECRET=AUTH0_SECRET_STAGING:latest,APP_BASE_URL=APP_BASE_URL_STAGING:latest,ADMIN_PORTAL_URL=ADMIN_PORTAL_URL_STAGING:latest,ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET_STAGING:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,MONGO_URI=MONGO_URI_STAGING:latest,CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL_STAGING:latest
+          secrets="AUTH0_CLIENT_ID=AUTH0_CLIENT_ID_STAGING:latest,AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET_STAGING:latest,AUTH0_DOMAIN=AUTH0_DOMAIN_STAGING:latest,AUTH0_SECRET=AUTH0_SECRET_STAGING:latest,APP_BASE_URL=APP_BASE_URL_STAGING:latest,ADMIN_PORTAL_URL=ADMIN_PORTAL_URL_STAGING:latest,ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET_STAGING:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,MONGO_URI=MONGO_URI_STAGING:latest,CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL_STAGING:latest"
         else
-          gcloud run deploy source-develop --image=$IMAGE --region=europe-north1 --platform=managed --allow-unauthenticated --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com --update-secrets=AUTH0_CLIENT_ID=AUTH0_CLIENT_ID_DEV:latest,AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET_DEV:latest,AUTH0_DOMAIN=AUTH0_DOMAIN_DEV:latest,AUTH0_SECRET=AUTH0_SECRET_DEV:latest,APP_BASE_URL=APP_BASE_URL_DEV:latest,ADMIN_PORTAL_URL=ADMIN_PORTAL_URL_DEV:latest,ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET_DEV:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,MONGO_URI=MONGO_URI_DEV:latest,CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL_DEV:latest
+          secrets="AUTH0_CLIENT_ID=AUTH0_CLIENT_ID_DEV:latest,AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET_DEV:latest,AUTH0_DOMAIN=AUTH0_DOMAIN_DEV:latest,AUTH0_SECRET=AUTH0_SECRET_DEV:latest,APP_BASE_URL=APP_BASE_URL_DEV:latest,ADMIN_PORTAL_URL=ADMIN_PORTAL_URL_DEV:latest,ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET_DEV:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,MONGO_URI=MONGO_URI_DEV:latest,CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL_DEV:latest"
         fi
+        gcloud run deploy $svc --image=$img --region=europe-north1 --platform=managed --allow-unauthenticated --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com --update-secrets=$secrets
     waitFor: ["build-and-push"]
