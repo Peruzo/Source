@@ -1,17 +1,9 @@
-# Cloud Build: auto-deploy till Cloud Run vid push till main
-# Appen ligger i repo-roten (Dockerfile, package.json, app/, etc.)
-# Trigger-test: push till main ska starta build
-
 substitutions:
   _REGION: europe-north1
-  _SERVICE_NAME: source
-  _IMAGE: europe-north1-docker.pkg.dev/sigma-future-479409-h9/source-services/source:latest
-
 options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # Konfigurera Docker för Artifact Registry (europe-north1)
   - id: configure-docker
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
@@ -21,41 +13,93 @@ steps:
       - ${_REGION}-docker.pkg.dev
       - --quiet
 
-  # Bygg Docker-image (Dockerfile och app i repo-roten)
   - id: build
     name: gcr.io/cloud-builders/docker
+    entrypoint: bash
     args:
-      - build
-      - -t
-      - ${_IMAGE}
-      - -f
-      - Dockerfile
-      - .
+      - -c
+      - |
+        if [ "$BRANCH_NAME" = "main" ]; then
+          SERVICE="source"
+        elif [ "$BRANCH_NAME" = "staging" ]; then
+          SERVICE="source-staging"
+        else
+          SERVICE="source-develop"
+        fi
+        IMAGE="${_REGION}-docker.pkg.dev/sigma-future-479409-h9/source-services/${SERVICE}:${COMMIT_SHA}"
+        docker build -t $IMAGE -f Dockerfile .
+        echo $IMAGE > /workspace/image.txt
     waitFor: ["configure-docker"]
 
-  # Pusha image till Artifact Registry
   - id: push
     name: gcr.io/cloud-builders/docker
+    entrypoint: bash
     args:
-      - push
-      - ${_IMAGE}
+      - -c
+      - docker push $(cat /workspace/image.txt)
     waitFor: ["build"]
 
-  # Deploy till Cloud Run
-  # Vid behov av secrets: lägg till --update-secrets=ENV_NAME=secret:version
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      - run
-      - deploy
-      - ${_SERVICE_NAME}
-      - --image=${_IMAGE}
-      - --region=${_REGION}
-      - --platform=managed
-      - --allow-unauthenticated
-      - --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com
+      - -c
+      - |
+        IMAGE=$(cat /workspace/image.txt)
+        if [ "$BRANCH_NAME" = "main" ]; then
+          SERVICE="source"
+          SECRETS="AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET:latest,\
+AUTH0_CLIENT_ID=AUTH0_CLIENT_ID:latest,\
+AUTH0_DOMAIN=AUTH0_DOMAIN:latest,\
+AUTH0_SECRET=AUTH0_SECRET:latest,\
+APP_BASE_URL=APP_BASE_URL:latest,\
+ADMIN_PORTAL_URL=ADMIN_PORTAL_URL:latest,\
+ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,\
+STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET:latest,\
+GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,\
+GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,\
+GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,\
+GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,\
+MONGO_URI=MONGO_URI:latest,\
+CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL:latest"
+        elif [ "$BRANCH_NAME" = "staging" ]; then
+          SERVICE="source-staging"
+          SECRETS="AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET_STAGING:latest,\
+AUTH0_CLIENT_ID=AUTH0_CLIENT_ID_STAGING:latest,\
+AUTH0_DOMAIN=AUTH0_DOMAIN_STAGING:latest,\
+AUTH0_SECRET=AUTH0_SECRET_STAGING:latest,\
+APP_BASE_URL=APP_BASE_URL_STAGING:latest,\
+ADMIN_PORTAL_URL=ADMIN_PORTAL_URL_STAGING:latest,\
+ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,\
+STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET_STAGING:latest,\
+GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,\
+GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,\
+GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,\
+GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,\
+MONGO_URI=MONGO_URI_STAGING:latest,\
+CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL_STAGING:latest"
+        else
+          SERVICE="source-develop"
+          SECRETS="AUTH0_CLIENT_SECRET=AUTH0_CLIENT_SECRET_DEVELOP:latest,\
+AUTH0_CLIENT_ID=AUTH0_CLIENT_ID_DEVELOP:latest,\
+AUTH0_DOMAIN=AUTH0_DOMAIN_DEVELOP:latest,\
+AUTH0_SECRET=AUTH0_SECRET_DEVELOP:latest,\
+APP_BASE_URL=APP_BASE_URL_DEVELOP:latest,\
+ADMIN_PORTAL_URL=ADMIN_PORTAL_URL_DEVELOP:latest,\
+ADMIN_SHARED_SECRET=ADMIN_SHARED_SECRET:latest,\
+STRIPE_PLATFORM_SECRET=STRIPE_PLATFORM_SECRET_DEVELOP:latest,\
+GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,\
+GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,\
+GCS_BUCKET_CODE_PACKAGES=GCS_BUCKET_CODE_PACKAGES:latest,\
+GITHUB_WORKER_URL=GITHUB_WORKER_URL:latest,\
+MONGO_URI=MONGO_URI_DEVELOP:latest,\
+CUSTOMER_PORTAL_URL=CUSTOMER_PORTAL_URL_DEVELOP:latest"
+        fi
+        gcloud run deploy $SERVICE \
+          --image=$IMAGE \
+          --region=${_REGION} \
+          --platform=managed \
+          --allow-unauthenticated \
+          --service-account=source-run-sa@sigma-future-479409-h9.iam.gserviceaccount.com \
+          --update-secrets=$SECRETS
     waitFor: ["push"]
-
-images:
-  - ${_IMAGE}
