@@ -11,14 +11,18 @@ type QuestionsData = {
   hasExistingSite: 'Ja' | 'Nej' | '';
   currentStage: 'Jag har bara en idé' | 'Jag har en färdig hemsida' | 'Jag har ett system i drift' | '';
   primaryGoal: 'Betalningar & fakturor' | 'Kundportal' | 'Analys & insikter' | 'Allt ovan' | '';
-  customerCount: '0–10' | '10–100' | '100+' | '';
+  legalEntityType: 'Enskild firma' | 'Aktiebolag' | 'Handelsbolag' | 'Ekonomisk förening' | 'Annat' | '';
+  employeeCount: '1' | '2–5' | '6–20' | '20+' | '';
+  heardAboutUs: 'Google' | 'Sociala medier' | 'Vän eller kollega' | 'Event eller mässa' | 'Annat' | '';
 };
 
 const defaultData: QuestionsData = {
   hasExistingSite: '',
   currentStage: '',
   primaryGoal: '',
-  customerCount: '',
+  legalEntityType: '',
+  employeeCount: '',
+  heardAboutUs: '',
 };
 
 const questions = [
@@ -38,9 +42,19 @@ const questions = [
     options: ['Betalningar & fakturor', 'Kundportal', 'Analys & insikter', 'Allt ovan'],
   },
   {
-    key: 'customerCount' as keyof QuestionsData,
-    question: 'Hur många kunder har du idag?',
-    options: ['0–10', '10–100', '100+'],
+    key: 'legalEntityType' as keyof QuestionsData,
+    question: 'Vad är din företagsform?',
+    options: ['Enskild firma', 'Aktiebolag', 'Handelsbolag', 'Ekonomisk förening', 'Annat'],
+  },
+  {
+    key: 'employeeCount' as keyof QuestionsData,
+    question: 'Hur många anställda har du?',
+    options: ['1', '2–5', '6–20', '20+'],
+  },
+  {
+    key: 'heardAboutUs' as keyof QuestionsData,
+    question: 'Hur hörde du talas om oss?',
+    options: ['Google', 'Sociala medier', 'Vän eller kollega', 'Event eller mässa', 'Annat'],
   },
 ];
 
