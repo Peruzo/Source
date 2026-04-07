@@ -3,6 +3,7 @@ import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
+import Stripe from 'stripe';
 
 /**
  * POST /api/onboarding/stripe/complete
@@ -85,24 +86,53 @@ export async function POST(request: Request) {
     // KRITISK: FSM-transitionen är klar (event append lyckades)
     // Returnera 200 omedelbart - admin-sync är best effort och får inte påverka FSM
     
-    // Skicka till admin-portalen med formell status från FSM (best effort)
+    // Hämta full kontoinfo från Stripe (best effort)
+    let stripeAccountData: Record<string, unknown> = { accountId };
+    try {
+      const stripeKey = process.env.STRIPE_PLATFORM_SECRET;
+      if (stripeKey) {
+        const stripe = new Stripe(stripeKey, { apiVersion: '2025-12-15.clover' });
+        const account = await stripe.accounts.retrieve(accountId);
+        stripeAccountData = {
+          accountId,
+          detailsSubmitted: account.details_submitted,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+          businessName: account.business_profile?.name || null,
+          businessUrl: account.business_profile?.url || null,
+          mcc: account.business_profile?.mcc || null,
+          companyName: account.company?.name || null,
+          companyPhone: account.company?.phone || null,
+          companyAddress: account.company?.address || null,
+          taxId: account.company?.tax_id_provided ? '****' : null,
+          individualFirstName: account.individual?.first_name || null,
+          individualLastName: account.individual?.last_name || null,
+          individualEmail: account.individual?.email || null,
+          individualPhone: account.individual?.phone || null,
+          individualAddress: account.individual?.address || null,
+          country: account.country || null,
+          email: account.email || null,
+        };
+        console.log('[Stripe Complete] Retrieved full account data for', accountId);
+      }
+    } catch (stripeError) {
+      console.warn('[Stripe Complete] Could not retrieve full account data:', stripeError);
+    }
+
     sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-stripe-complete`,
       onboardingId,
       sessionId: userSub,
       step: 'stripe_completed',
-      onboardingStatus: updatedState.status, // Använd formell status från FSM (inte heuristik)
+      onboardingStatus: updatedState.status,
       user: {
         email: authEmail,
         sub: session.user.sub,
       },
-      data: {
-        accountId,
-      },
+      data: stripeAccountData,
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
     }).catch((adminError) => {
-      // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
       console.warn(`[Onboarding Stripe Complete] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
 
