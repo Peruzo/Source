@@ -160,7 +160,7 @@ export function QuestionsForm() {
           <img
             src="/twogreenarrows.png"
             alt="Source"
-            className="h-10 w-auto"
+            className="h-16 w-auto"
           />
           <div className="flex gap-2">
             {questions.map((_, i) => (
