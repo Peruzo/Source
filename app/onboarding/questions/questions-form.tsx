@@ -141,19 +141,26 @@ export function QuestionsForm() {
       {/* Innehåll */}
       <div className="relative z-10 w-full max-w-lg px-6 flex flex-col items-center">
         
-        {/* Progress dots */}
-        <div className="flex gap-2 mb-12">
-          {questions.map((_, i) => (
-            <div
-              key={i}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width: i === currentQuestion ? 24 : 8,
-                height: 8,
-                background: i <= currentQuestion ? '#10b981' : '#d1fae5',
-              }}
-            />
-          ))}
+        {/* Logo + Progress dots */}
+        <div className="flex flex-col items-center mb-12 gap-4">
+          <img
+            src="/twogreenarrows.png"
+            alt="Source"
+            className="h-10 w-auto"
+          />
+          <div className="flex gap-2">
+            {questions.map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentQuestion ? 24 : 8,
+                  height: 8,
+                  background: i <= currentQuestion ? '#10b981' : '#d1fae5',
+                }}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Fråga + alternativ */}
