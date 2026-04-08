@@ -92,7 +92,9 @@ export async function POST(request: Request) {
       const stripeKey = process.env.STRIPE_PLATFORM_SECRET;
       if (stripeKey) {
         const stripe = new Stripe(stripeKey, { apiVersion: '2025-12-15.clover' });
-        const account = await stripe.accounts.retrieve(accountId);
+        const account = await stripe.accounts.retrieve(accountId, {
+          expand: ['individual', 'external_accounts']
+        });
         stripeAccountData = {
           accountId,
           detailsSubmitted: account.details_submitted,
@@ -110,8 +112,36 @@ export async function POST(request: Request) {
           individualEmail: account.individual?.email || null,
           individualPhone: account.individual?.phone || null,
           individualAddress: account.individual?.address || null,
+          iban: (() => {
+            const bankAccounts = (account as any).external_accounts?.data || [];
+            const sepa = bankAccounts.find((b: any) => b.object === 'bank_account');
+            return sepa?.last4 ? `****${sepa.last4}` : null;
+          })(),
+          bankAccountLast4: (() => {
+            const bankAccounts = (account as any).external_accounts?.data || [];
+            const bank = bankAccounts.find((b: any) => b.object === 'bank_account');
+            return bank?.last4 || null;
+          })(),
+          bankName: (() => {
+            const bankAccounts = (account as any).external_accounts?.data || [];
+            const bank = bankAccounts.find((b: any) => b.object === 'bank_account');
+            return bank?.bank_name || null;
+          })(),
           country: account.country || null,
           email: account.email || null,
+          organizationNumber: account.company?.tax_id_provided ? 'provided' : null,
+          vatNumber: account.company?.vat_id_provided ? 'provided' : null,
+          companyTaxIdProvided: account.company?.tax_id_provided || false,
+          individualIdNumberProvided: account.individual?.id_number_provided || false,
+          individualDob: account.individual?.dob || null,
+          individualSsnLast4: account.individual?.ssn_last_4_provided ? 'provided' : null,
+          kycVerified: account.individual?.verification?.status === 'verified',
+          idDocumentVerified: account.individual?.verification?.document?.details_code === null,
+          idType: account.individual?.verification?.document?.type || null,
+          missingRequirements: account.requirements?.currently_due || [],
+          eventuallyDue: account.requirements?.eventually_due || [],
+          currency: account.default_currency || null,
+          payoutSchedule: account.settings?.payouts?.schedule?.interval || null,
         };
         console.log('[Stripe Complete] Retrieved full account data for', accountId);
       }
