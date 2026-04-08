@@ -4,6 +4,7 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import Stripe from 'stripe';
+import { sendTransactionalEmail } from '@/lib/mail/mailService';
 
 /**
  * POST /api/onboarding/stripe/complete
@@ -137,7 +138,7 @@ export async function POST(request: Request) {
           individualSsnLast4: account.individual?.ssn_last_4_provided ? 'provided' : null,
           kycVerified: account.individual?.verification?.status === 'verified',
           idDocumentVerified: account.individual?.verification?.document?.details_code === null,
-          idType: account.individual?.verification?.document?.type || null,
+          idType: (account.individual?.verification?.document as any)?.type || null,
           missingRequirements: account.requirements?.currently_due || [],
           eventuallyDue: account.requirements?.eventually_due || [],
           currency: account.default_currency || null,
@@ -165,6 +166,25 @@ export async function POST(request: Request) {
     }).catch((adminError) => {
       console.warn(`[Onboarding Stripe Complete] Admin sync failed (non-blocking) for onboarding ${onboardingId}:`, adminError);
     });
+
+    // Skicka välkomstmail (best effort, non-blocking)
+    const firstName = typeof stripeAccountData.individualFirstName === 'string'
+      ? stripeAccountData.individualFirstName
+      : '';
+    const companyName = typeof stripeAccountData.companyName === 'string' && stripeAccountData.companyName
+      ? stripeAccountData.companyName
+      : (typeof stripeAccountData.businessName === 'string' ? stripeAccountData.businessName : '');
+
+    sendTransactionalEmail({
+      to: authEmail,
+      subject: 'Din ansökan är mottagen – Source',
+      templatePath: 'templates/emails/application-received.html',
+      variables: {
+        contactName: firstName || authEmail,
+        companyName: companyName || 'ditt företag',
+        package: 'Growth', // TODO: hämta från onboarding-state när tillgängligt
+      },
+    }).catch(() => {});
 
     // Returnera 200 oavsett admin-sync-resultat
     return NextResponse.json({ success: true });
