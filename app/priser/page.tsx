@@ -142,7 +142,7 @@ export default function PricingPage() {
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="text-6xl md:text-7xl lg:text-8xl font-bold text-teal"
               >
-                Från 399 kr
+                Från 799 kr
               </motion.p>
               <p className="text-xl text-gray-400 mt-4">per månad</p>
             </FadeIn>
