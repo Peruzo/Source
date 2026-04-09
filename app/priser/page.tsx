@@ -11,8 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const pricingPlans = [
   {
     planId: 'bas',
-    name: 'Bas',
-    price: '399',
+    name: 'Core',
+    price: '799',
     description: 'Perfekt för att komma igång med din online-närvaro',
     features: [
       'Responsiv design',
@@ -29,7 +29,7 @@ const pricingPlans = [
   {
     planId: 'growth',
     name: 'Growth',
-    price: '799',
+    price: '1499',
     badge: 'Mest valda',
     description: 'Komplett lösning för att växa din verksamhet online',
     features: [
@@ -54,7 +54,7 @@ const pricingPlans = [
   {
     planId: 'enterprise',
     name: 'Enterprise',
-    price: 'Pris på förfrågan',
+    price: '3499',
     description: 'För företag som behöver avancerade lösningar',
     features: [
       'Allt i Growth, plus:',
