@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     console.log('[Onboarding Stripe Complete] userSub =', userSub);
 
     const body = await request.json();
-    const { accountId, onboardingId: providedOnboardingId } = body || {};
+    const { accountId, onboardingId: providedOnboardingId, planId } = body || {};
 
     if (!accountId) {
       return NextResponse.json({ success: false, message: 'Missing accountId' }, { status: 400 });
@@ -148,6 +148,7 @@ export async function POST(request: Request) {
           eventuallyDue: account.requirements?.eventually_due || [],
           currency: account.default_currency || null,
           payoutSchedule: account.settings?.payouts?.schedule?.interval || null,
+          selectedPlan: planId || null,
         };
         console.log('[Stripe Complete] Retrieved full account data for', accountId);
       }
@@ -187,7 +188,7 @@ export async function POST(request: Request) {
       variables: {
         contactName: firstName || authEmail,
         companyName: companyName || 'ditt företag',
-        package: 'Growth', // TODO: hämta från onboarding-state när tillgängligt
+        package: planId || 'bas',
       },
     }).catch(() => {});
 
