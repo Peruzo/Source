@@ -227,6 +227,23 @@ export async function POST(request: Request) {
         { step: adminPayload.step, fsmStatus: state.status, onboardingId }
       );
     } else {
+      // Skicka ett separat questions-record till admin-portalen
+      if (currentStep === 'questions') {
+        sendToAdminPortal('onboarding', {
+          idempotencyKey: `onboarding-${onboardingId}-questions`,
+          onboardingId,
+          sessionId: userSub,
+          step: 'questions',
+          onboardingStatus: state.status,
+          user: email ? { email, sub: userSub } : { sub: userSub },
+          data: payloadData,
+          submittedAt: new Date().toISOString(),
+          source: 'public_onboarding',
+        }).catch((adminError) => {
+          console.warn('[Step] Questions admin sync failed (non-blocking):', adminError);
+        });
+      }
+
       // Best effort: admin-sync får aldrig påverka FSM-transitionen
       sendToAdminPortal('onboarding', adminPayload).catch((adminError) => {
         // Logga varning men kasta aldrig - admin-sync är sekundär till FSM
