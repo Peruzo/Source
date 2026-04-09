@@ -29,11 +29,12 @@ export async function sendTransactionalEmail({
       return;
     }
 
-    const templateHtml = await fs.readFile(
-      path.join(process.cwd(), templatePath),
-      'utf-8'
-    );
+    const fullPath = path.join(process.cwd(), templatePath);
+    console.log('[Mail] Reading template from:', fullPath);
+    const templateHtml = await fs.readFile(fullPath, 'utf-8');
+    console.log('[Mail] Template length:', templateHtml.length);
     const html = compileTemplate(templateHtml, variables);
+    console.log('[Mail] Compiled HTML length:', html.length);
 
     const mailchimp = require('@mailchimp/mailchimp_transactional')(MAILCHIMP_API_KEY);
 
