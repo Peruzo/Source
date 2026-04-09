@@ -40,6 +40,7 @@ export async function sendTransactionalEmail({
     const result = await mailchimp.messages.send({
       message: {
         html,
+        text: 'Din ansökan är mottagen. Öppna detta mail i en HTML-kompatibel klient för att se innehållet.',
         subject,
         from_email: FROM_EMAIL,
         from_name: FROM_NAME,
