@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
+import { getStoredPlanId } from '@/lib/onboarding/selected-plan';
 
 export function SuccessMessage() {
   const searchParams = useSearchParams();
@@ -13,10 +14,11 @@ export function SuccessMessage() {
   // Markera Stripe-onboarding som klar i backend när success-sidan laddas
   useEffect(() => {
     if (account && onboardingId) {
+      const planId = getStoredPlanId();
       fetch('/api/onboarding/stripe/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountId: account, onboardingId }),
+        body: JSON.stringify({ accountId: account, onboardingId, planId: planId || undefined }),
       }).catch((err) => {
         console.error('[Success] Error marking Stripe complete:', err);
       });
