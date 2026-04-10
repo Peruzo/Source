@@ -100,7 +100,7 @@ export async function POST(request: Request) {
         // Hämta persons separat (kan ej expanderas direkt)
         let rep: any = null;
         try {
-          const persons = await (stripe.accounts as any).persons.list(accountId, { limit: 10 });
+          const persons = await (stripe as any).accounts.listPersons(accountId, { limit: 10 });
           rep = persons.data?.[0] || null;
           console.log('[Stripe Complete] Persons fetched:', persons.data?.length || 0);
         } catch (personsError) {

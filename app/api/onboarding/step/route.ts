@@ -229,6 +229,7 @@ export async function POST(request: Request) {
     } else {
       // Skicka ett separat questions-record till admin-portalen
       if (currentStep === 'questions') {
+        console.log('[Step] Sending questions record to admin portal, onboardingId:', onboardingId, 'data keys:', Object.keys(payloadData || {}));
         sendToAdminPortal('onboarding', {
           idempotencyKey: `onboarding-${onboardingId}-questions`,
           onboardingId,
