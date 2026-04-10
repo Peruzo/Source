@@ -17,6 +17,7 @@ export function StripeStart() {
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const autoStartedRef = useRef(false);
 
   const loadingState = onboardingIdLoading || stateLoading;
@@ -114,19 +115,60 @@ export function StripeStart() {
 
   return (
     <section className="max-w-2xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-4">Stripe onboarding</h1>
+      <h1 className="text-3xl font-semibold text-gray-900 mb-4">Nästan klart!</h1>
       <p className="text-gray-600 mb-8">
-        För att aktivera betalningar behöver vi koppla Stripe. Det tar bara några minuter.
+        Innan vi kopplar betalningar behöver du godkänna våra villkor.
       </p>
+
       {error && <p className="text-red-600 mb-4">{typeof error === 'string' ? error : normalizeError(error)}</p>}
+
+      {/* Terms & Conditions */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-1 w-4 h-4 accent-emerald-600 flex-shrink-0 cursor-pointer"
+          />
+          <span className="text-gray-700 text-sm leading-relaxed">
+            Jag har läst och godkänner Source{' '}
+            <a
+              href="/anvandarvillkor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-600 underline font-semibold hover:text-emerald-700"
+            >
+              användarvillkor
+            </a>
+            {' '}och{' '}
+            <a
+              href="/integritetspolicy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-600 underline font-semibold hover:text-emerald-700"
+            >
+              integritetspolicy
+            </a>
+            .
+          </span>
+        </label>
+      </div>
+
       <button
         type="button"
         onClick={startStripe}
-        className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition"
-        disabled={loading}
+        className="bg-emerald-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={loading || !termsAccepted}
       >
         {loading ? 'Förbereder...' : 'Starta Stripe onboarding'}
       </button>
+
+      {!termsAccepted && (
+        <p className="text-gray-400 text-xs mt-3">
+          Du måste godkänna villkoren för att fortsätta.
+        </p>
+      )}
     </section>
   );
 }
