@@ -94,8 +94,19 @@ export async function POST(request: Request) {
       if (stripeKey) {
         const stripe = new Stripe(stripeKey, { apiVersion: '2025-12-15.clover' });
         const account = await stripe.accounts.retrieve(accountId, {
-          expand: ['individual', 'external_accounts', 'persons']
+          expand: ['individual', 'external_accounts']
         });
+
+        // Hämta persons separat (kan ej expanderas direkt)
+        let rep: any = null;
+        try {
+          const persons = await (stripe.accounts as any).persons.list(accountId, { limit: 10 });
+          rep = persons.data?.[0] || null;
+          console.log('[Stripe Complete] Persons fetched:', persons.data?.length || 0);
+        } catch (personsError) {
+          console.warn('[Stripe Complete] Could not fetch persons:', personsError);
+        }
+
         stripeAccountData = {
           accountId,
           detailsSubmitted: account.details_submitted,
@@ -105,19 +116,19 @@ export async function POST(request: Request) {
           businessUrl: account.business_profile?.url || null,
           mcc: account.business_profile?.mcc || null,
           companyName: account.company?.name || null,
-          companyPhone: account.company?.phone || (account as any).persons?.data?.[0]?.phone || null,
-          companyAddress: account.company?.address || (account as any).persons?.data?.[0]?.address || null,
+          companyPhone: account.company?.phone || rep?.phone || null,
+          companyAddress: account.company?.address || rep?.address || null,
           taxId: account.company?.tax_id_provided ? '****' : null,
-          individualFirstName: account.individual?.first_name || (account as any).persons?.data?.[0]?.first_name || null,
-          individualLastName: account.individual?.last_name || (account as any).persons?.data?.[0]?.last_name || null,
-          individualEmail: account.individual?.email || (account as any).persons?.data?.[0]?.email || null,
-          individualPhone: account.individual?.phone || (account as any).persons?.data?.[0]?.phone || null,
-          individualAddress: account.individual?.address || (account as any).persons?.data?.[0]?.address || null,
-          representativeFirstName: (account as any).persons?.data?.[0]?.first_name || null,
-          representativeLastName: (account as any).persons?.data?.[0]?.last_name || null,
-          representativePhone: (account as any).persons?.data?.[0]?.phone || null,
-          representativeEmail: (account as any).persons?.data?.[0]?.email || null,
-          representativeAddress: (account as any).persons?.data?.[0]?.address || null,
+          individualFirstName: account.individual?.first_name || rep?.first_name || null,
+          individualLastName: account.individual?.last_name || rep?.last_name || null,
+          individualEmail: account.individual?.email || rep?.email || null,
+          individualPhone: account.individual?.phone || rep?.phone || null,
+          individualAddress: account.individual?.address || rep?.address || null,
+          representativeFirstName: rep?.first_name || null,
+          representativeLastName: rep?.last_name || null,
+          representativePhone: rep?.phone || null,
+          representativeEmail: rep?.email || null,
+          representativeAddress: rep?.address || null,
           iban: (() => {
             const bankAccounts = (account as any).external_accounts?.data || [];
             const sepa = bankAccounts.find((b: any) => b.object === 'bank_account');
