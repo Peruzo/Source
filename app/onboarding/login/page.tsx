@@ -8,7 +8,7 @@ export default async function OnboardingLoginPage() {
 
   // 1️⃣ Ingen Auth0-session → skicka till login
   if (!session?.user?.sub) {
-    redirect('/api/auth/login?returnTo=/onboarding/questions');
+    redirect('/api/auth/login?returnTo=/onboarding/questions&screen_hint=signup');
   }
 
   // 2️⃣ Kolla onboarding-status i kundportalen

@@ -287,7 +287,7 @@ export function CodeUploadForm() {
     const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
     const stripeUrl = getStripeOnboardingUrl(planId);
     const returnTo = stripeUrl + (stripeUrl.includes('?') ? '&' : '?') + 'autostart=true';
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&screen_hint=signup`;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {

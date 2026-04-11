@@ -34,7 +34,7 @@ export function StripeStart() {
 
   const loginWithRedirect = (options: { appState?: { returnTo: string } }) => {
     const returnTo = options.appState?.returnTo || pathname;
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&screen_hint=signup`;
   };
 
   const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {
