@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     }
     
     const userSub = session.user.sub;
+    const authEmail = typeof session.user.email === 'string' ? session.user.email.trim().toLowerCase() : '';
     console.log('[Onboarding Step] Using Auth0 userSub:', userSub);
 
     const body = await request.json();
@@ -236,7 +237,7 @@ export async function POST(request: Request) {
           sessionId: userSub,
           step: 'questions',
           onboardingStatus: state.status,
-          user: email ? { email, sub: userSub } : { sub: userSub },
+          user: { email: email || authEmail || '', sub: userSub },
           data: payloadData,
           submittedAt: new Date().toISOString(),
           source: 'public_onboarding',
