@@ -13,6 +13,7 @@ type QuestionsData = {
   primaryGoal: 'Betalningar & fakturor' | 'Kundportal' | 'Analys & insikter' | 'Allt ovan' | '';
   legalEntityType: 'Enskild firma' | 'Aktiebolag' | 'Handelsbolag' | 'Ekonomisk förening' | 'Annat' | '';
   employeeCount: '1' | '2–5' | '6–20' | '20+' | '';
+  annualRevenue: 'Under 500 000 kr' | '500 000 – 2 000 000 kr' | '2 000 000 – 10 000 000 kr' | '10 000 000 – 50 000 000 kr' | 'Över 50 000 000 kr' | '';
   heardAboutUs: 'Google' | 'Sociala medier' | 'Vän eller kollega' | 'Event eller mässa' | 'Annat' | '';
 };
 
@@ -22,6 +23,7 @@ const defaultData: QuestionsData = {
   primaryGoal: '',
   legalEntityType: '',
   employeeCount: '',
+  annualRevenue: '',
   heardAboutUs: '',
 };
 
@@ -50,6 +52,11 @@ const questions = [
     key: 'employeeCount' as keyof QuestionsData,
     question: 'Hur många anställda har du?',
     options: ['1', '2–5', '6–20', '20+'],
+  },
+  {
+    key: 'annualRevenue' as keyof QuestionsData,
+    question: 'Vad är er ungefärliga årsomsättning?',
+    options: ['Under 500 000 kr', '500 000 – 2 000 000 kr', '2 000 000 – 10 000 000 kr', '10 000 000 – 50 000 000 kr', 'Över 50 000 000 kr'],
   },
   {
     key: 'heardAboutUs' as keyof QuestionsData,
