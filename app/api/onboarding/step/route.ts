@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         console.error('[Onboarding Step] Invalid questions data:', payloadData);
         return NextResponse.json({ success: false, message: 'Invalid questions data' }, { status: 400 });
       }
-      const requiredFields = ['hasExistingSite', 'currentStage', 'primaryGoal', 'legalEntityType', 'employeeCount', 'heardAboutUs'];
+      const requiredFields = ['hasExistingSite', 'currentStage', 'primaryGoal', 'legalEntityType', 'employeeCount', 'annualRevenue', 'heardAboutUs'];
       const missingFields: string[] = [];
       for (const field of requiredFields) {
         if (!payloadData[field]) {
