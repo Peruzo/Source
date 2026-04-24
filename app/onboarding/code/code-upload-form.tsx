@@ -8,6 +8,7 @@ import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { getAnonymousSessionIdFromCookie } from '@/lib/onboarding/anonymous-session-client';
 import { normalizeError } from '@/lib/utils/normalize-error';
+import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
 export function CodeUploadForm() {
   const router = useRouter();
@@ -74,11 +75,11 @@ export function CodeUploadForm() {
   // Ladda data från backend när state är tillgänglig
   useEffect(() => {
     if (loading) return;
-    
+
     // ARKITEKTURREGEL: Ingen server-side redirect baserat på step.
     // Sidan får renderas även om state ännu inte reflekterar 'code'.
     // Visa loader om state.step !== 'code' (hanteras i render-logik nedan).
-    
+
     setRepoLink(state?.code?.repoLink || '');
     setCodeText(state?.code?.codeText || '');
   }, [state, loading]);
@@ -96,7 +97,7 @@ export function CodeUploadForm() {
     const gh = searchParams.get('github');
     const jobId = searchParams.get('jobId');
     const errorParam = searchParams.get('error');
-    
+
     if (gh === 'processing' && jobId) {
       setGithubJobId(jobId);
       setGithubJobStatus('processing');
@@ -251,22 +252,18 @@ export function CodeUploadForm() {
 
   if (loading || isWaitingForStateUpdate) {
     return (
-      <section className="max-w-3xl mx-auto px-6 py-16">
-        <div className="text-center">
-          <p className="text-gray-600">Laddar...</p>
-        </div>
-      </section>
+      <OnboardingLayout>
+        <p className="text-gray-600">Laddar...</p>
+      </OnboardingLayout>
     );
   }
 
   // Efter guard: om state inte är code_pending/code_completed visas redirect i useEffect; visa loader under omdirigering
   if (state && state.status !== 'code_pending' && state.status !== 'code_completed') {
     return (
-      <section className="max-w-3xl mx-auto px-6 py-16">
-        <div className="text-center">
-          <p className="text-gray-600">Omdirigerar...</p>
-        </div>
-      </section>
+      <OnboardingLayout>
+        <p className="text-gray-600">Omdirigerar...</p>
+      </OnboardingLayout>
     );
   }
 
@@ -291,12 +288,12 @@ export function CodeUploadForm() {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    console.log('[handleSubmit] fired', { 
-      stateStatus: state?.status, 
-      codeFromBackend, 
-      submitting, 
+    console.log('[handleSubmit] fired', {
+      stateStatus: state?.status,
+      codeFromBackend,
+      submitting,
       githubJobStatus,
-      onboardingId: !!onboardingId 
+      onboardingId: !!onboardingId
     });
     event.preventDefault();
     setError('');
@@ -418,14 +415,22 @@ export function CodeUploadForm() {
   console.log('error:', error);
   console.log('================================');
 
+  const submitDisabled =
+    submitting ||
+    githubJobStatus === 'processing' ||
+    !onboardingId ||
+    (!codeFromBackend && !repoLink && !codeText && !file);
+
   return (
-    <section className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-4">Koduppladdning</h1>
-      <p className="text-gray-600 mb-6">
+    <OnboardingLayout>
+      <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 text-center mb-4">
+        Koduppladdning
+      </h1>
+      <p className="text-gray-600 text-center mb-10 max-w-md">
         Du kan ladda upp en ZIP eller klistra in kod/repo-länk. Allt är read-only och används
         endast som tillfälligt onboarding-material.
       </p>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="w-full space-y-6">
         {codeFromBackend && (
           <div className="rounded-md bg-emerald-50 p-3 text-emerald-800" role="status">
             <p className="font-medium">
@@ -548,13 +553,19 @@ export function CodeUploadForm() {
 
         <button
           type={state?.status === 'code_completed' ? 'button' : 'submit'}
-          className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          disabled={submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file)}
+          disabled={submitDisabled}
           onClick={state?.status === 'code_completed' ? handleStripeClick : undefined}
+          className="mt-10 px-10 py-3 rounded-full font-semibold transition-all duration-200 w-full md:w-auto md:mx-auto block"
+          style={{
+            background: submitDisabled ? '#d1fae5' : '#10b981',
+            color: submitDisabled ? '#6ee7b7' : 'white',
+            cursor: submitDisabled ? 'not-allowed' : 'pointer',
+            boxShadow: submitDisabled ? 'none' : '0 4px 14px rgba(16,185,129,0.3)',
+          }}
         >
           {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : state?.status === 'code_completed' ? 'Fortsätt till Stripe onboarding' : 'Fortsätt till Stripe'}
         </button>
       </form>
-    </section>
+    </OnboardingLayout>
   );
 }
