@@ -210,7 +210,7 @@ export async function POST(request: Request) {
       sessionId: userSub,
       step: adminStep, // KRITISKT: Skicka nextStep (code) istället för currentStep (questions)
       onboardingStatus: state.status, // Använd formell status från FSM (code_pending eller questions_completed)
-      user: email ? { email, sub: userSub } : { sub: userSub },
+      user: { email: email || authEmail || '', sub: userSub },
       data: payloadData,
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
