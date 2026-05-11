@@ -211,7 +211,7 @@ export async function POST(request: Request) {
       step: adminStep, // KRITISKT: Skicka nextStep (code) istället för currentStep (questions)
       onboardingStatus: state.status, // Använd formell status från FSM (code_pending eller questions_completed)
       user: { email: email || authEmail || '', sub: userSub },
-      data: payloadData,
+      data: currentStep === adminStep ? payloadData : {},
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
     };
