@@ -9,10 +9,12 @@ export type GitHubJob = {
   jobId: string;
   onboardingId: string;
   userSub: string;
-  repo: string;
-  owner: string;
-  repoName: string;
-  repoUrl: string;
+  // För GitHub-flöden: owner/repoName/repoUrl är satta från OAuth-callback.
+  // För ZIP-upload-flöden: dessa är undefined.
+  repo?: string;
+  owner?: string;
+  repoName?: string;
+  repoUrl?: string;
   status: GitHubJobStatus;
   createdAt: string;
   updatedAt: string;
@@ -44,19 +46,21 @@ export type GitHubJob = {
 export async function createGitHubJob(params: {
   onboardingId: string;
   userSub: string;
-  repo: string;
-  owner: string;
-  repoName: string;
-  repoUrl: string;
-  githubToken: string;
+  jobId?: string;
+  status?: GitHubJobStatus;
+  repo?: string;
+  owner?: string;
+  repoName?: string;
+  repoUrl?: string;
+  githubToken?: string;
 }): Promise<string> {
   if (!BUCKET) {
     throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set');
   }
 
-  const jobId = `${params.onboardingId}-${Date.now()}`;
+  const jobId = params.jobId ?? `${params.onboardingId}-${Date.now()}`;
   const now = new Date().toISOString();
-  
+
   const job: GitHubJob = {
     jobId,
     onboardingId: params.onboardingId,
@@ -65,8 +69,8 @@ export async function createGitHubJob(params: {
     owner: params.owner,
     repoName: params.repoName,
     repoUrl: params.repoUrl,
-    githubToken: params.githubToken, // Spara temporärt för worker
-    status: 'queued',
+    githubToken: params.githubToken,
+    status: params.status ?? 'queued',
     createdAt: now,
     updatedAt: now,
   };

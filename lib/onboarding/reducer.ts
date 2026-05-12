@@ -104,7 +104,7 @@ export type OnboardingState = {
     repoLink?: string;
     codeText?: string;
     fileName?: string;
-    codeSource?: 'github' | 'manual';
+    codeSource?: 'github' | 'manual' | 'upload';
     storageObjectUrl?: string;
   } | null;
   github: {
