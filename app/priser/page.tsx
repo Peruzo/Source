@@ -105,10 +105,27 @@ export default function PricingPage() {
   const router = useRouter();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
-  const goToOnboarding = (e: React.MouseEvent, planId: string) => {
+  const goToOnboarding = async (e: React.MouseEvent, planId: string) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Bevarad: lokal storage för befintlig getStoredPlanId()-läsning
     setStoredPlanId(planId);
+
+    // Robusthet: skicka package_selected-event till admin-portalen innan login.
+    // Detta garanterar att admin-portalen ALLTID har paket-valet registrerat
+    // även om kunden avbryter Stripe-flödet halvvägs. Best effort —
+    // navigation fortsätter oavsett resultat.
+    try {
+      await fetch('/api/onboarding/package-selected', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      });
+    } catch (err) {
+      console.error('[Pricing] Failed to register package selection:', err);
+    }
+
     router.push(`/onboarding/login?plan=${encodeURIComponent(planId)}`);
   };
 
