@@ -10,7 +10,7 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID;
 export type OnboardingEventInput =
   | { type: 'email_set'; payload: { email: string; name?: string } }
   | { type: 'questions_submitted'; payload: Record<string, any> }
-  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string } }
+  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual' | 'upload'; storageObjectUrl?: string } }
   | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string; source: 'github_oauth_callback'; oauth: { codeExchangeCompleted: boolean; accessTokenPresent: boolean } } }
   | { type: 'stripe_started'; payload: { accountId: string } }
   | { type: 'stripe_completed'; payload: { accountId: string } }
@@ -22,7 +22,7 @@ export type OnboardingEventInput =
 export type OnboardingEvent =
   | { type: 'email_set'; payload: { email: string; name?: string }; at: string }
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
-  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual'; storageObjectUrl?: string }; at: string }
+  | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual' | 'upload'; storageObjectUrl?: string }; at: string }
   | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string; source: 'github_oauth_callback'; oauth: { codeExchangeCompleted: boolean; accessTokenPresent: boolean } }; at: string }
   | { type: 'stripe_started'; payload: { accountId: string }; at: string }
   | { type: 'stripe_completed'; payload: { accountId: string }; at: string }
