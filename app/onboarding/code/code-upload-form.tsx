@@ -187,15 +187,20 @@ export function CodeUploadForm() {
           setGithubCallbackError(null);
           // Backend har redan append:at code_submitted; hämta state så att formuläret visar repoLink
           if (onboardingId) {
-            fetch(`/api/onboarding?onboardingId=${encodeURIComponent(onboardingId)}`)
-              .then((r) => r.ok ? r.json() : null)
-              .then((data) => {
+            try {
+              const r = await fetch(`/api/onboarding?onboardingId=${encodeURIComponent(onboardingId)}`);
+              if (r.ok) {
+                const data = await r.json();
                 if (!cancelled && data?.state?.code) {
                   setRepoLink(data.state.code.repoLink ?? '');
                   setCodeText(data.state.code.codeText ?? '');
                 }
-              })
-              .catch(() => {});
+              }
+            } catch {}
+          }
+          // Auto-fortsätt till Stripe när code är committed i FSM
+          if (!cancelled) {
+            handleStripeClick();
           }
         } else if (job.status === 'failed') {
           setGithubJobStatus('failed');
@@ -392,8 +397,14 @@ export function CodeUploadForm() {
           break;
         case 'started':
         case 'already_running':
-          // Visa loader / polling (hanteras av GitHub OAuth-flödet)
-          break;
+          // Worker uploadar fortfarande. Starta polling, vänta på 'completed'.
+          // Polling-useEffecten kommer trigga handleStripeClick när FSM är klar.
+          if (result.job.jobId) {
+            setGithubJobId(result.job.jobId);
+            setGithubJobStatus('processing');
+          }
+          setSubmitting(false);
+          return;
         case 'completed':
           // Fortsätt till Stripe
           break;
