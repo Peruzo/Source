@@ -5,6 +5,7 @@ import { listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/stor
 import { auth0 } from '@/lib/auth0';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
 import { streamUploadToWorker } from '@/lib/utils/worker-upload';
+import { createGitHubJob } from '@/lib/storage/github-jobs';
 
 /**
  * Sanitize filename: keep only alphanumerics, dots, dashes, underscores.
@@ -105,6 +106,24 @@ export async function POST(request: Request) {
       const jobId = crypto.randomBytes(16).toString('hex'); // 32-char hex, matches worker regex
 
       console.log('[Onboarding Code] ZIP upload — streaming to worker', { jobId, onboardingId, filename, size: file.size });
+
+      // Skapa GCS job-record så polling-endpointen kan hitta jobbet.
+      // Utan detta returnerar /api/github/job?jobId=... alltid 404 → polling
+      // fastnar för evigt → user-flödet kommer aldrig till Stripe-steget.
+      try {
+        await createGitHubJob({
+          jobId,
+          onboardingId,
+          userSub,
+          status: 'running',
+        });
+      } catch (err) {
+        console.error('[Onboarding Code] Failed to create job record:', err);
+        return NextResponse.json(
+          { success: false, error: 'JOB_STORE_UNAVAILABLE', message: 'Could not create job record.' },
+          { status: 502 }
+        );
+      }
 
       let workerResponse: Response;
       try {
