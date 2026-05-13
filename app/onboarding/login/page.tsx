@@ -1,9 +1,21 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { auth0 } from '@/lib/auth0';
 
 export const dynamic = 'force-dynamic';
 
 export default async function OnboardingLoginPage() {
+  // Robusthet-guard: kund MÅSTE ha kommit via /priser-sidan där paket valdes.
+  // Om source_selected_plan-cookie saknas → skicka tillbaka till /priser så
+  // de kan välja paket innan onboarding fortsätter. Detta garanterar att
+  // admin-portalen alltid har ett paket-event registrerat.
+  const cookieStore = await cookies();
+  const selectedPlan = cookieStore.get('source_selected_plan')?.value;
+
+  if (!selectedPlan) {
+    redirect('/priser');
+  }
+
   const session = await auth0.getSession();
 
   // 1️⃣ Ingen Auth0-session → skicka till login
