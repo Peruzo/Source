@@ -3,18 +3,23 @@ import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import { auth0 } from '@/lib/auth0';
 import { sendToAdminPortal } from '@/lib/api/admin-portal';
+import { getActiveOnboardingIdForSession } from '@/lib/storage/onboarding-sessions';
+import { isValidOnboardingId } from '@/lib/onboarding/onboarding-id';
 
 /**
  * POST /api/onboarding/package-selected
  *
  * Anropas från /priser-sidan när kund klickar på ett paket.
- * - Genererar onboardingId (UUID) om kunden inte redan har en sessionId-cookie
- * - Sätter cookies: source_onboarding_id + source_selected_plan
- * - Skickar package_selected-event till admin-portalen för auditerbar trail
  *
- * Backend-eventet säkerställer att admin-portalen ALLTID har paket-valet
- * registrerat innan kunden ens loggar in. Tyst defaulting till 'bas' kan
- * därmed inte ske om kunden gått igenom hemsida-flödet.
+ * Prioritetsordning för onboardingId (mest stabilt först):
+ *   1. Aktiv onboarding-session bunden till userSub (om Auth0-inloggad)
+ *   2. source_onboarding_id-cookie (om kund redan börjat anonymt)
+ *   3. Ny crypto.randomUUID()
+ *
+ * Effekt: en kund som klickar /priser → Growth → Bas → Growth genererar
+ * ALDRIG fler än EN onboarding-rad i admin-portalen. Admin-portalens
+ * idempotency-upsert per idempotencyKey ser bara ETT 'package_selected'-event
+ * som uppdateras vid varje klick.
  *
  * Body: { planId: 'bas' | 'growth' | 'enterprise' }
  */
@@ -32,15 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Återanvänd befintligt onboardingId från cookie om sådant finns
-    const cookieStore = await cookies();
-    let onboardingId = cookieStore.get('source_onboarding_id')?.value;
-
-    if (!onboardingId) {
-      onboardingId = crypto.randomUUID();
-    }
-
-    // Hämta Auth0-session om kunden är inloggad (för att binda till user)
+    // Hämta Auth0-session om kunden är inloggad
     let userSub: string | null = null;
     let userEmail: string | null = null;
     try {
@@ -51,7 +48,39 @@ export async function POST(request: Request) {
       // Inte inloggad — det är förväntat på /priser
     }
 
+    const cookieStore = await cookies();
+    const cookieOnboardingId = cookieStore.get('source_onboarding_id')?.value;
+
+    // Bestäm onboardingId i prioritetsordning
+    let onboardingId: string | null = null;
+
+    // Prio 1: Auth0-inloggad → leta upp existing onboarding för userSub
+    if (userSub) {
+      try {
+        onboardingId = await getActiveOnboardingIdForSession(userSub);
+        if (onboardingId) {
+          console.log('[Package Selected] Using existing onboarding for userSub:', { onboardingId, userSub });
+        }
+      } catch (err) {
+        console.warn('[Package Selected] Failed to lookup existing onboarding for userSub:', err);
+      }
+    }
+
+    // Prio 2: cookie-UUID (anonym kund som klickat /priser tidigare)
+    if (!onboardingId && cookieOnboardingId && isValidOnboardingId(cookieOnboardingId)) {
+      onboardingId = cookieOnboardingId;
+      console.log('[Package Selected] Using existing onboarding from cookie:', { onboardingId });
+    }
+
+    // Prio 3: generera nytt UUID (helt ny kund)
+    if (!onboardingId) {
+      onboardingId = crypto.randomUUID();
+      console.log('[Package Selected] Generated new onboarding:', { onboardingId });
+    }
+
     // Skicka event till admin-portalen (best effort, non-blocking)
+    // Idempotency-key är konstant för samma onboardingId — admin-portalen upsertar
+    // så multipla klick på samma kund-session uppdaterar EN rad, inte skapar nya.
     sendToAdminPortal('onboarding', {
       idempotencyKey: `onboarding-${onboardingId}-package-selected`,
       publicOnboardingId: onboardingId,
@@ -72,9 +101,8 @@ export async function POST(request: Request) {
       console.error('[Package Selected] Admin sync failed (non-blocking):', err);
     });
 
-    // Sätt cookies — onboardingId och selectedPlan
-    // httpOnly: false eftersom getStoredPlanId() läser från localStorage
-    // (vi sätter cookien för server-side guards som /onboarding/login)
+    // Sätt cookies för bevarad UUID under hela kund-resan (7 dagar)
+    // httpOnly: false så frontend kan läsa (legacy getStoredPlanId-helper).
     const response = NextResponse.json({
       success: true,
       onboardingId,
@@ -97,15 +125,7 @@ export async function POST(request: Request) {
       path: '/',
     });
 
-    console.log('[Package Selected]', { onboardingId, planId, userSub });
-
-    return NextResponse.json({
-      success: true,
-      onboardingId,
-      planId,
-    }, {
-      headers: response.headers,
-    });
+    return response;
   } catch (error) {
     console.error('[Package Selected] Error:', error);
     return NextResponse.json(

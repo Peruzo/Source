@@ -122,19 +122,17 @@ export async function POST(request: NextRequest) {
       console.warn(`[Onboarding Start] Admin ingest failed (non-blocking) for onboarding ${onboardingId}:`, err);
     });
     
-    // Konsumera source_onboarding_id-cookien efter användning så den inte återanvänds
-    // av en annan kund som loggar in på samma device. Cookien har redan tjänat sitt syfte:
-    // att bevara UUID:t från /priser-klicket till login.
-    const response = NextResponse.json({
+    // KÄLLA av sanningen är userSub-bundet onboardingId via getActiveOnboardingIdForSession.
+    // Cookien tjänar bara som bro mellan anonyma /priser-klick och inloggat onboarding-flöde.
+    // Vi konsumerar INTE cookien — den ska kunna återanvändas vid /priser-klick även efter
+    // login (t.ex. om kund går tillbaka och byter paket). När en NY kund signupar på samma
+    // device skapar vi en ny session bunden till deras userSub; deras package_selected-flöde
+    // läser då sin userSub-bundna onboarding via getActiveOnboardingIdForSession (prio 1).
+    return NextResponse.json({
       onboardingId,
       userSub,
       isAnonymous,
     });
-    response.cookies.set('source_onboarding_id', '', {
-      maxAge: 0,
-      path: '/',
-    });
-    return response;
   } catch (error) {
     console.error('[Onboarding Start] Error:', error);
     return NextResponse.json({ error: 'Failed to start onboarding' }, { status: 500 });
