@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getActiveOnboardingIdForSession, createNewOnboardingSession, bindOnboardingToSession, getActiveOnboardingForSession } from '@/lib/storage/onboarding-sessions';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
@@ -57,10 +58,22 @@ export async function POST(request: NextRequest) {
     let onboardingId = await getActiveOnboardingIdForSession(userSub);
     
     if (!onboardingId || forceNew) {
-      // Skapa ny onboarding endast om ingen finns (eller vid forceNew)
-      onboardingId = await createNewOnboardingSession(userSub);
-      console.log(`[Onboarding Start] Created new onboarding session${forceNew ? ' (forceNew)' : ''}: ${onboardingId} for userSub: ${userSub}`);
-      
+      // Läs source_onboarding_id-cookie satt på /priser via /api/onboarding/package-selected.
+      // Om cookien finns ska vi använda samma UUID som package_selected-eventet så att
+      // hela kedjan av events (package_selected → start → questions → code → stripe)
+      // delar ett gemensamt UUID. Annars skapas två separata 'inkommande'-rader i admin.
+      const cookieStore = await cookies();
+      const cookieOnboardingId = cookieStore.get('source_onboarding_id')?.value;
+
+      // Skapa ny onboarding — använd cookie-UUID om det finns, annars generera nytt
+      onboardingId = await createNewOnboardingSession(userSub, cookieOnboardingId);
+      console.log(
+        `[Onboarding Start] Created new onboarding session${forceNew ? ' (forceNew)' : ''}: ${onboardingId} for userSub: ${userSub}` +
+        (cookieOnboardingId && cookieOnboardingId === onboardingId
+          ? ' (from source_onboarding_id-cookie)'
+          : '')
+      );
+
       // KRITISKT: Bind onboardingId till sessionId (förhindrar att onboardingId ändras)
       bindOnboardingToSession(userSub, onboardingId);
     } else {
@@ -109,11 +122,19 @@ export async function POST(request: NextRequest) {
       console.warn(`[Onboarding Start] Admin ingest failed (non-blocking) for onboarding ${onboardingId}:`, err);
     });
     
-    return NextResponse.json({ 
-      onboardingId, 
+    // Konsumera source_onboarding_id-cookien efter användning så den inte återanvänds
+    // av en annan kund som loggar in på samma device. Cookien har redan tjänat sitt syfte:
+    // att bevara UUID:t från /priser-klicket till login.
+    const response = NextResponse.json({
+      onboardingId,
       userSub,
       isAnonymous,
     });
+    response.cookies.set('source_onboarding_id', '', {
+      maxAge: 0,
+      path: '/',
+    });
+    return response;
   } catch (error) {
     console.error('[Onboarding Start] Error:', error);
     return NextResponse.json({ error: 'Failed to start onboarding' }, { status: 500 });

@@ -153,8 +153,17 @@ export async function getActiveOnboardingId(userSub: string): Promise<string | n
  * Skapar en ny onboarding-session (tvingar ny onboardingId).
  * Används när användaren startar en ny onboarding från början.
  */
-export async function createNewOnboardingSession(userSub: string): Promise<string> {
-  const onboardingId = generateOnboardingId();
+export async function createNewOnboardingSession(
+  userSub: string,
+  predefinedId?: string
+): Promise<string> {
+  // Om predefinedId ges (t.ex. från source_onboarding_id-cookie satt på /priser),
+  // validera och använd den istället för att generera ny.
+  // Detta säkerställer att alla events i en onboarding delar samma UUID från första
+  // klicket på /priser till slutförd Stripe.
+  const onboardingId = predefinedId && isValidOnboardingId(predefinedId)
+    ? predefinedId
+    : generateOnboardingId();
   const now = new Date().toISOString();
   const session: OnboardingSession = {
     onboardingId,
