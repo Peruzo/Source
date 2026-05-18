@@ -104,10 +104,18 @@ import { setStoredPlanId } from '@/lib/onboarding/selected-plan';
 export default function PricingPage() {
   const router = useRouter();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [submittingPlanId, setSubmittingPlanId] = useState<string | null>(null);
 
   const goToOnboarding = async (e: React.MouseEvent, planId: string) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Bug 3 race-condition fix: blockera multipla parallella klick.
+    // Utan denna guard kan flera snabba klick (<10ms) skapa flera olika
+    // UUIDs eftersom första cookien inte hunnit sättas. Resultat: 3-6
+    // inkommande-rader för EN onboarding i admin-portalen.
+    if (submittingPlanId !== null) return;
+    setSubmittingPlanId(planId);
 
     // Bevarad: lokal storage för befintlig getStoredPlanId()-läsning
     setStoredPlanId(planId);
@@ -126,6 +134,10 @@ export default function PricingPage() {
       console.error('[Pricing] Failed to register package selection:', err);
     }
 
+    // router.push() triggar navigation — ingen reset av submittingPlanId
+    // behövs eftersom komponenten unmountas. Om navigation failade av
+    // någon anledning skulle vi behöva resetta, men det är extremt sällsynt
+    // i Next.js client-side navigation.
     router.push(`/onboarding/login?plan=${encodeURIComponent(planId)}`);
   };
 
@@ -256,13 +268,14 @@ export default function PricingPage() {
                 <button
                   type="button"
                   onClick={(e) => goToOnboarding(e, plan.planId)}
-                  className={`block w-full text-center font-semibold transition-all duration-300 px-8 py-4 text-base rounded-xl ${
+                  disabled={submittingPlanId !== null}
+                  className={`block w-full text-center font-semibold transition-all duration-300 px-8 py-4 text-base rounded-xl disabled:opacity-60 disabled:cursor-not-allowed ${
                     plan.featured
                       ? 'bg-teal text-white hover:bg-teal-hover'
                       : 'bg-transparent text-teal border-2 border-teal hover:bg-teal hover:text-white'
                   }`}
                 >
-                  {plan.cta}
+                  {submittingPlanId === plan.planId ? 'Skickar...' : plan.cta}
                 </button>
               </motion.div>
             ))}
