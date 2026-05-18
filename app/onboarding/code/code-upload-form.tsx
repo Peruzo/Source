@@ -43,6 +43,7 @@ export function CodeUploadForm() {
   /** Sätt när GitHub-job completed (innan state har refetch:ats) så att vi aldrig POST:ar och knappen är klickbar. */
   const [codePersistedByBackend, setCodePersistedByBackend] = useState(false);
   const [connectingGithub, setConnectingGithub] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   console.log('===== CODE UPLOAD DEBUG =====');
   console.log('state:', state);
@@ -343,9 +344,91 @@ export function CodeUploadForm() {
 
     setSubmitting(true);
 
-    // KRITISKT: Hämta sessionId från anonym onboarding-session (samma källa som onboardingId)
-    // Backend kräver anon_<uuid> i FormData, inte userSub från hook
-    // Backend avgör om tomt sessionId är OK eller inte
+    // Bug 8 — ZIP-upload-branch via direct GCS (bypassar Cloud Run 32 MB-limit)
+    if (file) {
+      try {
+        // Steg 1: Begär signed PUT URL
+        setUploadProgress(0);
+        const urlResponse = await fetch('/api/onboarding/code/generate-upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            onboardingId,
+            fileName: file.name,
+            fileSize: file.size,
+            contentType: file.type || 'application/zip',
+          }),
+        });
+
+        const urlData = await urlResponse.json();
+        if (!urlData.success) {
+          throw new Error(urlData.message || urlData.error || 'Kunde inte begära uppladdnings-URL');
+        }
+
+        const { jobId, uploadUrl, gcsPath } = urlData;
+
+        // Steg 2: PUT direkt till GCS med progress (XHR krävs för upload-events)
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', uploadUrl);
+          xhr.setRequestHeader('Content-Type', file.type || 'application/zip');
+
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              setUploadProgress(Math.round((e.loaded / e.total) * 100));
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              reject(new Error(`GCS upload misslyckades (status ${xhr.status})`));
+            }
+          });
+
+          xhr.addEventListener('error', () => reject(new Error('Nätverksfel under uppladdning')));
+          xhr.addEventListener('abort', () => reject(new Error('Uppladdning avbruten')));
+
+          xhr.send(file);
+        });
+
+        // Steg 3: Finalize — PATCH admin + append code_submitted-event
+        const finalizeResponse = await fetch('/api/onboarding/code/finalize-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            onboardingId,
+            jobId,
+            gcsPath,
+            fileName: file.name,
+            fileSize: file.size,
+          }),
+        });
+
+        const finalizeData = await finalizeResponse.json();
+        if (!finalizeData.success) {
+          throw new Error(finalizeData.message || finalizeData.error || 'Finalize misslyckades');
+        }
+
+        // Trigga polling så frontend visar 'Processing repository...' tills FSM är klar
+        // Polling-endpointen (/api/github/job?jobId=...) detekterar GCS-filen och
+        // sätter status='completed' om finalize inte hann uppdatera än.
+        setGithubJobId(jobId);
+        setGithubJobStatus('processing');
+        setUploadProgress(null);
+        setSubmitting(false);
+        return;
+      } catch (uploadErr) {
+        console.error('[Code Upload] Direct GCS upload failed:', uploadErr);
+        setError(uploadErr instanceof Error ? uploadErr.message : 'Uppladdning misslyckades');
+        setUploadProgress(null);
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    // ── Branch: repoLink eller codeText (oförändrat befintligt flöde) ──────────
     const sessionId = getAnonymousSessionIdFromCookie() || '';
 
     const formData = new FormData();
@@ -353,9 +436,6 @@ export function CodeUploadForm() {
     formData.append('onboardingId', onboardingId);
     formData.append('repoLink', repoLink);
     formData.append('codeText', codeText);
-    if (file) {
-      formData.append('file', file);
-    }
 
     const response = await fetch('/api/onboarding/code', {
       method: 'POST',
@@ -475,6 +555,20 @@ export function CodeUploadForm() {
             disabled={isReadOnly}
             className="hidden"
           />
+          {uploadProgress !== null && (
+            <div className="mt-3">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Laddar upp...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-150"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
