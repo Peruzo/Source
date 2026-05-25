@@ -14,8 +14,8 @@ export type SelectedPlan = {
 
 const PLANS: SelectedPlan[] = [
   {
-    planId: 'bas',
-    name: 'Bas',
+    planId: 'core',
+    name: 'Core',
     price: '399',
     currency: 'SEK',
     interval: 'månad',
@@ -34,7 +34,7 @@ const PLANS: SelectedPlan[] = [
     currency: 'SEK',
     interval: 'månad',
     features: [
-      'Allt i Bas, plus:',
+      'Allt i Core, plus:',
       'Obegränsat antal sidor och design',
       'Rapporter',
       'Kontaktformulär till kundportal',

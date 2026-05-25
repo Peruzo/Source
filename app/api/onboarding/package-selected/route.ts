@@ -21,7 +21,7 @@ import { isValidOnboardingId } from '@/lib/onboarding/onboarding-id';
  * idempotency-upsert per idempotencyKey ser bara ETT 'package_selected'-event
  * som uppdateras vid varje klick.
  *
- * Body: { planId: 'bas' | 'growth' | 'enterprise' }
+ * Body: { planId: 'core' | 'growth' | 'enterprise' } (legacy 'bas' accepteras under övergångsperiod)
  */
 export async function POST(request: Request) {
   try {
@@ -29,7 +29,9 @@ export async function POST(request: Request) {
     const planId = typeof body.planId === 'string' ? body.planId.toLowerCase() : null;
 
     // Validera planId
-    const VALID_PLANS = ['bas', 'growth', 'enterprise'];
+    // Övergångsperiod: 'bas' accepteras parallellt med 'core' för att skydda
+    // mot stale klient-JS i öppna tabbar. Tas bort i PR A6.1 (tidigast 14 dagar efter merge).
+    const VALID_PLANS = ['bas', 'core', 'growth', 'enterprise'];
     if (!planId || !VALID_PLANS.includes(planId)) {
       return NextResponse.json(
         { success: false, error: 'INVALID_PLAN', validPlans: VALID_PLANS },
