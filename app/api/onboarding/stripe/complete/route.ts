@@ -199,7 +199,7 @@ export async function POST(request: Request) {
       variables: {
         contactName: firstName || authEmail,
         companyName: companyName || 'ditt företag',
-        package: planId || 'bas',
+        package: planId || 'core',
       },
     }).catch(() => {});
 

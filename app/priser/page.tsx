@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const pricingPlans = [
   {
-    planId: 'bas',
+    planId: 'core',
     name: 'Core',
     price: '799',
     description: 'Perfekt för att komma igång med din online-närvaro',
@@ -33,7 +33,7 @@ const pricingPlans = [
     badge: 'Mest valda',
     description: 'Komplett lösning för att växa din verksamhet online',
     features: [
-      'Allt i Bas, plus:',
+      'Allt i Core, plus:',
       'Obegränsat antal sidor och design.',
       'Rapporter',
       'Kontaktformulär på hemsida till kundportal',
