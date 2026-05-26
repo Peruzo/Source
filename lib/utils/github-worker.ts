@@ -64,7 +64,6 @@ export async function triggerExternalGitHubWorker(
 
   const workerUrl = `${GITHUB_WORKER_URL}/run-job`;
 
-  console.log(`[GitHub Worker] Triggering external worker: ${workerUrl} for job ${jobId}`);
 
   const response = await fetch(workerUrl, {
     method: 'POST',
@@ -84,6 +83,5 @@ export async function triggerExternalGitHubWorker(
     );
   }
 
-  console.log(`[GitHub Worker] External worker accepted job ${jobId}`);
   return { accepted: true, body: responseBody };
 }

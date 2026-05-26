@@ -40,7 +40,6 @@ export async function sendToAdminPortal(
       });
 
       if (response.ok) {
-        console.log(`[Integration] ${endpoint} succeeded`);
         return response.status === 204 ? { success: true } : await response.json();
       }
 
@@ -159,7 +158,6 @@ export async function patchAdminOnboarding(
       console.error(`[Admin Portal] PATCH ${segment} failed: ${response.status}`, text);
       return;
     }
-    console.log(`[Admin Portal] PATCH ${segment} succeeded for onboarding ${onboardingId}`);
   } catch (err) {
     console.error(`[Admin Portal] PATCH ${segment} error:`, err);
   }

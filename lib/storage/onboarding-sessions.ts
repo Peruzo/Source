@@ -78,7 +78,6 @@ export async function getOrCreateActiveOnboardingId(userSub: string): Promise<st
       
       // Verifiera att sessionen tillhör rätt userSub
       if (session.userSub === userSub && isValidOnboardingId(session.onboardingId)) {
-        console.log(`[Onboarding Sessions] Found existing onboardingId: ${session.onboardingId} for userSub: ${userSub}`);
         return session.onboardingId;
       }
     }
@@ -107,7 +106,6 @@ export async function getOrCreateActiveOnboardingId(userSub: string): Promise<st
     },
   });
 
-  console.log(`[Onboarding Sessions] Created new onboardingId: ${onboardingId} for userSub: ${userSub}`);
   return onboardingId;
 }
 
@@ -189,6 +187,5 @@ export async function createNewOnboardingSession(
     },
   });
 
-  console.log(`[Onboarding Sessions] Created new onboarding session: ${onboardingId} for userSub: ${userSub}`);
   return onboardingId;
 }

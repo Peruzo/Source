@@ -17,20 +17,11 @@ export function useOnboardingState(userSub: string | null | undefined, onboardin
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('[useOnboardingState] useEffect triggered:', {
-      userSub,
-      userSubIsEmpty: !userSub,
-      userSubType: typeof userSub,
-      onboardingId,
-      onboardingIdIsNull: onboardingId === null,
-      onboardingIdIsUndefined: onboardingId === undefined
-    });
 
     // KRITISK FIX: userSub är valfri för public onboarding
     // Hooken kräver ENDAST onboardingId - userSub kan vara null/undefined/tom sträng
     // Om onboardingId saknas, vänta tills den är tillgänglig
     if (onboardingId === undefined || onboardingId === null) {
-      console.log('[useOnboardingState] Waiting for onboardingId');
       setLoading(true);
       return;
     }
@@ -47,26 +38,7 @@ export function useOnboardingState(userSub: string | null | undefined, onboardin
           throw new Error(`Failed to load onboarding: ${res.status}`);
         }
         const data = await res.json();
-        console.log('[useOnboardingState] RAW API response:', {
-          onboardingId,
-          userSub,
-          responseState: data.state,
-          responseStateStatus: data.state?.status,
-          responseStateIsNull: data.state === null,
-          responseStateIsUndefined: data.state === undefined,
-          eventsCount: data.eventsCount,
-          responseOnboardingId: data.onboardingId,
-          fullResponse: JSON.stringify(data, null, 2),
-          responseType: typeof data.state
-        });
         if (!cancelled) {
-          console.log('[useOnboardingState] Setting state:', {
-            onboardingId,
-            userSub,
-            stateToSet: data.state,
-            stateToSetStatus: data.state?.status,
-            stateToSetIsNull: data.state === null
-          });
           setState(data.state);
           setError(null);
         }
@@ -89,10 +61,6 @@ export function useOnboardingState(userSub: string | null | undefined, onboardin
     };
   }, [userSub, onboardingId]);
 
-  console.log('=== FINAL HOOK STATE ===');
-  console.log('hook state value:', state);
-  console.log('hook loading:', loading);
-  console.log('========================');
 
   return { state, loading, error };
 }

@@ -30,11 +30,8 @@ export async function sendTransactionalEmail({
     }
 
     const fullPath = path.join(process.cwd(), templatePath);
-    console.log('[Mail] Reading template from:', fullPath);
     const templateHtml = await fs.readFile(fullPath, 'utf-8');
-    console.log('[Mail] Template length:', templateHtml.length);
     const html = compileTemplate(templateHtml, variables);
-    console.log('[Mail] Compiled HTML length:', html.length);
 
     const mailchimp = require('@mailchimp/mailchimp_transactional')(MAILCHIMP_API_KEY);
 
@@ -58,7 +55,6 @@ export async function sendTransactionalEmail({
       throw new Error(`Mailchimp rejected email: ${emailResult.reject_reason}`);
     }
 
-    console.log('[Mail] Sent:', { to, subject, status: emailResult.status });
   } catch (error) {
     console.error('[Mail] Failed to send email:', error);
     // Kasta inte vidare – mail är non-blocking
