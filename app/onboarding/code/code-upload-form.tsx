@@ -15,21 +15,8 @@ export function CodeUploadForm() {
   const searchParams = useSearchParams();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const hookResult = useOnboardingState(userSub || '', onboardingId);
-  console.log('HOOK RESULT OBJECT:', hookResult);
   const { state, loading: stateLoading } = hookResult;
 
-  // Debug: Logga state när den ändras
-  useEffect(() => {
-    console.log('[CodeUploadForm] State updated:', {
-      onboardingId,
-      userSub,
-      stateStatus: state?.status,
-      stateCode: state?.code,
-      stateGithub: state?.github,
-      loading: stateLoading,
-      fullState: state
-    });
-  }, [state, onboardingId, userSub, stateLoading]);
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -45,17 +32,6 @@ export function CodeUploadForm() {
   const [connectingGithub, setConnectingGithub] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  console.log('===== CODE UPLOAD DEBUG =====');
-  console.log('state:', state);
-  console.log('state.status:', state?.status);
-  console.log('state.github:', state?.github);
-  console.log('state.github?.verified:', state?.github?.verified);
-  console.log('onboardingId:', onboardingId);
-  console.log('repoLink:', repoLink);
-  console.log('privateRepoPrompt:', privateRepoPrompt);
-  console.log('showGithubAuthButton:', showGithubAuthButton);
-  console.log('error:', error);
-  console.log('================================');
 
   /** När true: backend har redan code (GitHub/ZIP/tidigare POST). POST /api/onboarding/code får ALDRIG anropas. */
   const codeAlreadyInBackendRef = useRef(false);
@@ -294,13 +270,6 @@ export function CodeUploadForm() {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    console.log('[handleSubmit] fired', {
-      stateStatus: state?.status,
-      codeFromBackend,
-      submitting,
-      githubJobStatus,
-      onboardingId: !!onboardingId
-    });
     event.preventDefault();
     setError('');
 
@@ -494,17 +463,6 @@ export function CodeUploadForm() {
     handleStripeClick();
   };
 
-  console.log('===== CODE UPLOAD DEBUG =====');
-  console.log('state:', state);
-  console.log('state.status:', state?.status);
-  console.log('state.github:', state?.github);
-  console.log('state.github?.verified:', state?.github?.verified);
-  console.log('onboardingId:', onboardingId);
-  console.log('repoLink:', repoLink);
-  console.log('privateRepoPrompt:', privateRepoPrompt);
-  console.log('showGithubAuthButton:', showGithubAuthButton);
-  console.log('error:', error);
-  console.log('================================');
 
   const submitDisabled =
     submitting ||
