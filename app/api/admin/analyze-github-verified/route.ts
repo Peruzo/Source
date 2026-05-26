@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
   try {
     // Hämta alla onboardingId
     const allOnboardingIds = await listAllOnboardingIds();
-    console.log(`[Analyze GitHub Verified] Found ${allOnboardingIds.length} onboarding IDs`);
 
     const results: Array<{
       onboardingId: string;

@@ -53,7 +53,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('[Finalize Upload] Processing', { jobId, onboardingId, gcsPath, fileSize });
 
     // PATCH admin-portalen så onboarding visar "har kod" (samma payload-form som worker)
     try {
@@ -92,7 +91,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('[Finalize Upload] Completed', { jobId, onboardingId });
 
     return NextResponse.json({
       success: true,

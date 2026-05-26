@@ -127,7 +127,6 @@ export async function POST(request: Request) {
 
     const gcsPath = `gs://${BUCKET}/${storagePath}`;
 
-    console.log('[Generate Upload URL] Generated', { jobId, onboardingId, fileName: safeFileName, fileSize, gcsPath });
 
     return NextResponse.json({
       success: true,

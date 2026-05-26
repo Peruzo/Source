@@ -38,7 +38,6 @@ export async function POST(request: Request) {
     
     const userSub = session.user.sub;
     const authEmail = typeof session.user.email === 'string' ? session.user.email.trim().toLowerCase() : '';
-    console.log('[Onboarding Step] Using Auth0 userSub:', userSub);
 
     const body = await request.json();
     const { onboardingId: providedOnboardingId, step, nextStep, answers, data } = body || {};
@@ -54,7 +53,6 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
-    console.log('[Onboarding Step] Using onboardingId:', onboardingId);
 
     // BACKEND TOLERANS: Om step saknas → inferera från nuvarande FSM-state
     let currentStep = step;
@@ -71,7 +69,6 @@ export async function POST(request: Request) {
       } else {
         currentStep = 'questions'; // Default fallback
       }
-      console.log(`[Onboarding Step] Inferred step from FSM state: ${currentStep} (status: ${tempState.status})`);
     }
 
     // Använd answers om det finns, annars data (bakåtkompatibilitet)
@@ -107,7 +104,6 @@ export async function POST(request: Request) {
           type: 'questions_submitted',
           payload: payloadData,
         });
-        console.log(`[Onboarding Step] Appended questions_submitted event for onboarding ${onboardingId}`);
         
         // Om email finns i payloadData (från questions-formuläret), spara det också i onboarding-state
         if (payloadData.userEmail && typeof payloadData.userEmail === 'string' && payloadData.userEmail.trim()) {
@@ -187,13 +183,11 @@ export async function POST(request: Request) {
 
     // För questions: nextStep bestäms ALLTID från hasExistingSite på backend (strikt 'Ja' → code)
     const hasExistingSiteRaw = currentStep === 'questions' ? payloadData.hasExistingSite : undefined;
-    console.log('[Onboarding Step] hasExistingSite (raw):', hasExistingSiteRaw, 'type:', typeof hasExistingSiteRaw, 'state.status:', state.status);
 
     let determinedNextStep: string | undefined;
     if (currentStep === 'questions') {
       // Strikt: endast exakt strängen "Ja" → code, annars (Nej, undefined, annan casing) → stripe
       determinedNextStep = hasExistingSiteRaw === 'Ja' ? 'code' : 'stripe';
-      console.log('[Onboarding Step] determinedNextStep (from hasExistingSite):', determinedNextStep);
     } else if (nextStep) {
       determinedNextStep = nextStep;
     }
@@ -230,7 +224,6 @@ export async function POST(request: Request) {
     } else {
       // Skicka ett separat questions-record till admin-portalen
       if (currentStep === 'questions') {
-        console.log('[Step] Sending questions record to admin portal, onboardingId:', onboardingId, 'data keys:', Object.keys(payloadData || {}));
         sendToAdminPortal('onboarding', {
           idempotencyKey: `onboarding-${onboardingId}-questions`,
           onboardingId,

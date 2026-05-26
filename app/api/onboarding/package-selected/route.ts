@@ -61,7 +61,6 @@ export async function POST(request: Request) {
       try {
         onboardingId = await getActiveOnboardingIdForSession(userSub);
         if (onboardingId) {
-          console.log('[Package Selected] Using existing onboarding for userSub:', { onboardingId, userSub });
         }
       } catch (err) {
         console.warn('[Package Selected] Failed to lookup existing onboarding for userSub:', err);
@@ -71,13 +70,11 @@ export async function POST(request: Request) {
     // Prio 2: cookie-UUID (anonym kund som klickat /priser tidigare)
     if (!onboardingId && cookieOnboardingId && isValidOnboardingId(cookieOnboardingId)) {
       onboardingId = cookieOnboardingId;
-      console.log('[Package Selected] Using existing onboarding from cookie:', { onboardingId });
     }
 
     // Prio 3: generera nytt UUID (helt ny kund)
     if (!onboardingId) {
       onboardingId = crypto.randomUUID();
-      console.log('[Package Selected] Generated new onboarding:', { onboardingId });
     }
 
     // Skicka event till admin-portalen (best effort, non-blocking)

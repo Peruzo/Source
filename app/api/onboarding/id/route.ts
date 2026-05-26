@@ -35,7 +35,6 @@ export async function GET() {
       return NextResponse.json({ onboardingId: null }, { status: 200 });
     }
 
-    console.log('[Onboarding ID] Using anonymous sessionId:', sessionId);
 
     const onboardingId = await getActiveOnboardingIdForSession(sessionId);
 
