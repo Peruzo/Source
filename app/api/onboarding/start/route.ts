@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     
     const userSub = session.user.sub;
     const isAnonymous = false;
-    console.log(`[Onboarding Start] Using Auth0 userSub: ${userSub}`);
     
     // Läs forceNew och email från request body (email kommer från signup-context)
     let forceNew = false;
@@ -67,17 +66,10 @@ export async function POST(request: NextRequest) {
 
       // Skapa ny onboarding — använd cookie-UUID om det finns, annars generera nytt
       onboardingId = await createNewOnboardingSession(userSub, cookieOnboardingId);
-      console.log(
-        `[Onboarding Start] Created new onboarding session${forceNew ? ' (forceNew)' : ''}: ${onboardingId} for userSub: ${userSub}` +
-        (cookieOnboardingId && cookieOnboardingId === onboardingId
-          ? ' (from source_onboarding_id-cookie)'
-          : '')
-      );
 
       // KRITISKT: Bind onboardingId till sessionId (förhindrar att onboardingId ändras)
       bindOnboardingToSession(userSub, onboardingId);
     } else {
-      console.log(`[Onboarding Start] Reusing existing onboarding: ${onboardingId} for userSub: ${userSub}`);
       // Bind om den inte redan är bunden (t.ex. från GCS)
       if (!getActiveOnboardingForSession(userSub)) {
         bindOnboardingToSession(userSub, onboardingId);

@@ -73,7 +73,6 @@ export async function GET(request: NextRequest) {
 
             const gcsPath = `gs://${BUCKET}/${zipFileName}`;
             
-            console.log(`[GitHub Job] ZIP file found for job ${jobId}, updating to completed. Size: ${sizeMB} MB`);
             
             // Uppdatera job-status till completed med GCS-path och size
             await updateJobStatus(jobId, 'completed', {
@@ -98,7 +97,6 @@ export async function GET(request: NextRequest) {
                   storageObjectUrl: gcsPath,
                 },
               });
-              console.log(`[GitHub Job] Onboarding ${job.onboardingId} updated with code_submitted (${codeSource})`);
             } catch (eventErr) {
               console.error('[GitHub Job] Failed to append code_submitted for onboarding:', eventErr);
             }

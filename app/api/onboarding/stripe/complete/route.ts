@@ -25,7 +25,6 @@ export async function POST(request: Request) {
     }
     
     const userSub = session.user.sub;
-    console.log('[Onboarding Stripe Complete] userSub =', userSub);
 
     const body = await request.json();
     const { accountId, onboardingId: providedOnboardingId, planId } = body || {};
@@ -43,7 +42,6 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
-    console.log('[Onboarding Stripe Complete] Using onboardingId:', onboardingId);
 
     // Hämta state för att verifiera status
     const events = await listOnboardingEvents(onboardingId);
@@ -102,7 +100,6 @@ export async function POST(request: Request) {
         try {
           const persons = await (stripe as any).accounts.listPersons(accountId, { limit: 10 });
           rep = persons.data?.[0] || null;
-          console.log('[Stripe Complete] Persons fetched:', persons.data?.length || 0);
         } catch (personsError) {
           console.warn('[Stripe Complete] Could not fetch persons:', personsError);
         }
@@ -161,7 +158,6 @@ export async function POST(request: Request) {
           payoutSchedule: account.settings?.payouts?.schedule?.interval || null,
           selectedPlan: planId || null,
         };
-        console.log('[Stripe Complete] Retrieved full account data for', accountId);
       }
     } catch (stripeError) {
       console.warn('[Stripe Complete] Could not retrieve full account data:', stripeError);

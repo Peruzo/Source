@@ -30,7 +30,6 @@ export async function POST(request: Request) {
     }
 
     const userSub = session.user.sub;
-    console.log('[Onboarding Code] Using Auth0 userSub:', userSub);
 
     // ── Parse multipart/form-data ─────────────────────────────────────────────
     // TODO: replace with streaming multipart parser for files >32MB.
@@ -47,7 +46,6 @@ export async function POST(request: Request) {
     }
 
     const onboardingId = providedOnboardingId;
-    console.log('[Onboarding Code] Using onboardingId:', onboardingId);
 
     const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '').trim();
@@ -105,7 +103,6 @@ export async function POST(request: Request) {
       const filename = sanitizeFilename(rawFilename);
       const jobId = crypto.randomBytes(16).toString('hex'); // 32-char hex, matches worker regex
 
-      console.log('[Onboarding Code] ZIP upload — streaming to worker', { jobId, onboardingId, filename, size: file.size });
 
       // Skapa GCS job-record så polling-endpointen kan hitta jobbet.
       // Utan detta returnerar /api/github/job?jobId=... alltid 404 → polling
@@ -172,7 +169,6 @@ export async function POST(request: Request) {
       const events = await listOnboardingEvents(onboardingId);
       const githubVerification = isGithubRepoVerifiedFromEvents(events);
       if (githubVerification.verified) {
-        console.log('[Onboarding Code] GitHub repo already OAuth-verified, job started by callback', { onboardingId, repoSlug });
         return NextResponse.json({
           success: true,
           job: {
@@ -185,7 +181,6 @@ export async function POST(request: Request) {
       // Public repo: trigger worker directly (no OAuth token needed)
       const jobId = crypto.randomBytes(16).toString('hex');
 
-      console.log('[Onboarding Code] Public repo — triggering worker', { jobId, onboardingId, repoSlug });
 
       let result;
       try {

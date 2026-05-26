@@ -46,7 +46,6 @@ export async function POST(request: Request) {
     }
     
     const userSub = session.user.sub;
-    console.log('[Onboarding Stripe] Using Auth0 userSub:', userSub);
 
     const body = await request.json();
     const providedOnboardingId = body.onboardingId;
@@ -60,11 +59,9 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
-    console.log('[Onboarding Stripe] Using onboardingId:', onboardingId);
 
     // Använd canonical base URL (throwar error om den saknas, ingen fallback till localhost)
     const baseUrl = getBaseUrl();
-    console.log(`[Stripe] Using base URL for redirects: ${baseUrl}`);
 
     // Hämta state från onboarding-state (inte Auth0 session)
     const events = await listOnboardingEvents(onboardingId);
