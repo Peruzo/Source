@@ -32,9 +32,6 @@ export async function POST(request: Request) {
     const userSub = session.user.sub;
 
     // ── Parse multipart/form-data ─────────────────────────────────────────────
-    // TODO: replace with streaming multipart parser for files >32MB.
-    // Next.js buffers the entire body when calling request.formData().
-    // For now this is acceptable — worker handles large repos via OAuth/GitHub API.
     const formData = await request.formData();
     const providedOnboardingId = formData.get('onboardingId')?.toString();
 
