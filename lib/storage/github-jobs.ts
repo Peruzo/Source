@@ -87,7 +87,6 @@ export async function createGitHubJob(params: {
     },
   });
 
-  console.log(`[GitHub Jobs] Created job ${jobId} for onboardingId: ${params.onboardingId}`);
   return jobId;
 }
 

@@ -136,17 +136,9 @@ export function reduceOnboarding(
   onboardingId: string,
   userSub: string
 ): OnboardingState {
-  console.log('[reduceOnboarding] ENTRY:', {
-    onboardingId,
-    userSub,
-    eventsCount: events.length,
-    eventsInput: events,
-    firstEvent: events.length > 0 ? events[0] : null
-  });
 
   // Om inga events finns, returnera helt tom state med initial status
   if (events.length === 0) {
-    console.log('[reduceOnboarding] NO EVENTS - returning empty state with status: started');
     return {
       onboardingId,
       userSub,
@@ -181,13 +173,6 @@ export function reduceOnboarding(
   // Sortera events på timestamp (at) för deterministisk ordning
   const sortedEvents = [...events].sort((a, b) => a.at.localeCompare(b.at));
 
-  console.log('[reduceOnboarding] After sorting:', {
-    onboardingId,
-    userSub,
-    sortedEventsCount: sortedEvents.length,
-    sortedEventTypes: sortedEvents.map(e => e.type),
-    sortedEvents: sortedEvents.map(e => ({ type: e.type, at: e.at }))
-  });
 
   let createdAt: string | null = null;
   let updatedAt: string | null = null;
@@ -210,10 +195,8 @@ export function reduceOnboarding(
     // KRITISKT: För questions_submitted – endast exakt strängen "Ja" → code_pending, annars questions_completed
     if (event.type === 'questions_submitted') {
       const hasExistingSite = event.payload?.hasExistingSite;
-      console.log('[reduceOnboarding] questions_submitted hasExistingSite:', hasExistingSite, 'type:', typeof hasExistingSite, 'nextStatus (before override):', nextStatus);
       if (hasExistingSite === 'Ja' && nextStatus === 'questions_completed' && state.status === 'started') {
         nextStatus = 'code_pending';
-        console.log('[reduceOnboarding] Override: status → code_pending (hasExistingSite === "Ja")');
       }
       // "Nej" eller annat → behåll questions_completed (ingen override)
     }
@@ -239,20 +222,6 @@ export function reduceOnboarding(
     const wasStatusChanged = nextStatus !== null && nextStatus !== statusBefore;
     const wasEventApplied = true; // Alla events appliceras, ingen filtrering här
 
-    console.log('[reduceOnboarding] Event processed:', {
-      onboardingId,
-      userSub,
-      eventType: event.type,
-      statusBefore,
-      statusAfter: state.status,
-      nextStatus,
-      wasStatusChanged,
-      wasEventApplied,
-      eventAt: event.at,
-      eventPayload: event.payload,
-      eventNumber: eventsProcessed,
-      totalEvents: sortedEvents.length
-    });
 
     if (!wasEventApplied) {
       eventsSkipped++;
@@ -291,7 +260,6 @@ export function reduceOnboarding(
       // Eventet skapas endast för spårning/logging, inte för FSM-transition
       case 'github_repo_verified':
         // Ignorera helt - detta är INTE ett FSM-event
-        console.log('[reduceOnboarding] Ignoring github_repo_verified event (not a FSM event)');
         break;
 
       case 'stripe_started':
@@ -321,19 +289,6 @@ export function reduceOnboarding(
   state.createdAt = createdAt;
   state.updatedAt = updatedAt;
 
-  console.log('[reduceOnboarding] Final state:', {
-    onboardingId,
-    userSub,
-    finalStatus: state.status,
-    hasCode: !!state.code,
-    hasGithub: !!state.github,
-    eventsProcessed,
-    eventsSkipped,
-    totalEventsInput: events.length,
-    totalEventsSorted: sortedEvents.length,
-    fullState: state,
-    stateIsNull: state === null
-  });
 
   // VERIFIERA: Reducer returnerar ALDRIG null - den returnerar alltid en OnboardingState
   if (state === null) {

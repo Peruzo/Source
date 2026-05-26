@@ -35,7 +35,6 @@ export async function streamUploadToWorker(params: StreamUploadParams): Promise<
 
   const uploadUrl = `${workerUrl}/jobs/upload`;
 
-  console.log(`[Worker Upload] Streaming file to ${uploadUrl}`, { jobId, onboardingId, filename });
 
   const response = await fetch(uploadUrl, {
     method: 'POST',
