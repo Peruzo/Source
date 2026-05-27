@@ -1,80 +1,9 @@
 /**
- * Valt prispaket – onboarding-context (tillfällig, t.ex. URL/localStorage).
- * Ingen backend-persistens i detta steg.
+ * Onboarding plan-context — localStorage-helpers + Stripe-URL-builder.
+ * Ingen backend-persistens; planId bevaras endast i klient-state mellan steg.
  */
 
-export type SelectedPlan = {
-  planId: string;
-  name: string;
-  price: string;
-  currency: string;
-  interval: string;
-  features: string[];
-};
-
-const PLANS: SelectedPlan[] = [
-  {
-    planId: 'core',
-    name: 'Core',
-    price: '399',
-    currency: 'SEK',
-    interval: 'månad',
-    features: [
-      'Responsiv design',
-      'Upp till 5 sidor',
-      'Betalningar, faktuering, prenumerationer',
-      'Support',
-      'Rapporter för försäljning',
-    ],
-  },
-  {
-    planId: 'growth',
-    name: 'Growth',
-    price: '799',
-    currency: 'SEK',
-    interval: 'månad',
-    features: [
-      'Allt i Core, plus:',
-      'Obegränsat antal sidor och design',
-      'Rapporter',
-      'Kontaktformulär till kundportal',
-      'AI agent',
-      'Marknadsföring',
-      'Betalningslänk',
-      'Kampanjer',
-      'Logistik',
-      'Integrationer',
-      'Bokningssystem',
-      'Produkthantering',
-      'Max 5 användare',
-    ],
-  },
-  {
-    planId: 'enterprise',
-    name: 'Enterprise',
-    price: 'Pris på förfrågan',
-    currency: 'SEK',
-    interval: 'månad',
-    features: [
-      'Allt i Growth, plus:',
-      'AI insikter',
-      'Inventarier hantering',
-      '24/7 support',
-      'Avancerad statistik och analys',
-      'Bokföring verktyg',
-      'Max 10 användare',
-    ],
-  },
-];
-
-const PLAN_BY_ID = new Map(PLANS.map((p) => [p.planId, p]));
-
-export function getPlan(planId: string | null): SelectedPlan | null {
-  if (!planId) return null;
-  return PLAN_BY_ID.get(planId.toLowerCase()) ?? null;
-}
-
-export const SELECTED_PLAN_STORAGE_KEY = 'source_selected_plan';
+const SELECTED_PLAN_STORAGE_KEY = 'source_selected_plan';
 
 export function getStoredPlanId(): string | null {
   if (typeof window === 'undefined') return null;
