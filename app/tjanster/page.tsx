@@ -962,7 +962,7 @@ export default function ServicesPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { name: 'Starter', included: ['Design', 'Hosting', 'Support'] },
+              { name: 'Core', included: ['Design', 'Hosting', 'Support'] },
               { name: 'Growth', included: ['+ E-handel', '+ AI-Basic'], highlight: true },
               { name: 'Enterprise', included: ['+ AI-Advanced', '+ Prioritet'] },
             ].map((pkg, i) => (
