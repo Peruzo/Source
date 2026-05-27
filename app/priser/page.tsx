@@ -95,7 +95,7 @@ const faqs = [
   {
     question: 'Hur fungerar support?',
     answer:
-      'E-post: Alla planer (24h för Starter, 12h för Growth, 2h för Enterprise). Chatt: Growth och Enterprise (i kundportalen). Video-möten: Endast Enterprise (månatliga schemalagda samtal).',
+      'E-post: Alla planer (24h för Core, 12h för Growth, 2h för Enterprise). Chatt: Growth och Enterprise (i kundportalen). Video-möten: Endast Enterprise (månatliga schemalagda samtal).',
   },
 ];
 
