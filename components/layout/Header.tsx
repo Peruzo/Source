@@ -186,8 +186,8 @@ export function Header() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               href="https://portal.source.com"
-              className="border-2 rounded-lg font-semibold transition-all duration-300 px-4 lg:px-5 py-2 lg:py-2.5 text-sm lg:text-base hover:bg-[#00BFA6] hover:text-white"
-              style={{ borderColor: '#00BFA6', color: '#00BFA6' }}
+              className="border-2 rounded-lg font-semibold transition-all duration-300 px-4 lg:px-5 py-2 lg:py-2.5 text-sm lg:text-base text-[#00BFA6] hover:bg-[#00BFA6] hover:text-white"
+              style={{ borderColor: '#00BFA6' }}
               target="_blank"
               rel="noopener noreferrer"
             >

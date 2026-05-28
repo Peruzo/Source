@@ -8,27 +8,15 @@ import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { getAnonymousSessionIdFromCookie } from '@/lib/onboarding/anonymous-session-client';
 import { normalizeError } from '@/lib/utils/normalize-error';
+import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
 export function CodeUploadForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const hookResult = useOnboardingState(userSub || '', onboardingId);
-  console.log('HOOK RESULT OBJECT:', hookResult);
   const { state, loading: stateLoading } = hookResult;
 
-  // Debug: Logga state när den ändras
-  useEffect(() => {
-    console.log('[CodeUploadForm] State updated:', {
-      onboardingId,
-      userSub,
-      stateStatus: state?.status,
-      stateCode: state?.code,
-      stateGithub: state?.github,
-      loading: stateLoading,
-      fullState: state
-    });
-  }, [state, onboardingId, userSub, stateLoading]);
   const [repoLink, setRepoLink] = useState('');
   const [codeText, setCodeText] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -42,18 +30,8 @@ export function CodeUploadForm() {
   /** Sätt när GitHub-job completed (innan state har refetch:ats) så att vi aldrig POST:ar och knappen är klickbar. */
   const [codePersistedByBackend, setCodePersistedByBackend] = useState(false);
   const [connectingGithub, setConnectingGithub] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  console.log('===== CODE UPLOAD DEBUG =====');
-  console.log('state:', state);
-  console.log('state.status:', state?.status);
-  console.log('state.github:', state?.github);
-  console.log('state.github?.verified:', state?.github?.verified);
-  console.log('onboardingId:', onboardingId);
-  console.log('repoLink:', repoLink);
-  console.log('privateRepoPrompt:', privateRepoPrompt);
-  console.log('showGithubAuthButton:', showGithubAuthButton);
-  console.log('error:', error);
-  console.log('================================');
 
   /** När true: backend har redan code (GitHub/ZIP/tidigare POST). POST /api/onboarding/code får ALDRIG anropas. */
   const codeAlreadyInBackendRef = useRef(false);
@@ -74,11 +52,11 @@ export function CodeUploadForm() {
   // Ladda data från backend när state är tillgänglig
   useEffect(() => {
     if (loading) return;
-    
+
     // ARKITEKTURREGEL: Ingen server-side redirect baserat på step.
     // Sidan får renderas även om state ännu inte reflekterar 'code'.
     // Visa loader om state.step !== 'code' (hanteras i render-logik nedan).
-    
+
     setRepoLink(state?.code?.repoLink || '');
     setCodeText(state?.code?.codeText || '');
   }, [state, loading]);
@@ -96,7 +74,7 @@ export function CodeUploadForm() {
     const gh = searchParams.get('github');
     const jobId = searchParams.get('jobId');
     const errorParam = searchParams.get('error');
-    
+
     if (gh === 'processing' && jobId) {
       setGithubJobId(jobId);
       setGithubJobStatus('processing');
@@ -186,15 +164,20 @@ export function CodeUploadForm() {
           setGithubCallbackError(null);
           // Backend har redan append:at code_submitted; hämta state så att formuläret visar repoLink
           if (onboardingId) {
-            fetch(`/api/onboarding?onboardingId=${encodeURIComponent(onboardingId)}`)
-              .then((r) => r.ok ? r.json() : null)
-              .then((data) => {
+            try {
+              const r = await fetch(`/api/onboarding?onboardingId=${encodeURIComponent(onboardingId)}`);
+              if (r.ok) {
+                const data = await r.json();
                 if (!cancelled && data?.state?.code) {
                   setRepoLink(data.state.code.repoLink ?? '');
                   setCodeText(data.state.code.codeText ?? '');
                 }
-              })
-              .catch(() => {});
+              }
+            } catch {}
+          }
+          // Auto-fortsätt till Stripe när code är committed i FSM
+          if (!cancelled) {
+            handleStripeClick();
           }
         } else if (job.status === 'failed') {
           setGithubJobStatus('failed');
@@ -251,22 +234,18 @@ export function CodeUploadForm() {
 
   if (loading || isWaitingForStateUpdate) {
     return (
-      <section className="max-w-3xl mx-auto px-6 py-16">
-        <div className="text-center">
-          <p className="text-gray-600">Laddar...</p>
-        </div>
-      </section>
+      <OnboardingLayout>
+        <p className="text-gray-600">Laddar...</p>
+      </OnboardingLayout>
     );
   }
 
   // Efter guard: om state inte är code_pending/code_completed visas redirect i useEffect; visa loader under omdirigering
   if (state && state.status !== 'code_pending' && state.status !== 'code_completed') {
     return (
-      <section className="max-w-3xl mx-auto px-6 py-16">
-        <div className="text-center">
-          <p className="text-gray-600">Omdirigerar...</p>
-        </div>
-      </section>
+      <OnboardingLayout>
+        <p className="text-gray-600">Omdirigerar...</p>
+      </OnboardingLayout>
     );
   }
 
@@ -287,17 +266,10 @@ export function CodeUploadForm() {
     const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
     const stripeUrl = getStripeOnboardingUrl(planId);
     const returnTo = stripeUrl + (stripeUrl.includes('?') ? '&' : '?') + 'autostart=true';
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&screen_hint=signup`;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    console.log('[handleSubmit] fired', { 
-      stateStatus: state?.status, 
-      codeFromBackend, 
-      submitting, 
-      githubJobStatus,
-      onboardingId: !!onboardingId 
-    });
     event.preventDefault();
     setError('');
 
@@ -341,9 +313,91 @@ export function CodeUploadForm() {
 
     setSubmitting(true);
 
-    // KRITISKT: Hämta sessionId från anonym onboarding-session (samma källa som onboardingId)
-    // Backend kräver anon_<uuid> i FormData, inte userSub från hook
-    // Backend avgör om tomt sessionId är OK eller inte
+    // Bug 8 — ZIP-upload-branch via direct GCS (bypassar Cloud Run 32 MB-limit)
+    if (file) {
+      try {
+        // Steg 1: Begär signed PUT URL
+        setUploadProgress(0);
+        const urlResponse = await fetch('/api/onboarding/code/generate-upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            onboardingId,
+            fileName: file.name,
+            fileSize: file.size,
+            contentType: file.type || 'application/zip',
+          }),
+        });
+
+        const urlData = await urlResponse.json();
+        if (!urlData.success) {
+          throw new Error(urlData.message || urlData.error || 'Kunde inte begära uppladdnings-URL');
+        }
+
+        const { jobId, uploadUrl, gcsPath } = urlData;
+
+        // Steg 2: PUT direkt till GCS med progress (XHR krävs för upload-events)
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('PUT', uploadUrl);
+          xhr.setRequestHeader('Content-Type', file.type || 'application/zip');
+
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              setUploadProgress(Math.round((e.loaded / e.total) * 100));
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              reject(new Error(`GCS upload misslyckades (status ${xhr.status})`));
+            }
+          });
+
+          xhr.addEventListener('error', () => reject(new Error('Nätverksfel under uppladdning')));
+          xhr.addEventListener('abort', () => reject(new Error('Uppladdning avbruten')));
+
+          xhr.send(file);
+        });
+
+        // Steg 3: Finalize — PATCH admin + append code_submitted-event
+        const finalizeResponse = await fetch('/api/onboarding/code/finalize-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            onboardingId,
+            jobId,
+            gcsPath,
+            fileName: file.name,
+            fileSize: file.size,
+          }),
+        });
+
+        const finalizeData = await finalizeResponse.json();
+        if (!finalizeData.success) {
+          throw new Error(finalizeData.message || finalizeData.error || 'Finalize misslyckades');
+        }
+
+        // Trigga polling så frontend visar 'Processing repository...' tills FSM är klar
+        // Polling-endpointen (/api/github/job?jobId=...) detekterar GCS-filen och
+        // sätter status='completed' om finalize inte hann uppdatera än.
+        setGithubJobId(jobId);
+        setGithubJobStatus('processing');
+        setUploadProgress(null);
+        setSubmitting(false);
+        return;
+      } catch (uploadErr) {
+        console.error('[Code Upload] Direct GCS upload failed:', uploadErr);
+        setError(uploadErr instanceof Error ? uploadErr.message : 'Uppladdning misslyckades');
+        setUploadProgress(null);
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    // ── Branch: repoLink eller codeText (oförändrat befintligt flöde) ──────────
     const sessionId = getAnonymousSessionIdFromCookie() || '';
 
     const formData = new FormData();
@@ -351,9 +405,6 @@ export function CodeUploadForm() {
     formData.append('onboardingId', onboardingId);
     formData.append('repoLink', repoLink);
     formData.append('codeText', codeText);
-    if (file) {
-      formData.append('file', file);
-    }
 
     const response = await fetch('/api/onboarding/code', {
       method: 'POST',
@@ -395,8 +446,14 @@ export function CodeUploadForm() {
           break;
         case 'started':
         case 'already_running':
-          // Visa loader / polling (hanteras av GitHub OAuth-flödet)
-          break;
+          // Worker uploadar fortfarande. Starta polling, vänta på 'completed'.
+          // Polling-useEffecten kommer trigga handleStripeClick när FSM är klar.
+          if (result.job.jobId) {
+            setGithubJobId(result.job.jobId);
+            setGithubJobStatus('processing');
+          }
+          setSubmitting(false);
+          return;
         case 'completed':
           // Fortsätt till Stripe
           break;
@@ -406,26 +463,23 @@ export function CodeUploadForm() {
     handleStripeClick();
   };
 
-  console.log('===== CODE UPLOAD DEBUG =====');
-  console.log('state:', state);
-  console.log('state.status:', state?.status);
-  console.log('state.github:', state?.github);
-  console.log('state.github?.verified:', state?.github?.verified);
-  console.log('onboardingId:', onboardingId);
-  console.log('repoLink:', repoLink);
-  console.log('privateRepoPrompt:', privateRepoPrompt);
-  console.log('showGithubAuthButton:', showGithubAuthButton);
-  console.log('error:', error);
-  console.log('================================');
+
+  const submitDisabled =
+    submitting ||
+    githubJobStatus === 'processing' ||
+    !onboardingId ||
+    (!codeFromBackend && !repoLink && !codeText && !file);
 
   return (
-    <section className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-4">Koduppladdning</h1>
-      <p className="text-gray-600 mb-6">
+    <OnboardingLayout>
+      <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 text-center mb-4">
+        Koduppladdning
+      </h1>
+      <p className="text-gray-600 text-center mb-10 max-w-md">
         Du kan ladda upp en ZIP eller klistra in kod/repo-länk. Allt är read-only och används
         endast som tillfälligt onboarding-material.
       </p>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="w-full space-y-6">
         {codeFromBackend && (
           <div className="rounded-md bg-emerald-50 p-3 text-emerald-800" role="status">
             <p className="font-medium">
@@ -441,29 +495,64 @@ export function CodeUploadForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Ladda upp ZIP</label>
+          <label
+            htmlFor="zip-file-input"
+            className={`block w-full text-center px-6 py-4 rounded-2xl border-2 font-medium text-gray-700 transition-all duration-150 ${isReadOnly ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
+            style={{
+              borderColor: file ? '#10b981' : '#e5e7eb',
+              background: file ? 'rgba(16,185,129,0.06)' : 'white',
+            }}
+          >
+            {file ? `📁 ${file.name}` : '📎 Välj ZIP-fil'}
+          </label>
           <input
+            id="zip-file-input"
             type="file"
             accept=".zip"
             onChange={(event) => setFile(event.target.files?.[0] || null)}
             disabled={isReadOnly}
-            className={isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}
+            className="hidden"
           />
+          {uploadProgress !== null && (
+            <div className="mt-3">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Laddar upp...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-150"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Repo-länk</label>
-          <input
-            type="url"
-            value={repoLink}
-            onChange={(event) => {
-              setRepoLink(event.target.value);
-              setPrivateRepoPrompt(null);
-              setShowGithubAuthButton(false);
-            }}
-            readOnly={isReadOnly}
-            className={`w-full border border-gray-300 rounded-md p-3 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-            placeholder="https://github.com/..."
-          />
+          <div className="relative">
+            <svg
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+            </svg>
+            <input
+              type="url"
+              value={repoLink}
+              onChange={(event) => {
+                setRepoLink(event.target.value);
+                setPrivateRepoPrompt(null);
+                setShowGithubAuthButton(false);
+              }}
+              readOnly={isReadOnly}
+              className={`w-full border border-gray-300 rounded-md p-3 pl-12 ${isReadOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              placeholder="https://github.com/..."
+            />
+          </div>
         </div>
 
         <div>
@@ -548,13 +637,19 @@ export function CodeUploadForm() {
 
         <button
           type={state?.status === 'code_completed' ? 'button' : 'submit'}
-          className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          disabled={submitting || githubJobStatus === 'processing' || !onboardingId || (!codeFromBackend && !repoLink && !codeText && !file)}
+          disabled={submitDisabled}
           onClick={state?.status === 'code_completed' ? handleStripeClick : undefined}
+          className="mt-10 px-10 py-3 rounded-full font-semibold transition-all duration-200 w-full md:w-auto md:mx-auto block"
+          style={{
+            background: submitDisabled ? '#d1fae5' : '#10b981',
+            color: submitDisabled ? '#6ee7b7' : 'white',
+            cursor: submitDisabled ? 'not-allowed' : 'pointer',
+            boxShadow: submitDisabled ? 'none' : '0 4px 14px rgba(16,185,129,0.3)',
+          }}
         >
           {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : state?.status === 'code_completed' ? 'Fortsätt till Stripe onboarding' : 'Fortsätt till Stripe'}
         </button>
       </form>
-    </section>
+    </OnboardingLayout>
   );
 }

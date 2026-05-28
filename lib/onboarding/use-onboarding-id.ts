@@ -47,7 +47,6 @@ export function useOnboardingId(): {
 
         // Om det är en ny signup → rensa onboarding-relaterad sessionStorage för att förhindra återanvändning
         if (isCustomSignup && typeof window !== 'undefined') {
-          console.log('[useOnboardingId] New signup detected - clearing onboarding sessionStorage');
           sessionStorage.removeItem('onboarding_id');
           // customSignup, onboarding_signup_email, onboarding_signup_name rensas senare efter start
         }
@@ -71,7 +70,6 @@ export function useOnboardingId(): {
             if (typeof window !== 'undefined') {
               sessionStorage.removeItem('onboarding_id');
             }
-            console.log('[useOnboardingId] Stored onboarding_id does not belong to current user – cleared, creating new');
             const startRes = await fetch('/api/onboarding/start', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

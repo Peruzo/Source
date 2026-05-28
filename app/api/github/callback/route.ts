@@ -15,11 +15,6 @@ import { reduceOnboarding } from '@/lib/onboarding/reducer';
  * Token sparas temporärt i jobbet för worker-användning.
  */
 export async function GET(request: NextRequest) {
-  console.log('[DEBUG] GitHub callback route triggered', {
-    url: request.url,
-    searchParams: request.nextUrl?.searchParams?.toString?.(),
-    timestamp: new Date().toISOString(),
-  });
 
   const code = request.nextUrl.searchParams.get('code');
   const stateRaw = request.nextUrl.searchParams.get('state');
@@ -101,13 +96,6 @@ export async function GET(request: NextRequest) {
   const tokenScopes = tokenData.scope || 'unknown';
 
   // Logga token source för verifiering (säkerhetsaudit)
-  console.log(`[GitHub Callback] OAuth token obtained:`, {
-    tokenType,
-    scopes: tokenScopes,
-    source: 'oauth_code_exchange',
-    hasToken: !!token,
-    tokenLength: token?.length || 0,
-  });
 
   // KRITISK SÄKERHET: Verifiera repo-access med OAuth user-token INNAN event-sparning och job-skapande
   // Detta säkerställer att användaren faktiskt har gett consent och har access till repot
@@ -128,13 +116,6 @@ export async function GET(request: NextRequest) {
   // Logga GitHub response headers för verifiering (säkerhetsaudit)
   const oauthScopesHeader = repoRes.headers.get('x-oauth-scopes');
   const githubAuthHeader = repoRes.headers.get('x-github-request-id');
-  console.log(`[GitHub Callback] GitHub API response:`, {
-    status: repoRes.status,
-    oauthScopes: oauthScopesHeader || 'not present',
-    githubRequestId: githubAuthHeader || 'not present',
-    tokenSource: 'oauth_code_exchange',
-    repo: `${owner}/${repoName}`,
-  });
 
   // STRICT: Endast 200 OK tillåter event-sparning och job-skapande
   // KRITISK SÄKERHET: Verifiera att token faktiskt ger access (inte app-token som kan ha access)
@@ -203,12 +184,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
   }
 
-  console.log(`[GitHub Callback] OAuth token verified:`, {
-    scopes: scopes.join(', '),
-    hasRepoScope: scopes.includes('repo'),
-    tokenSource: 'oauth_code_exchange',
-    repoAccess: 'granted',
-  });
 
   // Repo är verifierat - användaren har read-access (200 OK)
   const repoUrl = `https://github.com/${owner}/${repoName}`;
@@ -278,7 +253,6 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-    console.log(`[GitHub Callback] Saved github_repo_verified event for logging (NOT a FSM event)`);
   } catch (eventErr) {
     // Event-sparning är endast för spårning - om det misslyckas, fortsätt ändå
     // Verifiering är redan satt direkt i state ovan
@@ -287,10 +261,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const memoryBefore = process.memoryUsage();
-    console.log(`[GitHub Callback] Memory before job creation:`, {
-      heapUsed: Math.round(memoryBefore.heapUsed / 1024 / 1024),
-      heapTotal: Math.round(memoryBefore.heapTotal / 1024 / 1024),
-    });
 
     // NIVÅ 2: Skapa jobb och spara token (ingen repo-download här)
     // Jobbet kommer att processas av worker-endpoint utanför request-livscykeln
@@ -305,12 +275,11 @@ export async function GET(request: NextRequest) {
       githubToken: token, // Spara token temporärt i jobbet
     });
 
-    console.log(`[GitHub Callback] Created job ${jobId}, triggering external worker`);
 
     // Trigga extern GitHub-worker (non-blocking)
     // Worker hanterar all ZIP-hantering utanför public website
     // KRITISK FIX: Skicka OAuth-token transient till worker (används för privata repo)
-    triggerExternalGitHubWorker(jobId, repo, token).catch(async (error) => {
+    triggerExternalGitHubWorker(jobId, activeOnboardingId, repo, { githubAccessToken: token }).catch(async (error) => {
       console.error(`[GitHub Callback] Failed to trigger external worker for ${jobId}:`, error);
       // Markera jobbet som failed om worker inte kan triggas
       try {

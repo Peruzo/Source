@@ -13,6 +13,7 @@
     "@google-cloud/storage": "^7.18.0",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
+    "@mailchimp/mailchimp_transactional": "^1.4.1",
     "framer-motion": "^12.23.24",
     "next": "15.5.5",
     "react": "19.1.0",

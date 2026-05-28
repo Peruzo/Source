@@ -44,20 +44,35 @@ export async function GET(request: NextRequest) {
         try {
           const storage = new Storage(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
           const bucket = storage.bucket(BUCKET);
-          const zipFileName = `github/${jobId}.zip`;
-          const zipFile = bucket.file(zipFileName);
-          
-          const [exists] = await zipFile.exists();
-          
+
+          // Worker sparar på två olika prefix beroende på flöde:
+          //   github/{jobId}.zip   — run-job.js (GitHub-clone via /run-job)
+          //   upload/{jobId}.zip   — upload-job.js (direkt ZIP via /jobs/upload)
+          // Vi kollar båda så polling fungerar för ZIP-upload-flödet också.
+          const githubPath = `github/${jobId}.zip`;
+          const uploadPath = `upload/${jobId}.zip`;
+
+          const githubFile = bucket.file(githubPath);
+          const uploadFile = bucket.file(uploadPath);
+
+          const [[githubExists], [uploadExists]] = await Promise.all([
+            githubFile.exists(),
+            uploadFile.exists(),
+          ]);
+
+          const zipFile = githubExists ? githubFile : uploadFile;
+          const zipFileName = githubExists ? githubPath : uploadPath;
+          const codeSource: 'github' | 'upload' = githubExists ? 'github' : 'upload';
+          const exists = githubExists || uploadExists;
+
           if (exists) {
             // ZIP-filen finns - hämta metadata för size
             const [metadata] = await zipFile.getMetadata();
             const sizeBytes = parseInt(String(metadata.size || '0'), 10);
             const sizeMB = Math.round((sizeBytes / 1024 / 1024) * 100) / 100;
-            
+
             const gcsPath = `gs://${BUCKET}/${zipFileName}`;
             
-            console.log(`[GitHub Job] ZIP file found for job ${jobId}, updating to completed. Size: ${sizeMB} MB`);
             
             // Uppdatera job-status till completed med GCS-path och size
             await updateJobStatus(jobId, 'completed', {
@@ -74,13 +89,14 @@ export async function GET(request: NextRequest) {
               await appendOnboardingEvent(job.onboardingId, {
                 type: 'code_submitted',
                 payload: {
-                  repoLink: job.repoUrl,
+                  // repoLink finns bara för GitHub-flödet. För ZIP-upload är det undefined
+                  // → FSM-guarden (kräver github_repo_verified om repoLink finns) triggas inte.
+                  repoLink: codeSource === 'github' ? job.repoUrl : undefined,
                   fileName: `${jobId}.zip`,
-                  codeSource: 'github',
+                  codeSource,
                   storageObjectUrl: gcsPath,
                 },
               });
-              console.log(`[GitHub Job] Onboarding ${job.onboardingId} updated with code_submitted (github)`);
             } catch (eventErr) {
               console.error('[GitHub Job] Failed to append code_submitted for onboarding:', eventErr);
             }
@@ -92,10 +108,13 @@ export async function GET(request: NextRequest) {
             // FSM-krav: Jobbet får endast köras när code är färdigt
             assertStatus(state, 'code_completed');
 
-            // SÄKERHET: GitHub-repo MÅSTE vara OAuth-verifierat (event-baserat)
-            const isVerified = await isGithubRepoVerified(job.onboardingId);
+            // SÄKERHET: GitHub-repo MÅSTE vara OAuth-verifierat (event-baserat).
+            // Skip för ZIP-upload-flöden — där finns inget repo att verifiera.
+            const isVerified = codeSource === 'github'
+              ? await isGithubRepoVerified(job.onboardingId)
+              : { verified: true, repoSlug: null, verifiedAt: null };
 
-            if (!isVerified.verified) {
+            if (codeSource === 'github' && !isVerified.verified) {
               throw new Error('GitHub repo is not OAuth-verified');
             }
 

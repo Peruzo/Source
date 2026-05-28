@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     }
     
     const userSub = session.user.sub;
-    console.log('[Onboarding Step] Using Auth0 userSub:', userSub);
+    const authEmail = typeof session.user.email === 'string' ? session.user.email.trim().toLowerCase() : '';
 
     const body = await request.json();
     const { onboardingId: providedOnboardingId, step, nextStep, answers, data } = body || {};
@@ -53,7 +53,6 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
-    console.log('[Onboarding Step] Using onboardingId:', onboardingId);
 
     // BACKEND TOLERANS: Om step saknas → inferera från nuvarande FSM-state
     let currentStep = step;
@@ -70,7 +69,6 @@ export async function POST(request: Request) {
       } else {
         currentStep = 'questions'; // Default fallback
       }
-      console.log(`[Onboarding Step] Inferred step from FSM state: ${currentStep} (status: ${tempState.status})`);
     }
 
     // Använd answers om det finns, annars data (bakåtkompatibilitet)
@@ -82,7 +80,7 @@ export async function POST(request: Request) {
         console.error('[Onboarding Step] Invalid questions data:', payloadData);
         return NextResponse.json({ success: false, message: 'Invalid questions data' }, { status: 400 });
       }
-      const requiredFields = ['hasExistingSite', 'currentStage', 'primaryGoal', 'customerCount'];
+      const requiredFields = ['hasExistingSite', 'currentStage', 'primaryGoal', 'legalEntityType', 'employeeCount', 'heardAboutUs'];
       const missingFields: string[] = [];
       for (const field of requiredFields) {
         if (!payloadData[field]) {
@@ -106,7 +104,6 @@ export async function POST(request: Request) {
           type: 'questions_submitted',
           payload: payloadData,
         });
-        console.log(`[Onboarding Step] Appended questions_submitted event for onboarding ${onboardingId}`);
         
         // Om email finns i payloadData (från questions-formuläret), spara det också i onboarding-state
         if (payloadData.userEmail && typeof payloadData.userEmail === 'string' && payloadData.userEmail.trim()) {
@@ -186,13 +183,11 @@ export async function POST(request: Request) {
 
     // För questions: nextStep bestäms ALLTID från hasExistingSite på backend (strikt 'Ja' → code)
     const hasExistingSiteRaw = currentStep === 'questions' ? payloadData.hasExistingSite : undefined;
-    console.log('[Onboarding Step] hasExistingSite (raw):', hasExistingSiteRaw, 'type:', typeof hasExistingSiteRaw, 'state.status:', state.status);
 
     let determinedNextStep: string | undefined;
     if (currentStep === 'questions') {
       // Strikt: endast exakt strängen "Ja" → code, annars (Nej, undefined, annan casing) → stripe
       determinedNextStep = hasExistingSiteRaw === 'Ja' ? 'code' : 'stripe';
-      console.log('[Onboarding Step] determinedNextStep (from hasExistingSite):', determinedNextStep);
     } else if (nextStep) {
       determinedNextStep = nextStep;
     }
@@ -209,8 +204,8 @@ export async function POST(request: Request) {
       sessionId: userSub,
       step: adminStep, // KRITISKT: Skicka nextStep (code) istället för currentStep (questions)
       onboardingStatus: state.status, // Använd formell status från FSM (code_pending eller questions_completed)
-      user: email ? { email, sub: userSub } : { sub: userSub },
-      data: payloadData,
+      user: { email: email || authEmail || '', sub: userSub },
+      data: currentStep === adminStep ? payloadData : {},
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
     };
@@ -227,6 +222,23 @@ export async function POST(request: Request) {
         { step: adminPayload.step, fsmStatus: state.status, onboardingId }
       );
     } else {
+      // Skicka ett separat questions-record till admin-portalen
+      if (currentStep === 'questions') {
+        sendToAdminPortal('onboarding', {
+          idempotencyKey: `onboarding-${onboardingId}-questions`,
+          onboardingId,
+          sessionId: userSub,
+          step: 'questions',
+          onboardingStatus: state.status,
+          user: { email: email || authEmail || '', sub: userSub },
+          data: payloadData,
+          submittedAt: new Date().toISOString(),
+          source: 'public_onboarding',
+        }).catch((adminError) => {
+          console.warn('[Step] Questions admin sync failed (non-blocking):', adminError);
+        });
+      }
+
       // Best effort: admin-sync får aldrig påverka FSM-transitionen
       sendToAdminPortal('onboarding', adminPayload).catch((adminError) => {
         // Logga varning men kasta aldrig - admin-sync är sekundär till FSM

@@ -27,7 +27,6 @@ export function ScrollControlledVideoSection() {
   const rafScrollRef = useRef<number | null>(null);
   const rafLoopRef = useRef<number | null>(null);
   const stickyReleasedRef = useRef(false);
-  const lastDebugLogRef = useRef(0);
 
   useEffect(() => {
     const preloadFrames = async () => {
@@ -44,7 +43,6 @@ export function ScrollControlledVideoSection() {
             resolve();
           };
           img.onerror = () => {
-            console.log('Missing frame index:', index);
             loadedCount++;
             resolve();
           };
@@ -59,7 +57,6 @@ export function ScrollControlledVideoSection() {
 
       await Promise.all(promises);
       framesRef.current = frames;
-      console.log('Loaded frames:', loadedCount, '/', total);
     };
 
     preloadFrames().then(() => {
@@ -103,15 +100,6 @@ export function ScrollControlledVideoSection() {
         ctx.drawImage(img, 0, 0, 4096, 2304);
       }
 
-      const now = Date.now();
-      if (now - lastDebugLogRef.current >= 1000) {
-        console.log('[ScrollVideo RAF]', {
-          currentProgress: current.toFixed(4),
-          targetProgress: target.toFixed(4),
-          frameIndex,
-        });
-        lastDebugLogRef.current = now;
-      }
 
       if (wrapper && !stickyReleasedRef.current && target > STICKY_RELEASE_PROGRESS) {
         stickyReleasedRef.current = true;
