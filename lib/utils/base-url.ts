@@ -29,7 +29,6 @@ export function getBaseUrl(): string {
   try {
     const url = new URL(baseUrl);
     const canonical = `${url.protocol}//${url.host}`;
-    console.log(`[Base URL] Using canonical base URL: ${canonical}`);
     return canonical;
   } catch (urlError) {
     const error = new Error(

@@ -2,246 +2,206 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { getStoredPlanId, getStripeOnboardingUrl } from '@/lib/onboarding/selected-plan';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
+import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
 type QuestionsData = {
   hasExistingSite: 'Ja' | 'Nej' | '';
   currentStage: 'Jag har bara en idé' | 'Jag har en färdig hemsida' | 'Jag har ett system i drift' | '';
   primaryGoal: 'Betalningar & fakturor' | 'Kundportal' | 'Analys & insikter' | 'Allt ovan' | '';
-  customerCount: '0–10' | '10–100' | '100+' | '';
+  legalEntityType: 'Enskild firma' | 'Aktiebolag' | 'Handelsbolag' | 'Ekonomisk förening' | 'Annat' | '';
+  employeeCount: '1' | '2–5' | '6–20' | '20+' | '';
+  annualRevenue: 'Under 500 000 kr' | '500 000 – 2 000 000 kr' | '2 000 000 – 10 000 000 kr' | '10 000 000 – 50 000 000 kr' | 'Över 50 000 000 kr' | '';
+  heardAboutUs: 'Google' | 'Sociala medier' | 'Vän eller kollega' | 'Event eller mässa' | 'Annat' | '';
 };
 
 const defaultData: QuestionsData = {
   hasExistingSite: '',
   currentStage: '',
   primaryGoal: '',
-  customerCount: '',
+  legalEntityType: '',
+  employeeCount: '',
+  annualRevenue: '',
+  heardAboutUs: '',
 };
+
+const questions = [
+  {
+    key: 'hasExistingSite' as keyof QuestionsData,
+    question: 'Har du redan en hemsida eller ett system?',
+    options: ['Ja', 'Nej'],
+  },
+  {
+    key: 'currentStage' as keyof QuestionsData,
+    question: 'Vad beskriver dig bäst just nu?',
+    options: ['Jag har bara en idé', 'Jag har en färdig hemsida', 'Jag har ett system i drift'],
+  },
+  {
+    key: 'primaryGoal' as keyof QuestionsData,
+    question: 'Vad vill du använda Source till?',
+    options: ['Betalningar & fakturor', 'Kundportal', 'Analys & insikter', 'Allt ovan'],
+  },
+  {
+    key: 'legalEntityType' as keyof QuestionsData,
+    question: 'Vad är din företagsform?',
+    options: ['Enskild firma', 'Aktiebolag', 'Handelsbolag', 'Ekonomisk förening', 'Annat'],
+  },
+  {
+    key: 'employeeCount' as keyof QuestionsData,
+    question: 'Hur många anställda har du?',
+    options: ['1', '2–5', '6–20', '20+'],
+  },
+  {
+    key: 'annualRevenue' as keyof QuestionsData,
+    question: 'Vad är er ungefärliga årsomsättning?',
+    options: ['Under 500 000 kr', '500 000 – 2 000 000 kr', '2 000 000 – 10 000 000 kr', '10 000 000 – 50 000 000 kr', 'Över 50 000 000 kr'],
+  },
+  {
+    key: 'heardAboutUs' as keyof QuestionsData,
+    question: 'Hur hörde du talas om oss?',
+    options: ['Google', 'Sociala medier', 'Vän eller kollega', 'Event eller mässa', 'Annat'],
+  },
+];
 
 export function QuestionsForm() {
   const router = useRouter();
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
-  const [sessionId, setSessionId] = useState('');
   const [formData, setFormData] = useState<QuestionsData>(defaultData);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [direction, setDirection] = useState<'in' | 'out'>('in');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const loading = onboardingIdLoading || stateLoading;
 
   useEffect(() => {
-    // Använd userSub från hook (Auth0 eller anonym sessionId)
-    if (userSub) {
-      setSessionId(userSub);
-    }
-  }, [userSub]);
-
-  // Visa fel om onboardingId saknas
-  useEffect(() => {
-    if (onboardingIdError) {
-      setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
-    }
+    if (onboardingIdError) setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
   }, [onboardingIdError]);
 
-  // Ladda data från backend när state är tillgänglig
   useEffect(() => {
-    if (state?.questions) {
-      setFormData({ ...defaultData, ...state.questions });
-    } else {
-      setFormData(defaultData);
-    }
+    if (state?.questions) setFormData({ ...defaultData, ...state.questions });
   }, [state]);
 
-  const updateField = (field: keyof QuestionsData, value: QuestionsData[keyof QuestionsData]) => {
-    setFormData((current) => ({ ...current, [field]: value }));
+  const currentQ = questions[currentQuestion];
+  const currentValue = formData[currentQ.key];
+  const isLast = currentQuestion === questions.length - 1;
+
+  const selectOption = (value: string) => {
+    setFormData(prev => ({ ...prev, [currentQ.key]: value as QuestionsData[keyof QuestionsData] }));
   };
 
-  const isComplete = Object.values(formData).every((value) => value);
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!onboardingId) {
-      setError('Onboarding är inte initierat. Ladda om sidan.');
-      return;
+  const goNext = async () => {
+    if (!currentValue) return;
+    if (!isLast) {
+      setAnimating(true);
+      setDirection('out');
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+        setDirection('in');
+        setAnimating(false);
+      }, 250);
+    } else {
+      await handleSubmit();
     }
+  };
 
-    if (!isComplete) {
-      setError('Svara på alla frågor för att fortsätta.');
-      return;
-    }
-
+  const handleSubmit = async () => {
+    if (!onboardingId) { setError('Onboarding är inte initierat. Ladda om sidan.'); return; }
+    const allAnswered = Object.values(formData).every(v => v);
+    if (!allAnswered) { setError('Svara på alla frågor.'); return; }
     setSubmitting(true);
     setError('');
-
-    // Hämta email från onboarding-state (inte Auth0 session)
     const emailFromState = state?.email || '';
-    
-    // Bestäm nextStep baserat på formulärdata
     const nextStep = formData.hasExistingSite === 'Ja' ? 'code' : 'stripe';
-    
     const payload = {
       onboardingId,
       step: 'questions',
       nextStep,
-      answers: {
-        ...formData,
-        // Skicka email från state om det finns (så att step-endpoint kan spara det som email_set event)
-        ...(emailFromState ? { userEmail: emailFromState } : {}),
-      },
+      answers: { ...formData, ...(emailFromState ? { userEmail: emailFromState } : {}) },
     };
-
     try {
       const response = await fetch('/api/onboarding/step', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setError(normalizeError(data.error || data.message || 'Ett fel uppstod. Försök igen.'));
+        setError(normalizeError(data.error || data.message || 'Ett fel uppstod.'));
         setSubmitting(false);
         return;
       }
-
-      // Vänta på 200 OK innan navigation
       const result = await response.json();
-
-      // KRITISKT: Navigation sker ENBART baserat på backendens nextStep från response
-      if (!result.success) {
-        setError('Kunde inte spara onboarding-steg.');
-        setSubmitting(false);
-        return;
-      }
-
-      const backendNextStep = result.nextStep;
-      if (backendNextStep === 'code') {
+      if (!result.success) { setError('Kunde inte spara onboarding-steg.'); setSubmitting(false); return; }
+      if (result.nextStep === 'code') {
         router.push('/onboarding/code');
-      } else if (backendNextStep === 'stripe') {
+      } else {
         const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
         router.push(getStripeOnboardingUrl(planId));
-      } else {
-        console.error('[Questions Form] Missing or unknown nextStep in response:', result);
-        setError('Kunde inte bestämma nästa steg.');
-        setSubmitting(false);
       }
     } catch (err) {
       setError(normalizeError(err));
       setSubmitting(false);
-      return;
     }
   };
 
   return (
-    <section className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-6">Onboarding</h1>
-      <p className="text-gray-600 mb-10">
-        Svara på alla frågor. Detta steg är obligatoriskt innan vi kan gå vidare.
-      </p>
-      <form onSubmit={handleSubmit} className="space-y-10">
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Har du redan en hemsida eller system du vill integrera?
-          </h2>
-          <div className="flex flex-col gap-2">
-            {['Ja', 'Nej'].map((value) => (
-              <label key={value} className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="hasExistingSite"
-                  value={value}
-                  checked={formData.hasExistingSite === value}
-                  onChange={() => updateField('hasExistingSite', value as QuestionsData['hasExistingSite'])}
-                  required
-                />
-                <span>{value}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Vad beskriver dig bäst just nu?
-          </h2>
-          <div className="flex flex-col gap-2">
-            {[
-              'Jag har bara en idé',
-              'Jag har en färdig hemsida',
-              'Jag har ett system i drift',
-            ].map((value) => (
-              <label key={value} className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="currentStage"
-                  value={value}
-                  checked={formData.currentStage === value}
-                  onChange={() => updateField('currentStage', value as QuestionsData['currentStage'])}
-                  required
-                />
-                <span>{value}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Vad vill du använda Source till?
-          </h2>
-          <div className="flex flex-col gap-2">
-            {['Betalningar & fakturor', 'Kundportal', 'Analys & insikter', 'Allt ovan'].map((value) => (
-              <label key={value} className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="primaryGoal"
-                  value={value}
-                  checked={formData.primaryGoal === value}
-                  onChange={() => updateField('primaryGoal', value as QuestionsData['primaryGoal'])}
-                  required
-                />
-                <span>{value}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Ungefär hur många kunder har du idag?
-          </h2>
-          <div className="flex flex-col gap-2">
-            {['0–10', '10–100', '100+'].map((value) => (
-              <label key={value} className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="customerCount"
-                  value={value}
-                  checked={formData.customerCount === value}
-                  onChange={() => updateField('customerCount', value as QuestionsData['customerCount'])}
-                  required
-                />
-                <span>{value}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {error && <p className="text-red-600">{typeof error === 'string' ? error : normalizeError(error)}</p>}
-
-        <button
-          type="submit"
-          className="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
-          disabled={submitting}
+    <OnboardingLayout currentStep={currentQuestion} totalSteps={questions.length}>
+      {/* Fråga + alternativ */}
+      <div
+          key={currentQuestion}
+          className="w-full flex flex-col items-center"
+          style={{
+            opacity: animating ? 0 : 1,
+            transform: animating ? (direction === 'out' ? 'translateY(-16px)' : 'translateY(16px)') : 'translateY(0)',
+            transition: 'opacity 0.25s ease, transform 0.25s ease',
+          }}
         >
-          {submitting ? 'Sparar...' : 'Fortsätt'}
-        </button>
-      </form>
-    </section>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 text-center mb-10">
+            {currentQ.question}
+          </h1>
+
+          <div className="flex flex-col gap-3 w-full">
+            {currentQ.options.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => selectOption(option)}
+                className="w-full text-left px-6 py-4 rounded-2xl border-2 font-medium text-gray-800 transition-all duration-150"
+                style={{
+                  borderColor: currentValue === option ? '#10b981' : '#e5e7eb',
+                  background: currentValue === option ? 'rgba(16,185,129,0.06)' : 'white',
+                  boxShadow: currentValue === option ? '0 0 0 3px rgba(16,185,129,0.15)' : '0 1px 3px rgba(0,0,0,0.06)',
+                  transform: currentValue === option ? 'scale(1.01)' : 'scale(1)',
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
+
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={!currentValue || submitting}
+            className="mt-10 px-10 py-3 rounded-full font-semibold text-white transition-all duration-200"
+            style={{
+              background: currentValue ? '#10b981' : '#d1fae5',
+              color: currentValue ? 'white' : '#6ee7b7',
+              cursor: currentValue ? 'pointer' : 'not-allowed',
+              boxShadow: currentValue ? '0 4px 14px rgba(16,185,129,0.3)' : 'none',
+            }}
+          >
+            {submitting ? 'Sparar...' : isLast ? 'Fortsätt →' : 'Nästa →'}
+          </button>
+      </div>
+    </OnboardingLayout>
   );
 }

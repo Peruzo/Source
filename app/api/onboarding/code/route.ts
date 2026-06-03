@@ -1,165 +1,214 @@
 import { NextResponse } from 'next/server';
-import { checkRepoAccess } from '@/lib/github/repo-utils';
+import crypto from 'crypto';
+import { checkRepoAccess, parseGitHubRepoUrl } from '@/lib/github/repo-utils';
 import { listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
-import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { auth0 } from '@/lib/auth0';
+import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
+import { streamUploadToWorker } from '@/lib/utils/worker-upload';
+import { createGitHubJob } from '@/lib/storage/github-jobs';
+
+/**
+ * Sanitize filename: keep only alphanumerics, dots, dashes, underscores.
+ * Prevents path traversal and worker-side injection.
+ */
+const FILENAME_RE = /[^a-zA-Z0-9._-]/g;
+function sanitizeFilename(name: string): string {
+  return name.replace(FILENAME_RE, '_').slice(0, 128);
+}
 
 export async function POST(request: Request) {
   try {
-    // KRITISK: Kräv Auth0-autentisering
+    // ── Auth ──────────────────────────────────────────────────────────────────
     const session = await auth0.getSession();
-    
+
     if (!session?.user?.sub) {
       console.warn('[Onboarding Code] POST called without Auth0 authentication');
       return NextResponse.json(
-        {
-          error: 'AUTH_REQUIRED',
-          message: 'User must be authenticated to submit code',
-        },
+        { error: 'AUTH_REQUIRED', message: 'User must be authenticated to submit code' },
         { status: 401 }
       );
     }
-    
-    const userSub = session.user.sub;
-    console.log('[Onboarding Code] Using Auth0 userSub:', userSub);
 
+    const userSub = session.user.sub;
+
+    // ── Parse multipart/form-data ─────────────────────────────────────────────
     const formData = await request.formData();
     const providedOnboardingId = formData.get('onboardingId')?.toString();
 
-    // KRITISK FIX: Kräv explicit onboardingId - skapar INGET implicit
     if (!providedOnboardingId) {
       return NextResponse.json(
-        { success: false, message: 'Missing onboardingId. Call POST /api/onboarding/start first.' },
+        { success: false, error: 'MISSING_ONBOARDING_ID', message: 'Missing onboardingId. Call POST /api/onboarding/start first.' },
         { status: 400 }
       );
     }
-    
+
     const onboardingId = providedOnboardingId;
-    console.log('[Onboarding Code] Using onboardingId:', onboardingId);
 
     const repoLink = String(formData.get('repoLink') || '').trim();
-    const codeText = String(formData.get('codeText') || '');
+    const codeText = String(formData.get('codeText') || '').trim();
     const file = formData.get('file') as File | null;
 
-    // HÅRD BLOCKERING: Om repoLink finns måste github_repo_verified event existera
-    // github_repo_verified är INTE ett FSM-event - läser direkt från events
-    // Detta stoppar ALLT: ingen ZIP, ingen code_submitted, ingen processing
+    // ── Plaintext removed in Phase 5 ─────────────────────────────────────────
+    // Keep frontend backward-compatible until Phase 5b updates the UI.
+    if (codeText && !repoLink && !file) {
+      return NextResponse.json(
+        { success: false, error: 'PLAINTEXT_NOT_SUPPORTED', message: 'Plaintext code submission is no longer supported. Upload a ZIP or provide a GitHub repo URL.' },
+        { status: 400 }
+      );
+    }
+
+    // ── Require at least one input ────────────────────────────────────────────
+    if (!repoLink && !file) {
+      return NextResponse.json(
+        { success: false, error: 'MISSING_INPUT', message: 'Provide a GitHub repo URL or a ZIP file.' },
+        { status: 400 }
+      );
+    }
+
+    // ── Gate: repoLink requires github_repo_verified (single check) ───────────
+    // This is the ONLY place this check runs. The duplicate further down has been removed.
     if (repoLink) {
       const events = await listOnboardingEvents(onboardingId);
       const githubVerification = isGithubRepoVerifiedFromEvents(events);
-      
+
       if (!githubVerification.verified) {
-        console.warn('[Onboarding Code] HARD BLOCK: repoLink provided but github_repo_verified missing', {
-          onboardingId,
-          repoLink,
-          githubVerified: false,
-        });
-        
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'GITHUB_OAUTH_REQUIRED',
-            message: 'GitHub-repo kräver OAuth-auktorisering innan kod kan laddas upp.',
-            nextStep: 'github_auth',
-          },
-          { status: 403 }
-        );
-      }
-    }
+        // Check if the repo is actually private before blocking
+        const access = await checkRepoAccess(repoLink);
+        const repoIsPrivate = !access.ok || access.private;
 
-    // /api/onboarding/code ska ALDRIG blockeras av FSM-status
-    // FSM-transition sker senare i GitHub-jobbet
-
-    // 1. Validera input (repoLink, file, etc)
-    if (!repoLink && !codeText && !file) {
-      return NextResponse.json({
-        success: false,
-        error: 'Missing code input. Provide repoLink, codeText, or file.',
-      }, { status: 400 });
-    }
-
-    // Only repo link, no file/codeText: verify GitHub repo; if private, return flags for GitHub OAuth
-    if (repoLink && !file && !codeText.trim()) {
-      const access = await checkRepoAccess(repoLink);
-      const repoIsPrivate = access.private || !access.ok;
-      
-      // Hård gate: Blockera GitHub-job innan OAuth är verifierad för privata repo
-      if (repoIsPrivate && access.repoSlug) {
-        // Hämta onboarding state för att kolla OAuth-verifiering
-        const events = await listOnboardingEvents(onboardingId);
-        console.log('[Onboarding Code] Events before reduce:', {
-          onboardingId,
-          userSub,
-          eventsCount: events.length,
-          eventTypes: events.map(e => e.type),
-          hasCodeSubmitted: events.some(e => e.type === 'code_submitted')
-        });
-        const state = reduceOnboarding(events, onboardingId, userSub);
-        // github_repo_verified är INTE ett FSM-event - läser direkt från events
-        const githubVerification = isGithubRepoVerifiedFromEvents(events);
-        
-        console.log('[Onboarding Code] GitHub verification check:', {
-          onboardingId,
-          userSub,
-          stateStatus: state.status,
-          stateCode: state.code,
-          githubVerified: githubVerification.verified
-        });
-        
-        if (!githubVerification.verified) {
+        if (repoIsPrivate) {
+          console.warn('[Onboarding Code] HARD BLOCK: private repoLink without github_repo_verified', {
+            onboardingId,
+            repoLink,
+          });
           return NextResponse.json(
             {
               success: false,
               error: 'GITHUB_OAUTH_REQUIRED',
-              message: 'Privata GitHub-repon kräver OAuth-auktorisering innan verifiering kan startas.',
-              nextStep: 'github_auth'
+              message: 'GitHub-repo kräver OAuth-auktorisering innan kod kan laddas upp.',
+              nextStep: 'github_auth',
             },
             { status: 403 }
           );
         }
       }
-      
-      if (access.repoSlug && repoIsPrivate) {
-        return NextResponse.json({
-          success: true,
-          job: {
-            status: 'requires_github_oauth',
-            repoPrivate: true,
-            requiresGithubAccess: true,
-            repoSlug: access.repoSlug,
-          },
+    }
+
+    // ── Branch: ZIP file upload ───────────────────────────────────────────────
+    if (file) {
+      const rawFilename = file.name || 'upload.zip';
+      const filename = sanitizeFilename(rawFilename);
+      const jobId = crypto.randomBytes(16).toString('hex'); // 32-char hex, matches worker regex
+
+
+      // Skapa GCS job-record så polling-endpointen kan hitta jobbet.
+      // Utan detta returnerar /api/github/job?jobId=... alltid 404 → polling
+      // fastnar för evigt → user-flödet kommer aldrig till Stripe-steget.
+      try {
+        await createGitHubJob({
+          jobId,
+          onboardingId,
+          userSub,
+          status: 'running',
         });
+      } catch (err) {
+        console.error('[Onboarding Code] Failed to create job record:', err);
+        return NextResponse.json(
+          { success: false, error: 'JOB_STORE_UNAVAILABLE', message: 'Could not create job record.' },
+          { status: 502 }
+        );
       }
-      // Public repo - kan hanteras direkt, men GitHub OAuth-flödet används normalt
-      // Returnera att job kan startas
+
+      let workerResponse: Response;
+      try {
+        workerResponse = await streamUploadToWorker({
+          jobId,
+          onboardingId,
+          filename,
+          body: file.stream() as unknown as ReadableStream,
+        });
+      } catch (err) {
+        console.error('[Onboarding Code] Worker upload error:', err);
+        return NextResponse.json(
+          { success: false, error: 'WORKER_UNAVAILABLE', message: 'Could not reach GitHub worker.' },
+          { status: 502 }
+        );
+      }
+
+      if (!workerResponse.ok) {
+        const workerBody = await workerResponse.json().catch(() => null);
+        console.error('[Onboarding Code] Worker rejected ZIP upload', { status: workerResponse.status, body: workerBody });
+        return NextResponse.json(
+          { success: false, error: 'WORKER_ERROR', workerStatus: workerResponse.status, workerBody },
+          { status: workerResponse.status >= 400 && workerResponse.status < 500 ? workerResponse.status : 502 }
+        );
+      }
+
       return NextResponse.json({
         success: true,
-        job: {
-          status: 'started',
-          message: 'Public repo detected. Use GitHub OAuth flow for consistency.',
-        },
+        job: { status: 'started', jobId },
       });
     }
 
-    // 2. Starta eller återanvänd GitHub-job (idempotent)
-    // För file/codeText: spara temporärt (ingen FSM-transition här)
-    // FSM-transition till code_completed sker endast i GitHub-job-processorn
+    // ── Branch: GitHub repo URL ───────────────────────────────────────────────
+    if (repoLink) {
+      const parsed = parseGitHubRepoUrl(repoLink);
+      if (!parsed) {
+        return NextResponse.json(
+          { success: false, error: 'INVALID_REPO_URL', message: 'Could not parse GitHub repo URL. Expected https://github.com/owner/repo.' },
+          { status: 400 }
+        );
+      }
 
-    // För nuvarande implementation: file/codeText sparas temporärt
-    // Men eftersom FSM-transition sker i GitHub-job, behöver vi inte göra något här
-    // Returnera success med job-status
+      const repoSlug = `${parsed.owner}/${parsed.repo}`;
 
-    // 3. Returnera job-status
-    // ALLTID returnera 200
-    return NextResponse.json({
-      success: true,
-      job: {
-        status: 'started',
-        message: 'Code submitted. Processing...',
-      },
-    });
+      // If OAuth-verified, the OAuth callback has already started a job — don't trigger a second one.
+      const events = await listOnboardingEvents(onboardingId);
+      const githubVerification = isGithubRepoVerifiedFromEvents(events);
+      if (githubVerification.verified) {
+        return NextResponse.json({
+          success: true,
+          job: {
+            status: 'already_running',
+            message: 'GitHub job started by OAuth callback, poll /api/github/job',
+          },
+        });
+      }
+
+      // Public repo: trigger worker directly (no OAuth token needed)
+      const jobId = crypto.randomBytes(16).toString('hex');
+
+
+      let result;
+      try {
+        result = await triggerExternalGitHubWorker(jobId, onboardingId, repoSlug, {});
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        // Surface worker's HTTP status if embedded in error message
+        const workerStatus = message.match(/worker failed: (\d+)/)?.[1];
+        const status = workerStatus ? parseInt(workerStatus, 10) : 502;
+        console.error('[Onboarding Code] Worker trigger error:', message);
+        return NextResponse.json(
+          { success: false, error: 'WORKER_ERROR', workerStatus: status, message },
+          { status: status >= 400 && status < 600 ? status : 502 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        job: { status: 'started', jobId },
+        workerResponse: result.body,
+      });
+    }
+
+    // Should be unreachable given the guards above
+    return NextResponse.json(
+      { success: false, error: 'INTERNAL', message: 'Unhandled input combination.' },
+      { status: 500 }
+    );
+
   } catch (error) {
-    console.error('[Onboarding Code] Error:', error);
-    return NextResponse.json({ success: false }, { status: 500 });
+    console.error('[Onboarding Code] Unexpected error:', error);
+    return NextResponse.json({ success: false, error: 'INTERNAL' }, { status: 500 });
   }
 }

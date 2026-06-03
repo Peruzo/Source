@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getActiveOnboardingIdForSession, createNewOnboardingSession, bindOnboardingToSession, getActiveOnboardingForSession } from '@/lib/storage/onboarding-sessions';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
@@ -37,7 +38,6 @@ export async function POST(request: NextRequest) {
     
     const userSub = session.user.sub;
     const isAnonymous = false;
-    console.log(`[Onboarding Start] Using Auth0 userSub: ${userSub}`);
     
     // Läs forceNew och email från request body (email kommer från signup-context)
     let forceNew = false;
@@ -57,14 +57,19 @@ export async function POST(request: NextRequest) {
     let onboardingId = await getActiveOnboardingIdForSession(userSub);
     
     if (!onboardingId || forceNew) {
-      // Skapa ny onboarding endast om ingen finns (eller vid forceNew)
-      onboardingId = await createNewOnboardingSession(userSub);
-      console.log(`[Onboarding Start] Created new onboarding session${forceNew ? ' (forceNew)' : ''}: ${onboardingId} for userSub: ${userSub}`);
-      
+      // Läs source_onboarding_id-cookie satt på /priser via /api/onboarding/package-selected.
+      // Om cookien finns ska vi använda samma UUID som package_selected-eventet så att
+      // hela kedjan av events (package_selected → start → questions → code → stripe)
+      // delar ett gemensamt UUID. Annars skapas två separata 'inkommande'-rader i admin.
+      const cookieStore = await cookies();
+      const cookieOnboardingId = cookieStore.get('source_onboarding_id')?.value;
+
+      // Skapa ny onboarding — använd cookie-UUID om det finns, annars generera nytt
+      onboardingId = await createNewOnboardingSession(userSub, cookieOnboardingId);
+
       // KRITISKT: Bind onboardingId till sessionId (förhindrar att onboardingId ändras)
       bindOnboardingToSession(userSub, onboardingId);
     } else {
-      console.log(`[Onboarding Start] Reusing existing onboarding: ${onboardingId} for userSub: ${userSub}`);
       // Bind om den inte redan är bunden (t.ex. från GCS)
       if (!getActiveOnboardingForSession(userSub)) {
         bindOnboardingToSession(userSub, onboardingId);
@@ -109,8 +114,14 @@ export async function POST(request: NextRequest) {
       console.warn(`[Onboarding Start] Admin ingest failed (non-blocking) for onboarding ${onboardingId}:`, err);
     });
     
-    return NextResponse.json({ 
-      onboardingId, 
+    // KÄLLA av sanningen är userSub-bundet onboardingId via getActiveOnboardingIdForSession.
+    // Cookien tjänar bara som bro mellan anonyma /priser-klick och inloggat onboarding-flöde.
+    // Vi konsumerar INTE cookien — den ska kunna återanvändas vid /priser-klick även efter
+    // login (t.ex. om kund går tillbaka och byter paket). När en NY kund signupar på samma
+    // device skapar vi en ny session bunden till deras userSub; deras package_selected-flöde
+    // läser då sin userSub-bundna onboarding via getActiveOnboardingIdForSession (prio 1).
+    return NextResponse.json({
+      onboardingId,
       userSub,
       isAnonymous,
     });

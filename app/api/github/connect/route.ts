@@ -110,6 +110,5 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set('scope', 'repo');
   authUrl.searchParams.set('state', state);
 
-  console.log(`[GitHub Connect] Redirecting to OAuth for private repo: ${repo} (anonymous session)`);
   return NextResponse.redirect(authUrl.toString());
 }

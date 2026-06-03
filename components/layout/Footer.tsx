@@ -17,6 +17,9 @@ export function Footer({ serverYear }: FooterProps) {
     { href: '/om-oss', label: 'Om oss' },
     { href: '/priser', label: 'Priser' },
     { href: '/kontakt', label: 'Kontakt' },
+    { href: '/legal/terms', label: 'Användarvillkor' },
+    { href: '/legal/privacy', label: 'Integritetspolicy' },
+    { href: '/legal/cookies', label: 'Cookiepolicy' },
   ];
 
   if (pathname != null && pathname.startsWith('/onboarding')) {
@@ -157,10 +160,10 @@ export function Footer({ serverYear }: FooterProps) {
               © {currentYear} Source. Alla rättigheter förbehållna.
             </p>
             <div className="flex gap-6 text-sm">
-              <Link href="/privacy" className="text-gray-500 hover:text-teal transition-colors">
+              <Link href="/legal/privacy" className="text-gray-500 hover:text-teal transition-colors">
                 Integritet
               </Link>
-              <Link href="/terms" className="text-gray-500 hover:text-teal transition-colors">
+              <Link href="/legal/terms" className="text-gray-500 hover:text-teal transition-colors">
                 Villkor
               </Link>
             </div>

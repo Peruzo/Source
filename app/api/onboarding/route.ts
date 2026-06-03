@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    console.log('[Onboarding GET] Using anonymous sessionId:', sessionId);
     
     const searchParams = request.nextUrl.searchParams;
     let onboardingId = searchParams.get('onboardingId');
@@ -55,23 +54,9 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    console.log('[Onboarding GET] sessionId =', sessionId, 'onboardingId =', onboardingId);
     
     const events = await listOnboardingEvents(onboardingId);
 
-    console.log(
-      '[DEBUG RAW EVENTS]',
-      JSON.stringify(
-        events.map((e, i) => ({
-          index: i,
-          type: e.type,
-          at: e.at,
-          payload: e.payload,
-        })),
-        null,
-        2
-      )
-    );
 
     // EVENT-SEKVENSVERIFIERING
     // - listOnboardingEvents(): sorterar på filnamn (prefix timestamp), inte på at. Filnamn = timestamp_eventtype.json → kronologisk ordning efter skrivtid.
@@ -92,21 +77,11 @@ export async function GET(request: NextRequest) {
         events.findIndex(e => e.type === 'code_submitted') >= 0 &&
         events.findIndex(e => e.type === 'github_repo_verified') < events.findIndex(e => e.type === 'code_submitted'),
     };
-    console.log('[Onboarding GET] EVENT-SEKVENS (precis innan reduceOnboarding):', JSON.stringify(eventSequenceLog, null, 2));
 
     // Reducer hanterar tom state automatiskt (returnerar null för alla fält)
     // Inga auto-create-logik här - GET-endpoint är read-only
     const state = reduceOnboarding(events, onboardingId, sessionId);
 
-    console.log('[Onboarding GET] Reduced state:', {
-      onboardingId,
-      sessionId,
-      stateStatus: state.status,
-      stateCode: state.code,
-      stateGithub: state.github,
-      fullState: state,
-      isStateNull: state === null
-    });
 
     const responseData = {
       state,
@@ -114,14 +89,6 @@ export async function GET(request: NextRequest) {
       eventsCount: events.length,
     };
 
-    console.log('[Onboarding GET] RAW Response being sent to frontend:', {
-      responseState: responseData.state,
-      responseStateStatus: responseData.state?.status,
-      responseStateIsNull: responseData.state === null,
-      responseOnboardingId: responseData.onboardingId,
-      responseEventsCount: responseData.eventsCount,
-      fullResponse: JSON.stringify(responseData, null, 2)
-    });
 
     return NextResponse.json(responseData);
   } catch (error) {
