@@ -457,3 +457,142 @@
     animation: none !important;
   }
 }
+
+/* ── Platform Converge ──────────────────────────────────────────────────────
+   Prefix: .cvg-*   |   Additiv global CSS
+   Scatter → grid → dissolve → reveal. Speglar source_converge_white.html.
+   Chip-positioner via custom props: --sx/--sy (utspritt), --gx/--gy (rutnät).
+   Fas-klasser sätts på .cvg-field: cvg-go → cvg-assembled → cvg-dissolve → cvg-reveal
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Klipper horisontellt spill så layouten aldrig bryts på små skärmar */
+.cvg-wrap {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.cvg-field {
+  position: relative;
+  width: 980px;
+  max-width: 100%;
+  height: 560px;
+  margin: 0 auto;
+}
+
+.cvg-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 880px;
+  max-width: 96%;
+  height: 320px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(0, 191, 166, 0.3);
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+.cvg-assembled .cvg-frame { opacity: 1; }
+.cvg-dissolve .cvg-frame { opacity: 0; transition: opacity 0.5s ease; }
+
+.cvg-chip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  --x: var(--sx);
+  --y: var(--sy);
+  --s: 1;
+  --dy: 0px;
+  transform:
+    translate(-50%, -50%)
+    translate(var(--x), var(--y))
+    translate(0, var(--dy))
+    scale(var(--s));
+  transition:
+    transform 1.15s cubic-bezier(0.5, 0, 0.18, 1) var(--d, 0s),
+    opacity 0.55s ease var(--d, 0s),
+    filter 0.55s ease var(--d, 0s);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1c2027;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px -16px rgba(16, 24, 32, 0.28);
+}
+
+.cvg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00bfa6;
+  flex: none;
+}
+
+.cvg-go .cvg-chip { opacity: 1; }
+.cvg-assembled .cvg-chip { --x: var(--gx); --y: var(--gy); }
+.cvg-dissolve .cvg-chip {
+  --s: 0.88;
+  --dy: -14px;
+  opacity: 0;
+  filter: blur(5px);
+}
+
+.cvg-resolve {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+  pointer-events: none;
+  padding: 0 16px;
+}
+.cvg-reveal .cvg-resolve {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Reduced motion: inga övergångar, slutläget visas direkt */
+.cvg-noanim .cvg-chip,
+.cvg-noanim .cvg-frame,
+.cvg-noanim .cvg-resolve {
+  transition: none;
+}
+
+/* Responsiv nedskalning så chips inte spiller utanför.
+   transform-scale behåller layout-boxen → höjden justeras per breakpoint. */
+@media (max-width: 1000px) {
+  .cvg-field { transform: scale(0.82); height: 470px; }
+}
+@media (max-width: 820px) {
+  .cvg-field { transform: scale(0.66); height: 400px; }
+}
+@media (max-width: 560px) {
+  .cvg-field { transform: scale(0.46); height: 300px; }
+}
+@media (max-width: 400px) {
+  .cvg-field { transform: scale(0.38); height: 250px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cvg-chip,
+  .cvg-frame,
+  .cvg-resolve {
+    transition: none !important;
+  }
+}
