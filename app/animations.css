@@ -410,3 +410,50 @@
     animation: none !important;
   }
 }
+
+/* ── Leads Showcase ─────────────────────────────────────────────────────────
+   Prefix: .leads-*   |   Additiv global CSS (safe per scope-analys)
+   Matchar timing i source_leads_generating_light.html (referens).
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Scan bar: 0 → 100 % i 2.1 s, försvinner sedan */
+.leads-scanbar {
+  height: 100%;
+  width: 0;
+  background: #00BFA6;
+  border-radius: 3px;
+  animation: leads-scan 2.1s ease-out forwards;
+}
+
+/* Wrapper fader ut när scan-baren är klar */
+.leads-scanfade {
+  animation: leads-scanfade 2.4s ease-out forwards;
+}
+
+/* Spinner rotation (SVG i status-raden) */
+.leads-spinner {
+  animation: leads-rot 0.8s linear infinite;
+}
+
+@keyframes leads-scan {
+  0%   { width: 0;    opacity: 1; }
+  88%  { width: 100%; opacity: 1; }
+  100% { width: 100%; opacity: 0; }
+}
+
+@keyframes leads-scanfade {
+  0%,  84% { opacity: 1; }
+  100%     { opacity: 0; }
+}
+
+@keyframes leads-rot {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leads-scanbar,
+  .leads-scanfade,
+  .leads-spinner {
+    animation: none !important;
+  }
+}
