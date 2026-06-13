@@ -2,7 +2,6 @@
 
 import { FadeIn } from '@/components/animations/FadeIn';
 import { ScrollTimeline } from '@/components/ui/ScrollTimeline';
-import { LeadsShowcase } from '@/components/ui/LeadsShowcase';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -216,43 +215,38 @@ export function WhatWeDo() {
                     transition={{ delay: 0.2, duration: 0.8 }}
                     className={`${!isEven ? 'lg:col-start-1 lg:row-start-1' : ''}`}
                   >
-                    {/* Block 02 – animerad leads-produktvy */}
-                    {index === 1 ? (
-                      <LeadsShowcase />
-                    ) : (
-                      <motion.div
-                        whileHover={{ scale: 1.02, rotateY: 2 }}
-                        transition={{ duration: 0.4 }}
-                        className="relative group"
-                      >
-                        <div className="glass relative aspect-[16/10] overflow-hidden rounded-[28px] border border-white/20 flex items-center justify-center">
-                          {/* Placeholder content - replace with actual screenshots */}
-                          {service.imageSrc ? (
-                            <div className="absolute inset-0 rounded-[28px] overflow-hidden">
-                              <Image
-                                src={service.imageSrc}
-                                alt={service.title}
-                                fill
-                                className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''} h-full w-full block`}
-                                sizes="(min-width: 1024px) 480px, 100vw"
-                                priority={index === 0}
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
-                            </div>
-                          ) : (
-                            <div className="text-center">
-                              <p className="text-6xl md:text-8xl font-bold text-white/10 mb-4">
-                                {service.number}
-                              </p>
-                              <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
-                            </div>
-                          )}
-                        </div>
+                    <motion.div
+                      whileHover={{ scale: 1.02, rotateY: 2 }}
+                      transition={{ duration: 0.4 }}
+                      className="relative group"
+                    >
+                      <div className="glass relative aspect-[16/10] overflow-hidden rounded-[28px] border border-white/20 flex items-center justify-center">
+                        {/* Placeholder content - replace with actual screenshots */}
+                        {service.imageSrc ? (
+                          <div className="absolute inset-0 rounded-[28px] overflow-hidden">
+                            <Image
+                              src={service.imageSrc}
+                              alt={service.title}
+                              fill
+                              className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''} h-full w-full block`}
+                              sizes="(min-width: 1024px) 480px, 100vw"
+                              priority={index === 0}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <p className="text-6xl md:text-8xl font-bold text-white/10 mb-4">
+                              {service.number}
+                            </p>
+                            <p className="text-sm text-white/60">{service.imagePlaceholder}</p>
+                          </div>
+                        )}
+                      </div>
 
-                        {/* Glow effect on hover */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
-                      </motion.div>
-                    )}
+                      {/* Glow effect on hover */}
+                      <div className="absolute -inset-1 bg-gradient-to-r from-teal/0 via-teal/30 to-teal/0 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+                    </motion.div>
                   </motion.div>
                 </div>
               </div>

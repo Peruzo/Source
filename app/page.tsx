@@ -1,6 +1,7 @@
 import { Hero } from '@/components/sections/Hero';
 import { ValueProposition } from '@/components/sections/ValueProposition';
 import { WhatWeDo } from '@/components/sections/WhatWeDo';
+import { LeadsSection } from '@/components/sections/LeadsSection';
 import { PortfolioTeaser } from '@/components/sections/PortfolioTeaser';
 import { AIAgentTestimonials } from '@/components/sections/AIAgentTestimonials';
 import { FAQ } from '@/components/sections/FAQ';
@@ -16,6 +17,7 @@ export default function Home() {
       <Hero />
       <ValueProposition />
       <WhatWeDo />
+      <LeadsSection />
       <DataGrowthSlideshow />
       <AIAssistant />
       <PortfolioTeaser />
