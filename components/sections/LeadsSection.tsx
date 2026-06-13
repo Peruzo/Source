@@ -1,24 +1,34 @@
 'use client';
 
-import { Section } from '@/components/ui/Section';
+import { useRef, useEffect, useState } from 'react';
+import { useInView } from 'framer-motion';
 import { Container } from '@/components/ui/Container';
-import { Button } from '@/components/ui/Button';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { LeadsShowcase } from '@/components/ui/LeadsShowcase';
+import { LeadDetail } from '@/components/ui/LeadDetail';
 import { motion } from 'framer-motion';
 
 /**
- * Egen sektion som ramar in LeadsShowcase-produktvyn.
- * Ljus beige bakgrund ger kontrast mot det vita produktkortet.
- * LeadsShowcase triggar sin genererande animation via useInView när
- * sektionen scrollas in i vy.
+ * Kompakt Leads-sektion: listan (LeadsShowcase, compact) bredvid en detaljvy
+ * (LeadDetail). En gemensam useInView-trigger orkestrerar koreografin:
+ * listan genererar → het rad väljs → detaljen glider in något efter.
+ * Beige bakgrund ger kontrast mot de vita korten.
  */
 export function LeadsSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  // once: false → spelas om varje gång sektionen scrollas in i vy
+  const inView = useInView(sectionRef, { once: false, margin: '-80px' });
+  const [triggerKey, setTriggerKey] = useState(0);
+
+  useEffect(() => {
+    if (inView) setTriggerKey(k => k + 1);
+  }, [inView]);
+
   return (
-    <Section background="beige">
+    <section ref={sectionRef} className="py-12 md:py-16 bg-[#FDF8F3]">
       <Container>
         {/* Rubrik-block */}
-        <FadeIn className="text-center max-w-2xl mx-auto mb-12 lg:mb-16">
+        <FadeIn className="text-center max-w-2xl mx-auto mb-10 lg:mb-12">
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -36,21 +46,16 @@ export function LeadsSection() {
           </p>
         </FadeIn>
 
-        {/* Produktvy */}
-        <FadeIn className="max-w-[1000px] mx-auto">
-          <LeadsShowcase />
-        </FadeIn>
-
-        {/* Dubbel CTA */}
-        <FadeIn className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 lg:mt-16">
-          <Button href="/kontakt" variant="primary" size="lg">
-            Boka demo
-          </Button>
-          <Button href="/priser" variant="secondary" size="lg">
-            Kom igång
-          </Button>
-        </FadeIn>
+        {/* Tvåkolumn: lista + detaljvy. Wrap till staplat under ~720 px. */}
+        <div className="flex flex-wrap items-start justify-center gap-4 max-w-[1080px] mx-auto">
+          <div className="flex-1 basis-[460px] min-w-[300px]">
+            <LeadsShowcase compact triggerKey={triggerKey} />
+          </div>
+          <div className="flex-[0_1_380px] min-w-[300px]">
+            <LeadDetail triggerKey={triggerKey} />
+          </div>
+        </div>
       </Container>
-    </Section>
+    </section>
   );
 }
