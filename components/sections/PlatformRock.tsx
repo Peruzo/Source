@@ -9,6 +9,7 @@ import {
   useReducedMotion,
   type MotionValue,
 } from 'framer-motion';
+import RockHotspots from './RockHotspots';
 
 /**
  * PlatformRock — scroll-driven sektion.
@@ -220,6 +221,9 @@ export default function PlatformRock() {
             Hela din verksamhet — samlad.
           </h2>
         </motion.div>
+
+        {/* Klickbara hotspots som tonar fram i slutläget */}
+        <RockHotspots progress={scrollYProgress} />
       </div>
 
       <style>{`
