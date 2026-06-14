@@ -1,4 +1,5 @@
 import { Hero } from '@/components/sections/Hero';
+import { ValueProposition } from '@/components/sections/ValueProposition';
 import PlatformRock from '@/components/sections/PlatformRock';
 import { WhatWeDo } from '@/components/sections/WhatWeDo';
 import { PortfolioTeaser } from '@/components/sections/PortfolioTeaser';
@@ -14,6 +15,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <ValueProposition />
       <PlatformRock />
       <WhatWeDo />
       <DataGrowthSlideshow />

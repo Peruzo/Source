@@ -145,7 +145,16 @@ export default function PlatformRock() {
             muted
             playsInline
             preload="auto"
-            style={{ width: '100%', height: 'auto', display: 'block', pointerEvents: 'none' }}
+            style={{
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+              pointerEvents: 'none',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 88% 90% at 50% 47%, #000 56%, transparent 100%)',
+              maskImage:
+                'radial-gradient(ellipse 88% 90% at 50% 47%, #000 56%, transparent 100%)',
+            }}
           />
         </div>
 
