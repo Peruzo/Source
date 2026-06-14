@@ -129,9 +129,9 @@ export default function PlatformRock() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          // mjuk ljus bakgrund som smälter ihop med videons gradient
+          // grå vinjett som matchar videons inbakade bakgrund
           background:
-            'radial-gradient(120% 90% at 50% 42%, #ffffff 0%, #f3f4f4 55%, #ecefee 100%)',
+            'radial-gradient(circle farthest-corner at 50% 34%, #ecedeb 0%, #d2d3cf 38%, #adada8 70%, #9a9a92 100%)',
         }}
       >
         {/* Stenen (video) med subtil float */}
@@ -151,9 +151,9 @@ export default function PlatformRock() {
               display: 'block',
               pointerEvents: 'none',
               WebkitMaskImage:
-                'radial-gradient(ellipse 88% 90% at 50% 47%, #000 56%, transparent 100%)',
+                'radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)',
               maskImage:
-                'radial-gradient(ellipse 88% 90% at 50% 47%, #000 56%, transparent 100%)',
+                'radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)',
             }}
           />
         </div>
