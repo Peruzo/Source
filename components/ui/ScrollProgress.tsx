@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function ScrollProgress() {
   const [mounted, setMounted] = useState(false);
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 120,
@@ -16,7 +18,7 @@ export function ScrollProgress() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || nofx.progress) { // TEMP: flicker bisect, remove after diagnosis
     return null;
   }
 

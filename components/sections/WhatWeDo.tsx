@@ -5,6 +5,7 @@ import { ScrollTimeline } from '@/components/ui/ScrollTimeline';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 type Service = {
   number: string;
@@ -94,6 +95,7 @@ const services: Service[] = [
 ];
 
 export function WhatWeDo() {
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   // Define service sections for horizontal underscores
   // Positions are calculated to align with the center of each service section
   const serviceSections = [
@@ -144,7 +146,8 @@ export function WhatWeDo() {
               transition={{ duration: 0.8, delay: index * 0.1 }}
               className={`relative min-h-[60vh] lg:min-h-[70vh] flex items-center bg-gradient-to-br ${service.bgColor}`}
             >
-              <div className="absolute inset-0 noise-overlay"></div>
+              {/* TEMP: flicker bisect, remove after diagnosis */}
+              {!nofx.noise && <div className="absolute inset-0 noise-overlay"></div>}
               
               <div className="relative w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
                 <div

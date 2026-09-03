@@ -119,6 +119,33 @@ const menuContent: Record<string, MenuContent> = {
   },
 };
 
+export type MenuLinkGroup = {
+  title?: string;
+  items: { label: string; href: string }[];
+};
+
+/**
+ * Normalised link groups for a menu key, shared by the desktop mega menu data
+ * and the mobile accordion so the link lists are defined in one place.
+ */
+export function getMenuLinks(menuKey: string): MenuLinkGroup[] {
+  const content = menuContent[menuKey];
+  if (!content) return [];
+
+  if (content.groupedFeatures?.length) {
+    return content.groupedFeatures.map((group) => ({
+      title: group.title,
+      items: group.items,
+    }));
+  }
+
+  if (content.featureLinks?.length) {
+    return [{ items: content.featureLinks }];
+  }
+
+  return [];
+}
+
 export function MegaMenu({
   menuKey,
   isOpen,

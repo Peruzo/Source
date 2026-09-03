@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 interface BentoGridProps {
   children: ReactNode;
@@ -33,6 +34,8 @@ export function BentoCard({
   rowSpan = 1,
   delay = 0,
 }: BentoCardProps) {
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
+
   const spanClasses = {
     1: 'md:col-span-1',
     2: 'md:col-span-2',
@@ -44,13 +47,7 @@ export function BentoCard({
     2: 'md:row-span-2',
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 0.6, delay, ease: [0.4, 0, 0.2, 1] }}
-      className={`
+  const cardClassName = `
         ${spanClasses[span]}
         ${rowSpanClasses[rowSpan]}
         rounded-2xl p-8 md:p-10
@@ -59,7 +56,19 @@ export function BentoCard({
         transition-all duration-300
         group
         ${className}
-      `}
+      `;
+
+  if (nofx.fade) { // TEMP: flicker bisect, remove after diagnosis
+    return <div className={cardClassName}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-100px' }}
+      transition={{ duration: 0.6, delay, ease: [0.4, 0, 0.2, 1] }}
+      className={cardClassName}
     >
       {children}
     </motion.div>

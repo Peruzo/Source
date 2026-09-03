@@ -4,8 +4,10 @@ import { BentoCard } from '@/components/ui/BentoGrid';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion } from 'framer-motion';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function ValueProposition() {
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   return (
     <section
       id="next-section"
@@ -61,7 +63,8 @@ export function ValueProposition() {
                 className="lg:col-span-7 lg:row-span-2 bg-gradient-to-br from-black via-black-secondary to-black-tertiary text-white relative overflow-hidden"
                 delay={0}
               >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-teal/10 rounded-full blur-3xl"></div>
+                {/* TEMP: flicker bisect, remove after diagnosis */}
+                {!nofx.glow && <div className="absolute top-0 right-0 w-64 h-64 bg-teal/10 rounded-full blur-3xl"></div>}
                 
                 <div className="relative z-10">
                   <h3 className="text-section-subtitle mb-6 leading-tight">
