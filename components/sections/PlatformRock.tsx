@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from 'framer-motion';
 import RockHotspots from './RockHotspots';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 /**
  * PlatformRock — scroll-driven sektion.
@@ -59,6 +60,7 @@ export default function PlatformRock() {
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const reduce = useReducedMotion();
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -113,6 +115,10 @@ export default function PlatformRock() {
   const glowOpacity = useTransform(scrollYProgress, [0.45, 1], [0, 0.3]);
   const msgOpacity = useTransform(scrollYProgress, [0.86, 0.97], [0, 1]);
   const msgY = useTransform(scrollYProgress, [0.86, 1], [28, 0]);
+
+  if (nofx.rock) { // TEMP: flicker bisect, remove after diagnosis
+    return null;
+  }
 
   return (
     <section
