@@ -82,12 +82,12 @@ export function Header() {
 
   return (
     <header className="header-root">
-      {showSolidBg && (
-        <div
-          aria-hidden
-          className="header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300"
-        />
-      )}
+      <div
+        aria-hidden
+        className={`header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300 ${
+          showSolidBg ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
       <div className="header-content">
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="flex justify-between items-center h-12 md:h-14 lg:h-16">
@@ -220,7 +220,7 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden fixed inset-0 top-12 z-[100] bg-white/95 backdrop-blur-lg"
+            className="md:hidden absolute left-0 right-0 top-full h-[calc(100dvh-3rem)] z-[100] bg-white/95 backdrop-blur-lg"
           >
             <nav className="px-6 py-8 h-full overflow-y-auto" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-6">

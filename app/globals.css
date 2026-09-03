@@ -163,7 +163,6 @@
 
 * {
   scroll-behavior: smooth;
-  backface-visibility: hidden;
 }
 
 body {
