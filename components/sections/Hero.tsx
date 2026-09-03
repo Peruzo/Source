@@ -183,7 +183,7 @@ export function Hero() {
                 transform: 'translateZ(0)',
               }
         }
-        className="relative z-[2] w-full h-screen flex items-end justify-center pb-10 md:pb-16"
+        className="relative z-[2] w-full h-screen flex items-center md:items-end justify-center pb-10 md:pb-16"
       >
         {/* Picture that transitions from full-page to small box */}
         <motion.div
@@ -199,15 +199,15 @@ export function Hero() {
                   transform: 'translateZ(0)',
                 }
           }
-          className="relative w-full h-full overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.8)] bg-black"
+          className="relative w-full min-h-[420px] h-[60svh] md:min-h-0 md:h-full overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.8)] bg-black"
         >
           <Image
             src="/firstsectionpicture.png"
             alt="Source hero"
-            width={1920}
-            height={1080}
+            width={1232}
+            height={928}
             priority
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-[80%_center] md:object-center"
           />
 
           {/* Soft vignette so the central text remains readable */}

@@ -4,27 +4,30 @@ import Image from 'next/image';
 
 export default function PrivatVaxandePage() {
   return (
-    <section className="relative min-h-[100svh] w-full overflow-hidden bg-black text-white">
-      <Image
-        src="/vaxandeprivat.webp"
-        alt="Privat Växande hero"
-        fill
-        priority
-        className="object-cover object-center"
-      />
+    <section className="relative w-full overflow-hidden bg-black text-white md:min-h-[100svh]">
+      {/* Media band: fixed height on small screens, full-bleed background from md */}
+      <div className="relative h-[60svh] min-h-[420px] w-full md:absolute md:inset-0 md:h-auto md:min-h-0">
+        <Image
+          src="/vaxandeprivat.webp"
+          alt="Privat Växande hero"
+          fill
+          priority
+          className="object-cover object-[53%_30%] md:object-center"
+        />
 
-      <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/20" />
 
-      <div className="relative z-10 flex min-h-[100svh] items-center justify-center px-6">
-        <div className="mx-auto mt-[-10vh] max-w-[600px] text-center">
-          <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
-            Ta din e-handel till nästa nivå
-          </h1>
+        <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
+          <div className="mx-auto max-w-[600px] text-center md:mt-[-10vh]">
+            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
+              Ta din e-handel till nästa nivå
+            </h1>
+          </div>
         </div>
       </div>
 
       <div
-        className="absolute right-[8%] bottom-[12%] z-20 flex min-h-[340px] w-[340px] max-w-[92vw] flex-col gap-4 rounded-[20px] border border-white/10 p-6 backdrop-blur-[25px]"
+        className="relative z-10 mx-6 mt-6 mb-10 flex min-h-[340px] flex-col gap-4 rounded-[20px] border border-white/10 p-6 backdrop-blur-[25px] md:absolute md:right-[8%] md:bottom-[12%] md:z-20 md:mx-0 md:mt-0 md:mb-0 md:w-[340px] md:max-w-[92vw]"
         style={{
           background:
             'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',

@@ -73,16 +73,16 @@ export default function PaymentsHostingPage() {
             video.currentTime = video.duration;
           }
         }}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[70%_50%] lg:inset-y-0 lg:right-[-5%] lg:left-auto lg:w-[120%] lg:object-contain lg:object-right lg:origin-right lg:scale-75 lg:translate-x-[10%]"
+        className="pointer-events-none relative aspect-video w-full object-cover object-center md:absolute md:inset-0 md:aspect-auto md:h-full md:object-[70%_50%] lg:inset-y-0 lg:right-[-5%] lg:left-auto lg:w-[120%] lg:object-contain lg:object-right lg:origin-right lg:scale-75 lg:translate-x-[10%]"
       />
 
       {/* Subtle left fade for text readability (no dark filter over video). */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/10 to-transparent" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,191,166,0.08),transparent_60%)]" />
 
-      <Container className="relative z-10 flex min-h-[100svh] items-center">
+      <Container className="relative z-10 flex items-center md:min-h-[100svh]">
         <div className="grid w-full grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-20">
-          <FadeIn className="max-w-xl space-y-8 py-24 lg:py-0">
+          <FadeIn className="max-w-xl space-y-8 py-16 md:py-24 lg:py-0">
             <p className="text-xs uppercase tracking-[0.4em] text-white/60">
               BETALNINGAR &amp; HOSTING
             </p>
