@@ -6,13 +6,18 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MegaMenu } from '@/components/ui/MegaMenu';
+import { MegaMenu, getMenuLinks } from '@/components/ui/MegaMenu';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
+  // TEMP: flicker bisect, remove after diagnosis. Overrides translateZ(0)/contain from .header-root/.header-content in globals.css
+  const headerNoLayer = nofx.header ? { transform: 'none', contain: 'none' } : undefined;
   const isBookingsystemPage = pathname === '/bokningssystem';
   const isKampanjerPage = pathname === '/tjanster/kampanjer';
   const isAnalysPage = pathname === '/analys';
@@ -66,12 +71,19 @@ export function Header() {
     if (e.key === 'Escape') {
       setActiveMenu(null);
       setIsMenuOpen(false);
+      setOpenSubmenu(null);
     }
   }, []);
 
   const handleMenuToggle = useCallback(() => {
     setIsMenuOpen(!isMenuOpen);
+    setOpenSubmenu(null);
   }, [isMenuOpen]);
+
+  const closeMobileMenu = useCallback(() => {
+    setIsMenuOpen(false);
+    setOpenSubmenu(null);
+  }, []);
 
   if (pathname != null && pathname.startsWith('/onboarding')) {
     return null;
@@ -81,14 +93,19 @@ export function Header() {
     (!isAnalysPage && isScrolled) || isBookingsystemPage || isKampanjerPage;
 
   return (
-    <header className="header-root">
+    <header className="header-root" style={headerNoLayer}>
+      {!nofx.blur && ( // TEMP: flicker bisect, remove after diagnosis
+        <div
+          aria-hidden
+          className={`header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300 ${
+            showSolidBg ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      )}
       <div
-        aria-hidden
-        className={`header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300 ${
-          showSolidBg ? 'opacity-100' : 'opacity-0'
-        }`}
-      />
-      <div className="header-content">
+        className={`header-content ${nofx.blur && showSolidBg ? 'bg-white/95' : ''}`} // TEMP: flicker bisect, remove after diagnosis
+        style={headerNoLayer}
+      >
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="flex justify-between items-center h-12 md:h-14 lg:h-16">
           {/* Logo */}
@@ -224,22 +241,78 @@ export function Header() {
           >
             <nav className="px-6 py-8 h-full overflow-y-auto" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-6">
-                {navLinks.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.3 }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3"
+                {navLinks.map((link, index) => {
+                  const submenuId = link.menuKey ? `mobile-submenu-${link.menuKey}` : undefined;
+                  const isSubmenuOpen = !!link.menuKey && openSubmenu === link.menuKey;
+                  const submenuGroups = link.hasMenu && link.menuKey ? getMenuLinks(link.menuKey) : [];
+
+                  return (
+                    <motion.li
+                      key={link.href}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
                     >
-                      {link.label}
-                    </Link>
-                  </motion.li>
-                ))}
+                      <div className="flex items-center justify-between">
+                        <Link
+                          href={link.href}
+                          onClick={closeMobileMenu}
+                          className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3"
+                        >
+                          {link.label}
+                        </Link>
+                        {link.hasMenu && link.menuKey && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenSubmenu(isSubmenuOpen ? null : link.menuKey ?? null)
+                            }
+                            aria-expanded={isSubmenuOpen}
+                            aria-controls={submenuId}
+                            aria-label={`${isSubmenuOpen ? 'Dölj' : 'Visa'} undermeny för ${link.label}`}
+                            className="w-11 h-11 flex items-center justify-center text-gray-900"
+                          >
+                            <svg
+                              className={`w-5 h-5 transition-transform ${isSubmenuOpen ? 'rotate-180' : ''}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              style={{ color: '#00BFA6' }}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      {isSubmenuOpen && submenuGroups.length > 0 && (
+                        <ul id={submenuId} className="pl-4 pb-2 space-y-1">
+                          {submenuGroups.map((group, groupIndex) => (
+                            <li key={group.title ?? groupIndex}>
+                              {group.title && (
+                                <p className="pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  {group.title}
+                                </p>
+                              )}
+                              <ul className="space-y-1">
+                                {group.items.map((item) => (
+                                  <li key={item.href}>
+                                    <Link
+                                      href={item.href}
+                                      onClick={closeMobileMenu}
+                                      className="text-gray-700 hover:text-emerald-600 transition-colors text-base block py-2"
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </motion.li>
+                  );
+                })}
                 <motion.li
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}

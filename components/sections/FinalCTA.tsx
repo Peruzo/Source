@@ -2,24 +2,28 @@
 
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { motion } from 'framer-motion';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function FinalCTA() {
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   return (
     <section className="relative py-32 md:py-48 lg:py-56 bg-black text-white overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0">
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
+        {!nofx.glow && ( // TEMP: flicker bisect, remove after diagnosis
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal/20 rounded-full blur-3xl"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        )}
       </div>
 
       <div className="relative max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">

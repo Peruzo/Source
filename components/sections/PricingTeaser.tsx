@@ -3,8 +3,10 @@
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion } from 'framer-motion';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function PricingTeaser() {
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   const features = [
     { text: 'Design & utveckling' },
     { text: 'AI-analys & insights' },
@@ -15,8 +17,12 @@ export function PricingTeaser() {
   return (
     <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-white via-beige-light to-white"></div>
-      <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal/5 blur-3xl rounded-full"></div>
-      <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-teal/5 blur-3xl rounded-full"></div>
+      {!nofx.glow && ( // TEMP: flicker bisect, remove after diagnosis
+        <>
+          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal/5 blur-3xl rounded-full"></div>
+          <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-teal/5 blur-3xl rounded-full"></div>
+        </>
+      )}
 
       <div className="relative max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="max-w-5xl mx-auto">
@@ -31,7 +37,8 @@ export function PricingTeaser() {
 
           <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="relative">
             <div className="glass-light rounded-3xl p-8 md:p-12 border border-gray-200 relative overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal/10 rounded-full blur-3xl"></div>
+              {/* TEMP: flicker bisect, remove after diagnosis */}
+              {!nofx.glow && <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal/10 rounded-full blur-3xl"></div>}
               <div className="relative z-10">
                 <div className="text-center mb-12">
                   <motion.div initial={{ scale: 0.9, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="inline-block">

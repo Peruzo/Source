@@ -4,9 +4,12 @@ import Image from 'next/image';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useEffect, useRef } from 'react';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
+  const heroOff = nofx.hero; // TEMP: flicker bisect, remove after diagnosis
 
   // Smooth snap: hero ↔ nästa sektion. Vid snap: passive: false + preventDefault
   // så native wheel inte tävlar med scrollIntoView; scroll-end (debounce) ersätter fast timeout.
@@ -122,32 +125,48 @@ export function Hero() {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative min-h-screen overflow-hidden bg-white will-change-transform transform-gpu"
+      className={`relative min-h-screen overflow-hidden bg-white ${
+        heroOff ? '' : 'will-change-transform transform-gpu'
+      }`} // TEMP: flicker bisect, remove after diagnosis
     >
       {/* Dark gradient mesh at the very top, fades away as we move into the white 2nd section */}
       <motion.div
-        style={{ 
-          opacity: darkBgOpacity,
-          willChange: 'opacity',
-          transform: 'translateZ(0)',
-        }}
+        style={
+          heroOff
+            ? { opacity: 1 } // TEMP: flicker bisect, remove after diagnosis
+            : {
+                opacity: darkBgOpacity,
+                willChange: 'opacity',
+                transform: 'translateZ(0)',
+              }
+        }
         className="absolute inset-0 gradient-mesh z-0"
       />
       {/* Noise overlay - separated for better performance, can be disabled on low-end devices */}
-      <motion.div
-        style={{ 
-          opacity: darkBgOpacity,
-          willChange: 'opacity',
-        }}
-        className="absolute inset-0 noise-overlay z-0"
-      />
+      {!nofx.noise && ( // TEMP: flicker bisect, remove after diagnosis
+        <motion.div
+          style={
+            heroOff
+              ? { opacity: 1 } // TEMP: flicker bisect, remove after diagnosis
+              : {
+                  opacity: darkBgOpacity,
+                  willChange: 'opacity',
+                }
+          }
+          className="absolute inset-0 noise-overlay z-0"
+        />
+      )}
       {/* White background that takes over as the image shrinks into a box - Always visible, just becomes opaque */}
       <motion.div
-        style={{ 
-          opacity: whiteBgOpacity,
-          willChange: 'opacity',
-          transform: 'translateZ(0)',
-        }}
+        style={
+          heroOff
+            ? { opacity: 0 } // TEMP: flicker bisect, remove after diagnosis
+            : {
+                opacity: whiteBgOpacity,
+                willChange: 'opacity',
+                transform: 'translateZ(0)',
+              }
+        }
         className="absolute inset-0 bg-white z-[1]"
       />
 
@@ -155,23 +174,31 @@ export function Hero() {
           gradually gets more air around it, reading as a smaller box that
           moves down towards section 2. */}
       <motion.div
-        style={{ 
-          paddingTop: framePadding,
-          willChange: 'transform',
-          transform: 'translateZ(0)',
-        }}
+        style={
+          heroOff
+            ? { paddingTop: 0 } // TEMP: flicker bisect, remove after diagnosis
+            : {
+                paddingTop: framePadding,
+                willChange: 'transform',
+                transform: 'translateZ(0)',
+              }
+        }
         className="relative z-[2] w-full h-screen flex items-end justify-center pb-10 md:pb-16"
       >
         {/* Picture that transitions from full-page to small box */}
         <motion.div
-          style={{
-            scale: imageScale,
-            y: imageY,
-            borderRadius: imageRadius,
-            opacity: imageOpacity,
-            willChange: 'transform, opacity',
-            transform: 'translateZ(0)',
-          }}
+          style={
+            heroOff
+              ? { scale: 1, y: 0, borderRadius: 0, opacity: 1 } // TEMP: flicker bisect, remove after diagnosis
+              : {
+                  scale: imageScale,
+                  y: imageY,
+                  borderRadius: imageRadius,
+                  opacity: imageOpacity,
+                  willChange: 'transform, opacity',
+                  transform: 'translateZ(0)',
+                }
+          }
           className="relative w-full h-full overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.8)] bg-black"
         >
           <Image
@@ -185,7 +212,7 @@ export function Hero() {
 
           {/* Soft vignette so the central text remains readable */}
           <motion.div
-            style={{ opacity: overlayGradientOpacity }}
+            style={heroOff ? { opacity: 1 } : { opacity: overlayGradientOpacity }} // TEMP: flicker bisect, remove after diagnosis
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent"
           />
 
