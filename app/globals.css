@@ -109,7 +109,10 @@
   --color-teal-hover: #00997D;
   --color-teal-light: #E6F7F4;
   --color-teal-dark: #00806D;
-  
+
+  /* Accent green – used by the rotating hero word (separate from teal) */
+  --color-accent-600: #1AB65C;
+
   --color-beige-light: #FDF8F3;
   --color-beige: #F4F7F6;
   
@@ -144,6 +147,7 @@
   --color-teal-hover: #00997D;
   --color-teal-light: #E6F7F4;
   --color-teal-dark: #00806D;
+  --color-accent-600: #1AB65C;
   --color-gray-50: #FAFAFA;
   --color-gray-100: #F4F4F4;
   --color-gray-200: #E5E5E5;
