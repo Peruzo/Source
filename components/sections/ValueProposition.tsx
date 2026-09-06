@@ -11,7 +11,7 @@ export function ValueProposition() {
   return (
     <section
       id="next-section"
-      className="relative bg-white pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible"
+      className="relative bg-gradient-to-b from-surface-stone from-70% to-surface-stone-deep pt-32 md:pt-40 lg:pt-48 pb-20 md:pb-32 lg:pb-40 overflow-visible"
       style={{ minHeight: '100vh' }}
     >
       {/* Behåll #value-proposition för befintliga länkar / SEO */}
@@ -131,7 +131,7 @@ export function ValueProposition() {
               {/* Bottom right - Microanalysis features */}
               <BentoCard
                 span={2}
-                className="lg:col-span-5 bg-beige-light border-none"
+                className="lg:col-span-5 bg-white"
                 delay={0.2}
               >
                 <p className="text-overline text-teal mb-4">MIKROANALYS INKLUDERAR</p>

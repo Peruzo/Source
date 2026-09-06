@@ -51,7 +51,7 @@ export function BentoCard({
         ${spanClasses[span]}
         ${rowSpanClasses[rowSpan]}
         rounded-2xl p-8 md:p-10
-        border border-gray-200
+        border border-gray-300
         hover:border-teal
         transition-all duration-300
         group
