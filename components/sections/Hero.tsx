@@ -183,7 +183,7 @@ export function Hero() {
                 transform: 'translateZ(0)',
               }
         }
-        className="relative z-[2] w-full h-screen flex items-center md:items-end justify-center pb-10 md:pb-16"
+        className="relative z-[2] w-full h-screen flex items-end justify-center pb-10 md:pb-16"
       >
         {/* Picture that transitions from full-page to small box */}
         <motion.div
@@ -199,7 +199,7 @@ export function Hero() {
                   transform: 'translateZ(0)',
                 }
           }
-          className="relative w-full min-h-[420px] h-[60svh] md:min-h-0 md:h-full overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.8)] bg-black"
+          className="relative w-full h-full overflow-hidden shadow-[0_40px_120px_rgba(0,0,0,0.8)] bg-black"
         >
           <Image
             src="/firstsectionpicture.png"

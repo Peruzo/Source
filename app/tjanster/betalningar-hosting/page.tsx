@@ -57,7 +57,7 @@ export default function PaymentsHostingPage() {
     <>
     <section
       ref={sectionRef}
-      className="relative min-h-[100svh] overflow-hidden bg-black text-white"
+      className="relative overflow-hidden bg-black pt-12 text-white md:min-h-[100svh] md:pt-0"
     >
       <video
         ref={videoRef}
@@ -82,7 +82,7 @@ export default function PaymentsHostingPage() {
 
       <Container className="relative z-10 flex items-center md:min-h-[100svh]">
         <div className="grid w-full grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-20">
-          <FadeIn className="max-w-xl space-y-8 py-16 md:py-24 lg:py-0">
+          <FadeIn className="max-w-xl space-y-8 pt-8 pb-16 md:py-24 lg:py-0">
             <p className="text-xs uppercase tracking-[0.4em] text-white/60">
               BETALNINGAR &amp; HOSTING
             </p>
