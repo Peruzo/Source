@@ -283,8 +283,12 @@ export function Hero() {
 
 /**
  * First word of the headline, rotating Starta → Växa → Skala.
- * All three words are rendered invisibly in the same grid cell so the slot is as
- * wide as the widest word and the rest of the line never reflows on change.
+ *
+ * All words share one inline-grid cell: the invisible ones fix the slot to the
+ * widest word so the line never reflows, and the visible one is an in-flow grid
+ * item, so it inherits the h1's family, weight, size and tracking and sits on the
+ * same baseline as the rest of the line. justify-self-end keeps its right edge
+ * fixed, so a shorter word cannot open a gap before "online.".
  */
 function RotatingWord() {
   const reduce = useReducedMotion();
@@ -303,23 +307,21 @@ function RotatingWord() {
   const word = reduce ? STATIC_WORD : ROTATING_WORDS[index];
 
   return (
-    <span className="relative inline-block overflow-hidden align-bottom text-accent-600">
-      <span aria-hidden className="invisible grid">
-        {ROTATING_WORDS.map((w) => (
-          <span key={w} className="col-start-1 row-start-1">
-            {w}
-          </span>
-        ))}
-      </span>
+    <span className="inline-grid align-baseline text-accent-600">
+      {ROTATING_WORDS.map((w) => (
+        <span key={w} aria-hidden className="invisible col-start-1 row-start-1">
+          {w}
+        </span>
+      ))}
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={word}
-          initial={{ y: '100%', opacity: 0 }}
+          initial={{ y: '0.25em', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: '-100%', opacity: 0 }}
+          exit={{ y: '-0.25em', opacity: 0 }}
           transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute inset-0 flex items-center justify-center"
+          className="col-start-1 row-start-1 justify-self-end"
         >
           {word}
         </motion.span>
