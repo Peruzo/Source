@@ -66,7 +66,7 @@ export function ValueProposition() {
           ))}
 
           <Line delay={CLOSING_DELAY} className="mt-[1.1em]">
-            Eller ett för <span className="text-accent-700">allt</span>.
+            Eller ett för <span className="text-teal-dark">allt</span>.
           </Line>
         </h2>
       </div>
