@@ -110,8 +110,11 @@
   --color-teal-light: #E6F7F4;
   --color-teal-dark: #00806D;
 
-  /* Accent green – used by the rotating hero word (separate from teal) */
+  /* Accent green. -600 for accent on dark ground and as a fill colour;
+     -700 when the accent is set as text on a light ground, where -600
+     does not reach WCAG AA (2.27:1 on the stone surface). */
   --color-accent-600: #1AB65C;
+  --color-accent-700: #0F7A3C;
 
   /* Stone surface – the light centre and mid stop of the PlatformRock gradient,
      so section 2 can carry the same tone and fade into it. */
@@ -153,6 +156,7 @@
   --color-teal-light: #E6F7F4;
   --color-teal-dark: #00806D;
   --color-accent-600: #1AB65C;
+  --color-accent-700: #0F7A3C;
   --color-surface-stone: #ecedeb;
   --color-surface-stone-deep: #d2d3cf;
   --color-gray-50: #FAFAFA;
