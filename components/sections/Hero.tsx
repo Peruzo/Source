@@ -307,7 +307,7 @@ function RotatingWord() {
   const word = reduce ? STATIC_WORD : ROTATING_WORDS[index];
 
   return (
-    <span className="inline-grid align-baseline text-accent-600">
+    <span className="inline-grid align-baseline text-teal">
       {ROTATING_WORDS.map((w) => (
         <span key={w} aria-hidden className="invisible col-start-1 row-start-1">
           {w}
