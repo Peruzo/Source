@@ -2,7 +2,15 @@
 
 import Image from 'next/image';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
-import { motion, useScroll, useTransform, useReducedMotion, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  animate,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  AnimatePresence,
+  type AnimationPlaybackControls,
+} from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
@@ -11,93 +19,95 @@ const WORD_INTERVAL = 2500;
 /** Word shown when the visitor prefers reduced motion (no rotation). */
 const STATIC_WORD = 'Växa';
 
+/** Wheel snap: a downward tick this far into the hero (fraction of its height) still snaps to section 2. */
+const HERO_ZONE = 0.4;
+/** An upward tick within this many px of section 2's top snaps back to the hero. */
+const SECTION_TOP_TOLERANCE = 40;
+/** Snap animation length in seconds, and the wheel cooldown after it in ms. */
+const SNAP_DURATION = 0.8;
+const SNAP_COOLDOWN_MS = 300;
+const SNAP_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const reduce = useReducedMotion();
   const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   const heroOff = nofx.hero; // TEMP: flicker bisect, remove after diagnosis
 
-  // Smooth snap: hero ↔ nästa sektion. Vid snap: passive: false + preventDefault
-  // så native wheel inte tävlar med scrollIntoView; scroll-end (debounce) ersätter fast timeout.
+  // Wheel snap between the hero and section 2 (desktop only: touch never fires wheel events).
+  // Any downward tick inside the hero zone, however small, animates the page to #next-section;
+  // any upward tick at the top of section 2 animates it back to the hero. The page scroll is
+  // driven by framer-motion's animate with a fixed duration rather than native smooth scrolling,
+  // so the lock window is exact and the motion is the same in Safari as elsewhere. Wheel events
+  // are swallowed while the animation runs and for a short cooldown after it, so a trailing tick
+  // of the same gesture cannot bounce the page back.
   useEffect(() => {
-    let isSnapping = false;
-    let lastDirection: 'down' | 'up' | null = null;
-    let scrollEndCleanup: (() => void) | null = null;
+    if (reduce) return;
 
-    function waitForScrollEnd(callback: () => void): () => void {
-      let timeout: ReturnType<typeof setTimeout>;
+    const html = document.documentElement;
+    let controls: AnimationPlaybackControls | null = null;
+    let animating = false;
+    let cooldownUntil = 0;
+    // globals.css sets scroll-behavior: smooth on everything; the per-frame scrollTo must be instant.
+    const previousScrollBehavior = html.style.scrollBehavior;
 
-      const check = () => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          window.removeEventListener('scroll', check);
-          callback();
-        }, 120);
-      };
+    const finish = () => {
+      controls = null;
+      animating = false;
+      html.style.scrollBehavior = previousScrollBehavior;
+      cooldownUntil = performance.now() + SNAP_COOLDOWN_MS;
+    };
 
-      window.addEventListener('scroll', check, { passive: true });
-
-      return () => {
-        clearTimeout(timeout);
-        window.removeEventListener('scroll', check);
-      };
-    }
+    const snapTo = (target: number) => {
+      animating = true;
+      html.style.scrollBehavior = 'auto';
+      controls = animate(window.scrollY, target, {
+        duration: SNAP_DURATION,
+        ease: SNAP_EASE,
+        onUpdate: (v) => window.scrollTo(0, v),
+        onComplete: finish,
+      });
+    };
 
     const handleWheel = (e: WheelEvent) => {
-      if (isSnapping) return;
+      // Pinch-zoom on trackpads arrives as wheel + ctrlKey; horizontal ticks carry no deltaY.
+      if (e.ctrlKey || e.deltaY === 0) return;
 
-      const direction = e.deltaY > 0 ? 'down' : 'up';
+      if (animating || performance.now() < cooldownUntil) {
+        e.preventDefault();
+        return;
+      }
 
-      // Ignorera snabba upprepningar i samma riktning (samma “tick” av gesten)
-      if (direction === lastDirection) return;
-
-      lastDirection = direction;
+      const next = document.getElementById('next-section');
+      const hero = sectionRef.current;
+      if (!next || !hero) return;
 
       const scrollY = window.scrollY;
-      const heroHeight = window.innerHeight;
+      const heroTop = hero.getBoundingClientRect().top + scrollY;
+      const nextTop = next.getBoundingClientRect().top + scrollY;
+      const heroHeight = hero.offsetHeight || window.innerHeight;
 
-      // SCROLL NER (Hero → Next)
-      if (direction === 'down' && scrollY < heroHeight * 0.2) {
+      if (e.deltaY > 0 && scrollY < heroTop + heroHeight * HERO_ZONE) {
         e.preventDefault();
-        isSnapping = true;
-        scrollEndCleanup?.();
-        scrollEndCleanup = waitForScrollEnd(() => {
-          isSnapping = false;
-          lastDirection = null;
-          scrollEndCleanup = null;
-        });
-        document.getElementById('next-section')?.scrollIntoView({
-          behavior: 'smooth',
-        });
+        snapTo(nextTop);
         return;
       }
 
-      // SCROLL UPP (Next → Hero)
-      if (direction === 'up' && scrollY > heroHeight * 0.2 && scrollY < heroHeight * 1.1) {
+      if (e.deltaY < 0 && Math.abs(scrollY - nextTop) <= SECTION_TOP_TOLERANCE) {
         e.preventDefault();
-        isSnapping = true;
-        scrollEndCleanup?.();
-        scrollEndCleanup = waitForScrollEnd(() => {
-          isSnapping = false;
-          lastDirection = null;
-          scrollEndCleanup = null;
-        });
-        document.getElementById('hero')?.scrollIntoView({
-          behavior: 'smooth',
-        });
-        return;
+        snapTo(heroTop);
       }
-
-      // Ingen snap: återställ så normal scroll inte låses av lastDirection
-      lastDirection = null;
+      // Anywhere else: normal scrolling, untouched.
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
-      scrollEndCleanup?.();
       window.removeEventListener('wheel', handleWheel);
+      controls?.stop();
+      html.style.scrollBehavior = previousScrollBehavior;
     };
-  }, []);
+  }, [reduce]);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
