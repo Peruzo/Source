@@ -5,6 +5,7 @@ import {
   motion,
   useScroll,
   useTransform,
+  useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
   type MotionValue,
@@ -67,6 +68,17 @@ export default function PlatformRock() {
     offset: ['start start', 'end end'],
   });
 
+  // The scene only plays forward: `progress` is the highest scroll progress seen so far, so
+  // scrolling back up leaves the rock in whatever state it reached (green, chips landed,
+  // hotspots visible). Every consumer below reads this locked value, never the raw one.
+  const maxSeen = useRef(0);
+  const progress = useMotionValue(0);
+  useMotionValueEvent(scrollYProgress, 'change', (p) => {
+    if (p <= maxSeen.current) return;
+    maxSeen.current = p;
+    progress.set(p);
+  });
+
   // Mät sticky-containern -> chip-positioner i px (GPU-accelererat, responsivt)
   useEffect(() => {
     const el = stickyRef.current;
@@ -101,7 +113,7 @@ export default function PlatformRock() {
     }
   }, []);
 
-  useMotionValueEvent(scrollYProgress, 'change', (p) => {
+  useMotionValueEvent(progress, 'change', (p) => {
     if (reduce) return;
     const dur = durationRef.current;
     if (!dur) return;
@@ -111,10 +123,10 @@ export default function PlatformRock() {
   });
 
   // Skuggorna i början -> ljusnar; svag glow på slutet; budskap stiger fram
-  const shadowOpacity = useTransform(scrollYProgress, [0, ROCK_DONE], [1, 0]);
-  const glowOpacity = useTransform(scrollYProgress, [0.45, 1], [0, 0.3]);
-  const msgOpacity = useTransform(scrollYProgress, [0.86, 0.97], [0, 1]);
-  const msgY = useTransform(scrollYProgress, [0.86, 1], [28, 0]);
+  const shadowOpacity = useTransform(progress, [0, ROCK_DONE], [1, 0]);
+  const glowOpacity = useTransform(progress, [0.45, 1], [0, 0.3]);
+  const msgOpacity = useTransform(progress, [0.86, 0.97], [0, 1]);
+  const msgY = useTransform(progress, [0.86, 1], [28, 0]);
 
   if (nofx.rock) { // TEMP: flicker bisect, remove after diagnosis
     return null;
@@ -193,7 +205,7 @@ export default function PlatformRock() {
 
         {/* Funktionerna som slår in mot stenen */}
         {!reduce && size.w > 0 &&
-          CHIPS.map((c) => <Chip key={c.label} def={c} size={size} progress={scrollYProgress} />)}
+          CHIPS.map((c) => <Chip key={c.label} def={c} size={size} progress={progress} />)}
 
         {/* Budskapet på slutet */}
         <motion.div
@@ -229,7 +241,7 @@ export default function PlatformRock() {
         </motion.div>
 
         {/* Klickbara hotspots som tonar fram i slutläget */}
-        <RockHotspots progress={scrollYProgress} />
+        <RockHotspots progress={progress} />
       </div>
 
       <style>{`
