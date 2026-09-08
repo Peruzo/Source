@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform, useReducedMotion, type MotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useReducedMotion, type MotionValue } from 'framer-motion';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { LaptopScene } from '@/components/sections/LaptopScene';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
@@ -84,6 +84,9 @@ export function ValueProposition() {
   const scale = useTransform(scrollYProgress, [0, MOVE_END], [0.82, 1]);
   const y = useTransform(scrollYProgress, [0, MOVE_END], ['6%', '0%']);
   const lidRotateX = useTransform(scrollYProgress, [0, MOVE_END], [-85, 0]);
+  // 0 closed → 1 open, for the lid sheen and screen glow; pinned at 1 in the static fallback.
+  const lidProgress = useTransform(scrollYProgress, [0, MOVE_END], [0, 1]);
+  const lidOpen = useMotionValue(1);
   const shadowOpacity = useTransform(scrollYProgress, [0, MOVE_END], [0.2, 0.45]);
 
   return (
@@ -103,6 +106,7 @@ export function ValueProposition() {
             scale={isStatic ? 1 : scale}
             y={isStatic ? '0%' : y}
             lidRotateX={isStatic ? 0 : lidRotateX}
+            lidProgress={isStatic ? lidOpen : lidProgress}
             shadowOpacity={isStatic ? 0.45 : shadowOpacity}
           >
             <h2 className="w-full text-center font-bold tracking-tight text-black text-[clamp(1rem,2.6vw,2rem)] leading-[1.3]">
