@@ -123,7 +123,7 @@ export default function PlatformRock() {
   return (
     <section
       ref={sectionRef}
-      style={{ position: 'relative', height: reduce ? '100vh' : '280vh' }}
+      style={{ position: 'relative', height: reduce ? '100vh' : '240vh' }}
       aria-label="Hela din verksamhet, samlad"
     >
       <div
