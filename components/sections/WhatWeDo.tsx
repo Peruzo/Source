@@ -14,7 +14,7 @@ type Service = {
   imagePlaceholder: string;
   imageSrc: string;
   imageFit: string;
-  imageClassName: string;
+  imageClassName?: string;
   bgColor: string;
   bannerImages?: {
     src: string;
@@ -36,8 +36,7 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'E-commerce UI',
     imageSrc: '/tillvarhemsida.png',
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
     bgColor: 'from-white to-beige-light',
   },
   {
@@ -53,9 +52,7 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'Analytics Dashboard',
     imageSrc: '/marketingone.png',
-    // Show full image within the square, slightly scaled down so nothing is cut off
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
     bgColor: 'from-beige-light to-white',
   },
   {
@@ -71,8 +68,7 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'Payment Systems',
     imageSrc: '/logositske.png',
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
     bgColor: 'from-white to-gray-50',
   },
   {
@@ -88,8 +84,7 @@ const services: Service[] = [
     ],
     imagePlaceholder: 'Support Portal',
     imageSrc: '/supportfordem.png',
-    imageFit: 'object-contain',
-    imageClassName: 'scale-90',
+    imageFit: 'object-cover',
     bgColor: 'from-gray-50 to-white',
   },
 ];
@@ -143,13 +138,13 @@ export function WhatWeDo() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
-              className={`relative min-h-[60vh] lg:min-h-[70vh] flex items-center bg-gradient-to-br ${service.bgColor}`}
+              className={`relative min-h-[60vh] lg:min-h-[70vh] lg:py-16 flex items-center bg-gradient-to-br ${service.bgColor}`}
             >
               <div className="absolute inset-0 noise-overlay"></div>
               
-              <div className="relative w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
+              <div className="relative w-full max-w-[1800px] mx-auto px-6 md:px-10 lg:px-8">
                 <div
-                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center ${
                     !isEven ? 'lg:grid-flow-dense' : ''
                   }`}
                 >
@@ -221,7 +216,7 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass relative rounded-3xl p-6 md:p-8 aspect-[4/3] flex items-center justify-center border border-white/20 overflow-hidden">
+                      <div className="glass relative rounded-[2.5rem] md:rounded-[4rem] aspect-[4/3] flex items-center justify-center border border-white/20 overflow-hidden">
                         {/* Placeholder content - replace with actual screenshots */}
                         {service.imageSrc ? (
                           <div className="absolute inset-0">
@@ -231,7 +226,6 @@ export function WhatWeDo() {
                               fill
                               className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''}`}
                               sizes="(min-width: 1024px) 480px, 100vw"
-                              priority={index === 0}
                             />
                           </div>
                         ) : (
