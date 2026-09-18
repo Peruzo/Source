@@ -173,8 +173,13 @@ export function Header() {
                       transition={{ delay: index * 0.05, duration: 0.5 }}
                       className="relative group"
                       onMouseEnter={() => {
+                        // Touch devices fire mouseenter on tap, which would open the
+                        // menu just before the click toggles it shut again. Only
+                        // pointers that can genuinely hover open on hover.
                         if (link.hasMenu) {
-                          handleMenuEnter(link.menuKey || null);
+                          if (window.matchMedia('(hover: hover)').matches) {
+                            handleMenuEnter(link.menuKey || null);
+                          }
                         } else {
                           handleMenuLeave();
                         }
