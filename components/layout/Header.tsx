@@ -49,7 +49,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/', label: 'Hem', hasMenu: false },
-    { href: '/tjanster', label: 'Tjänster', hasMenu: true, menuKey: 'tjanster' },
+    { href: '/tjanster', label: 'Tjänster', hasMenu: true, menuKey: 'tjanster', menuOnly: true },
     { href: '/portfolio', label: 'Portfolio', hasMenu: false },
     { href: '/foretag-nya', label: 'För dig', hasMenu: true, menuKey: 'for-dig' },
     { href: '/om-oss', label: 'Om oss', hasMenu: false },
@@ -65,6 +65,10 @@ export function Header() {
 
   const handleMenuLeave = useCallback(() => {
     setActiveMenu(null);
+  }, []);
+
+  const handleMenuClick = useCallback((menuKey: string | null) => {
+    setActiveMenu((prev) => (prev === menuKey ? null : menuKey));
   }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -135,64 +139,87 @@ export function Header() {
               className="relative"
             >
               <ul className="flex gap-6 lg:gap-8">
-                {navLinks.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.5 }}
-                    className="relative group"
-                    onMouseEnter={() => {
-                      if (link.hasMenu) {
-                        handleMenuEnter(link.menuKey || null);
-                      } else {
-                        handleMenuLeave();
-                      }
-                    }}
-                  >
-                    {/* Expanded clickable area wrapper */}
-                    <div className="relative flex items-center px-4 -mx-4 h-14">
-                      <Link
-                        href={link.href}
-                        className={`relative text-sm lg:text-base font-medium transition-colors duration-200 ${
-                          showSolidBg
-                            ? 'text-gray-900 hover:text-emerald-600'
-                            : 'text-white hover:text-emerald-300'
-                        }`}
-                        aria-expanded={link.hasMenu ? activeMenu === link.menuKey : undefined}
-                      >
-                        {link.label}
-                        {/* Visual indicator for dropdown items */}
-                        {link.hasMenu && (
-                          <span className="inline-block ml-1" style={{ color: '#00BFA6' }}>
-                            <svg 
-                              className="w-3 h-3 transition-transform group-hover:translate-y-0.5" 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </span>
+                {navLinks.map((link, index) => {
+                  const itemClassName = `relative text-sm lg:text-base font-medium transition-colors duration-200 ${
+                    showSolidBg
+                      ? 'text-gray-900 hover:text-emerald-600'
+                      : 'text-white hover:text-emerald-300'
+                  }`;
+                  const itemContent = (
+                    <>
+                      {link.label}
+                      {/* Visual indicator for dropdown items */}
+                      {link.hasMenu && (
+                        <span className="inline-block ml-1" style={{ color: '#00BFA6' }}>
+                          <svg 
+                            className="w-3 h-3 transition-transform group-hover:translate-y-0.5" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </span>
+                      )}
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full" style={{ backgroundColor: '#00BFA6' }}></span>
+                    </>
+                  );
+
+                  return (
+                    <motion.li
+                      key={link.href}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.5 }}
+                      className="relative group"
+                      onMouseEnter={() => {
+                        if (link.hasMenu) {
+                          handleMenuEnter(link.menuKey || null);
+                        } else {
+                          handleMenuLeave();
+                        }
+                      }}
+                    >
+                      {/* Expanded clickable area wrapper */}
+                      <div className="relative flex items-center px-4 -mx-4 h-14">
+                        {link.menuOnly && link.menuKey ? (
+                          /* Menu-only item: toggles its mega menu, never navigates.
+                             cursor-pointer restores the pointer a <button> loses under
+                             Tailwind v4 preflight, so it still looks like the links. */
+                          <button
+                            type="button"
+                            onClick={() => handleMenuClick(link.menuKey ?? null)}
+                            className={`${itemClassName} cursor-pointer`}
+                            aria-expanded={activeMenu === link.menuKey}
+                          >
+                            {itemContent}
+                          </button>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            className={itemClassName}
+                            aria-expanded={link.hasMenu ? activeMenu === link.menuKey : undefined}
+                          >
+                            {itemContent}
+                          </Link>
                         )}
-                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full" style={{ backgroundColor: '#00BFA6' }}></span>
-                      </Link>
-                    </div>
-                    
-                    {/* Dropdown with hover bridge */}
-                    {link.hasMenu && link.menuKey && (
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2">
-                        {/* Invisible hover bridge */}
-                        <div className="absolute top-0 left-0 right-0 h-2 bg-transparent" />
-                        <MegaMenu
-                          menuKey={link.menuKey}
-                          isOpen={activeMenu === link.menuKey}
-                          onClose={handleMenuLeave}
-                        />
                       </div>
-                    )}
-                  </motion.li>
-                ))}
+                      
+                      {/* Dropdown with hover bridge */}
+                      {link.hasMenu && link.menuKey && (
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2">
+                          {/* Invisible hover bridge */}
+                          <div className="absolute top-0 left-0 right-0 h-2 bg-transparent" />
+                          <MegaMenu
+                            menuKey={link.menuKey}
+                            isOpen={activeMenu === link.menuKey}
+                            onClose={handleMenuLeave}
+                          />
+                        </div>
+                      )}
+                    </motion.li>
+                  );
+                })}
               </ul>
             </div>
           </nav>
@@ -254,13 +281,28 @@ export function Header() {
                       transition={{ delay: index * 0.05, duration: 0.3 }}
                     >
                       <div className="flex items-center justify-between">
-                        <Link
-                          href={link.href}
-                          onClick={closeMobileMenu}
-                          className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3"
-                        >
-                          {link.label}
-                        </Link>
+                        {link.menuOnly && link.menuKey ? (
+                          /* Menu-only item: toggles the same accordion as the chevron. */
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenSubmenu(isSubmenuOpen ? null : link.menuKey ?? null)
+                            }
+                            aria-expanded={isSubmenuOpen}
+                            aria-controls={submenuId}
+                            className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3 cursor-pointer"
+                          >
+                            {link.label}
+                          </button>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            onClick={closeMobileMenu}
+                            className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3"
+                          >
+                            {link.label}
+                          </Link>
+                        )}
                         {link.hasMenu && link.menuKey && (
                           <button
                             type="button"
