@@ -15,6 +15,10 @@ import type { PortfolioProject } from '@/lib/data/portfolioProjects';
 const AUTOPLAY_INTERVAL = 5000;
 const RESUME_AFTER_INTERACTION = 5000;
 const DRAG_THRESHOLD = 8;
+// A throw counts as a flick past any of these, and then carries one card.
+const FLICK_MIN_DISTANCE = 36; // px
+const FLICK_DISTANCE_RATIO = 0.12; // of card width
+const FLICK_VELOCITY = 0.35; // px per ms
 
 interface PortfolioCarouselProps {
   projects: PortfolioProject[];
@@ -47,7 +51,12 @@ export function PortfolioCarousel({
   const dragRef = useRef({
     active: false,
     isMouse: false,
+    pointerId: -1,
+    captured: false,
     startX: 0,
+    lastX: 0,
+    startTime: 0,
+    startIndex: 0,
     startScrollLeft: 0,
     distance: 0,
   });
@@ -118,7 +127,7 @@ export function PortfolioCarousel({
 
   const syncActiveIndex = useCallback(() => {
     const track = trackRef.current;
-    if (!track) return;
+    if (!track) return activeIndexRef.current;
 
     const trackCenter = track.scrollLeft + track.clientWidth / 2;
     let nearest = 0;
@@ -221,16 +230,30 @@ export function PortfolioCarousel({
     markInteraction();
 
     const isMouse = event.pointerType === 'mouse';
+
+    if (isMouse) {
+      // An autoplay smooth scroll may still be animating. Pin the track to where
+      // it is right now so the animation is cancelled before we take over —
+      // otherwise the drag baseline moves under us and the two scrolls fight.
+      track.scrollTo({ left: track.scrollLeft, behavior: 'instant' as ScrollBehavior });
+    }
+
     dragRef.current = {
       active: true,
       isMouse,
+      pointerId: event.pointerId,
+      captured: false,
       startX: event.clientX,
+      lastX: event.clientX,
+      startTime: event.timeStamp || performance.now(),
+      startIndex: activeIndexRef.current,
       startScrollLeft: track.scrollLeft,
       distance: 0,
     };
 
     if (isMouse) {
       // Snap points fight a manually driven scrollLeft; restore on release.
+      // Pointer capture is taken lazily in pointermove — see below.
       track.style.scrollSnapType = 'none';
       setIsDragging(true);
     }
@@ -242,15 +265,28 @@ export function PortfolioCarousel({
     if (!drag.active || !track) return;
 
     const dx = event.clientX - drag.startX;
+    drag.lastX = event.clientX;
     drag.distance = Math.max(drag.distance, Math.abs(dx));
 
     // Touch pointers scroll natively; only mouse drag needs to be driven here.
-    if (drag.isMouse) {
-      track.scrollLeft = drag.startScrollLeft - dx;
+    if (!drag.isMouse) return;
+
+    // Capture only once this is a real drag. Capturing on pointerdown would
+    // retarget the following `click` to the track, so a plain click on a card
+    // would stop opening the project.
+    if (!drag.captured && drag.distance > DRAG_THRESHOLD) {
+      try {
+        track.setPointerCapture(drag.pointerId);
+        drag.captured = true;
+      } catch {
+        // Best-effort; the drag still works while the pointer stays inside.
+      }
     }
+
+    track.scrollLeft = drag.startScrollLeft - dx;
   };
 
-  const endDrag = () => {
+  const endDrag = (event?: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
     const track = trackRef.current;
     if (!drag.active || !track) return;
@@ -258,14 +294,63 @@ export function PortfolioCarousel({
     drag.active = false;
     suppressClickRef.current = drag.distance > DRAG_THRESHOLD;
 
-    if (drag.isMouse) {
-      track.style.scrollSnapType = '';
-      setIsDragging(false);
-      // Land on a snap position instead of wherever the cursor was released.
-      const nearest = syncActiveIndex();
-      window.requestAnimationFrame(() => scrollToIndex(nearest));
+    if (!drag.isMouse) return;
+
+    if (drag.captured && drag.pointerId !== -1) {
+      try {
+        if (track.hasPointerCapture(drag.pointerId)) {
+          track.releasePointerCapture(drag.pointerId);
+        }
+      } catch {
+        // Already released (e.g. this is the lostpointercapture handler).
+      }
     }
+    drag.captured = false;
+    drag.pointerId = -1;
+
+    track.style.scrollSnapType = '';
+    setIsDragging(false);
+
+    // Where the release actually left us.
+    let target = syncActiveIndex();
+
+    // A quick, short throw never moves the centre past the neighbouring card,
+    // so nearest-to-centre alone would snap straight back. Carry it one card in
+    // the drag direction when the gesture reads as a flick.
+    const dx = drag.lastX - drag.startX;
+    const elapsed = Math.max((event?.timeStamp || performance.now()) - drag.startTime, 1);
+    const velocity = Math.abs(dx) / elapsed; // px per ms
+    const cardWidth = cardRefs.current[drag.startIndex]?.clientWidth ?? 0;
+    const isFlick =
+      Math.abs(dx) > Math.max(FLICK_MIN_DISTANCE, cardWidth * FLICK_DISTANCE_RATIO) ||
+      velocity > FLICK_VELOCITY;
+
+    if (isFlick && target === drag.startIndex && Math.abs(dx) > DRAG_THRESHOLD) {
+      target = Math.min(count - 1, Math.max(0, drag.startIndex + (dx < 0 ? 1 : -1)));
+      activeIndexRef.current = target;
+      setActiveIndex(target);
+    }
+
+    const landing = target;
+    window.requestAnimationFrame(() => scrollToIndex(landing));
   };
+
+  // Safety net: a drag that never grew past the capture threshold gets no
+  // pointerup on the track if the button is released elsewhere. Without this the
+  // track would stay snap-disabled and stuck in the grabbing state.
+  const endDragRef = useRef(endDrag);
+  endDragRef.current = endDrag;
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const finish = () => endDragRef.current();
+    window.addEventListener('pointerup', finish);
+    window.addEventListener('pointercancel', finish);
+    return () => {
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+    };
+  }, [isDragging]);
 
   const handleCardClickCapture = (event: React.MouseEvent) => {
     if (!suppressClickRef.current) return;
@@ -298,7 +383,7 @@ export function PortfolioCarousel({
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        onPointerLeave={endDrag}
+        onLostPointerCapture={endDrag}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onFocus={() => setIsFocused(true)}
