@@ -1,75 +1,122 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
-import { ComingSoonCarousel } from '@/components/sections/ComingSoonCarousel';
+import { FadeIn } from '@/components/animations/FadeIn';
+import { PortfolioCarousel } from '@/components/sections/PortfolioCarousel';
+import {
+  portfolioCategories,
+  portfolioProjects,
+} from '@/lib/data/portfolioProjects';
 
 export default function PortfolioPage() {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState<string>('all');
 
-  const categories = [
-    { id: 'all', label: 'Alla' },
-    { id: 'ecommerce', label: 'E-handel' },
-    { id: 'saas', label: 'SaaS' },
-    { id: 'local', label: 'Lokal Business' },
-    { id: 'other', label: 'Övrigt' },
-  ];
+  const filteredProjects = useMemo(
+    () =>
+      filter === 'all'
+        ? portfolioProjects
+        : portfolioProjects.filter((project) => project.categoryId === filter),
+    [filter]
+  );
 
   return (
     <>
       {/* Hero */}
-      <section className="py-24 md:py-32 bg-gradient-to-b from-[#121212] to-[#1F1F1F] text-white">
-        <Container>
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+      <section className="relative isolate flex items-center overflow-hidden bg-gradient-to-b from-[#121212] to-[#1F1F1F] py-28 text-white md:min-h-[60svh] md:py-32 lg:py-40">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(0,191,166,0.18),transparent_60%)]"
+        />
+        <div aria-hidden="true" className="absolute inset-0 noise-overlay" />
+
+        <Container className="relative z-10">
+          <FadeIn className="mx-auto max-w-3xl text-center">
+            <p className="text-overline text-teal mb-6">PORTFOLIO</p>
+            <h1 className="text-section-title text-white">
               Projekt vi är{' '}
               <span className="underline-draw inline-block">stolta</span> över
             </h1>
-            <p className="text-lg md:text-xl text-gray-300">
+            <p className="text-body-large text-gray-300 mt-8 md:mt-10">
               Från e-handel till SaaS. Alla branscher. En plattform.
             </p>
-          </div>
+          </FadeIn>
         </Container>
       </section>
 
       {/* Filter */}
-      <section className="py-8 bg-white border-b border-gray-200 sticky top-16 md:top-20 z-40">
+      <section className="sticky top-12 z-40 border-b border-gray-200 bg-white/95 py-5 backdrop-blur md:top-14 lg:top-16">
         <Container>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide justify-center">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setFilter(cat.id)}
-                className={`px-5 py-2.5 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${
-                  filter === cat.id
-                    ? 'bg-teal text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+          <div
+            role="group"
+            aria-label="Filtrera projekt efter kategori"
+            className="scrollbar-hide flex justify-start gap-3 overflow-x-auto md:justify-center"
+          >
+            {portfolioCategories.map((category) => {
+              const isActive = filter === category.id;
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setFilter(category.id)}
+                  aria-pressed={isActive}
+                  className={`inline-flex min-h-[40px] items-center justify-center whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 ${
+                    isActive
+                      ? 'bg-teal text-white shadow-md shadow-teal/25'
+                      : 'border border-gray-200 bg-transparent text-black hover:border-teal hover:text-teal'
+                  }`}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
           </div>
         </Container>
       </section>
 
-      {/* Portfolio Grid */}
-      <section className="py-24 md:py-32 bg-transparent">
-        <div className="w-full">
-          {/* Coming Soon Carousel Section */}
-          <ComingSoonCarousel />
-        </div>
+      {/* Projects carousel */}
+      <section className="overflow-hidden bg-[#F4F7F6] py-20 md:py-32">
+        <Container>
+          <FadeIn className="mx-auto mb-4 max-w-2xl text-center md:mb-8">
+            <p className="text-overline text-teal mb-4">UTVALDA CASE</p>
+            <h2 className="text-section-title text-black mb-6">Våra projekt</h2>
+            <p className="text-body-large text-gray-600">
+              Ett urval av vad vi byggt och bygger just nu. Svep, dra eller
+              använd piltangenterna för att bläddra.
+            </p>
+          </FadeIn>
+        </Container>
+
+        {/* Full-bleed track so cards can center against the viewport */}
+        <PortfolioCarousel key={filter} projects={filteredProjects} />
+
+        <Container>
+          <FadeIn className="mt-12 text-center md:mt-16">
+            <p className="text-body text-gray-600">
+              Vi bygger just nu åt riktiga kunder – portfolion uppdateras
+              löpande.
+            </p>
+          </FadeIn>
+        </Container>
       </section>
 
       {/* Capabilities */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="bg-white py-20 md:py-32">
         <Container size="lg">
-          <h2 className="text-3xl md:text-4xl font-bold text-black text-center mb-12">
-            Vad vi kan bygga åt dig
-          </h2>
+          <FadeIn className="mx-auto mb-16 max-w-2xl text-center">
+            <p className="text-overline text-teal mb-4">VAD VI BYGGER</p>
+            <h2 className="text-section-title text-black mb-6">
+              Vad vi kan bygga åt dig
+            </h2>
+            <p className="text-body-large text-gray-600">
+              Samma team, samma plattform – oavsett vilken typ av verksamhet du
+              driver.
+            </p>
+          </FadeIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 title: 'E-handel',
@@ -83,15 +130,20 @@ export default function PortfolioPage() {
                 title: 'Business Websites',
                 desc: 'Professionella hemsidor för lokala företag med bokningssystem.',
               },
-            ].map((cap) => (
-              <div key={cap.title}>
-                <h3 className="text-xl font-bold text-black mb-2">{cap.title}</h3>
-                <p className="text-gray-700">{cap.desc}</p>
+            ].map((capability) => (
+              <div
+                key={capability.title}
+                className="rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-200 hover:-translate-y-1 hover:border-teal/40 hover:shadow-xl"
+              >
+                <h3 className="text-section-subtitle text-black mb-3">
+                  {capability.title}
+                </h3>
+                <p className="text-body text-gray-700">{capability.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="mt-12 text-center">
             <Button href="/kontakt" variant="primary" size="lg">
               Diskutera ditt projekt
             </Button>
@@ -100,13 +152,18 @@ export default function PortfolioPage() {
       </section>
 
       {/* Process */}
-      <section className="py-20 md:py-32 bg-[#FDF8F3]">
+      <section className="bg-[#FDF8F3] py-20 md:py-32">
         <Container>
-          <h2 className="text-3xl md:text-4xl font-bold text-black text-center mb-16">
-            Vår process
-          </h2>
+          <FadeIn className="mx-auto mb-16 max-w-2xl text-center">
+            <p className="text-overline text-teal mb-4">SÅ ARBETAR VI</p>
+            <h2 className="text-section-title text-black mb-6">Vår process</h2>
+            <p className="text-body-large text-gray-600">
+              Från första samtalet till löpande tillväxt – fem steg vi kör
+              igenom tillsammans.
+            </p>
+          </FadeIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-4 max-w-5xl mx-auto">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-5 md:gap-4">
             {[
               { num: '1', title: 'Discovery', desc: 'Vi förstår din verksamhet och dina mål' },
               { num: '2', title: 'Design', desc: 'AI-driven design anpassad för din bransch' },
@@ -115,29 +172,29 @@ export default function PortfolioPage() {
               { num: '5', title: 'Tillväxt', desc: 'Kontinuerlig optimering och utveckling' },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="w-12 h-12 bg-teal text-white rounded-full flex items-center justify-center text-xl font-bold mb-4 mx-auto">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal text-xl font-bold text-white">
                   {step.num}
                 </div>
-                <h3 className="font-bold text-black mb-2">{step.title}</h3>
+                <h3 className="mb-2 font-bold text-black">{step.title}</h3>
                 <p className="text-sm text-gray-600">{step.desc}</p>
               </div>
             ))}
           </div>
 
-          <p className="text-center text-gray-700 mt-12">
+          <p className="mt-12 text-center text-gray-700">
             Typisk tidslinje: <span className="font-semibold">4-8 veckor</span>
           </p>
         </Container>
       </section>
 
       {/* CTA */}
-      <section className="py-24 md:py-32 bg-black text-white">
+      <section className="bg-black py-20 text-white md:py-32">
         <Container>
-          <div className="text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-10">
+          <FadeIn className="text-center">
+            <h2 className="text-section-title mb-10">
               Redo att starta ditt projekt?
             </h2>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button href="/kontakt" variant="primary" size="lg">
                 Boka ett möte
               </Button>
@@ -145,10 +202,9 @@ export default function PortfolioPage() {
                 Se priser
               </Button>
             </div>
-          </div>
+          </FadeIn>
         </Container>
       </section>
     </>
   );
 }
-
