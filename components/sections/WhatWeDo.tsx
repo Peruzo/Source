@@ -144,14 +144,14 @@ export function WhatWeDo() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
-              className={`relative min-h-[60vh] lg:min-h-[70vh] flex items-center bg-gradient-to-br ${service.bgColor}`}
+              className={`relative min-h-[60vh] lg:min-h-[70vh] lg:py-16 flex items-center bg-gradient-to-br ${service.bgColor}`}
             >
               {/* TEMP: flicker bisect, remove after diagnosis */}
               {!nofx.noise && <div className="absolute inset-0 noise-overlay"></div>}
               
-              <div className="relative w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
+              <div className="relative w-full max-w-[1800px] mx-auto px-6 md:px-10 lg:px-8">
                 <div
-                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+                  className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center ${
                     !isEven ? 'lg:grid-flow-dense' : ''
                   }`}
                 >
@@ -223,17 +223,16 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass relative aspect-[16/10] overflow-hidden rounded-[28px] border border-white/20 flex items-center justify-center">
+                      <div className="glass relative aspect-[16/9] overflow-hidden rounded-[2.5rem] md:rounded-[5rem] border border-white/20 flex items-center justify-center">
                         {/* Placeholder content - replace with actual screenshots */}
                         {service.imageSrc ? (
-                          <div className="absolute inset-0 rounded-[28px] overflow-hidden">
+                          <div className="absolute inset-0 rounded-[2.5rem] md:rounded-[5rem] overflow-hidden">
                             <Image
                               src={service.imageSrc}
                               alt={service.title}
                               fill
                               className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''} h-full w-full block`}
                               sizes="(min-width: 1024px) 480px, 100vw"
-                              priority={index === 0}
                             />
                             <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                           </div>
