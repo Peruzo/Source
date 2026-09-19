@@ -261,3 +261,14 @@ body {
     animation-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Carousel tracks drive their own scroll animation from JS (scrollTo with an
+ * explicit behavior), so the global `scroll-behavior: smooth` must not apply —
+ * it would animate pointer-drag updates to scrollLeft.
+ */
+.carousel-track {
+  scroll-behavior: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}

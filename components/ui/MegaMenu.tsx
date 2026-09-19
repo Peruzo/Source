@@ -41,19 +41,6 @@ const menuContent: Record<string, MenuContent> = {
     ],
     href: '/tjanster',
   },
-  portfolio: {
-    title: 'Portfolio',
-    description: 'Verkliga resultat från verkliga kunder',
-    features: [
-      'Fashion store som ökade trafiken med 200%',
-      'SaaS-plattform levererad på 4 veckor',
-      'Restaurant som ökade bokningar med 150%',
-      'E-handel med 30% konverteringsökning',
-      'Se komplett portfolio med case studies',
-      'Läs om vår process och metodik',
-    ],
-    href: '/portfolio',
-  },
   'for-dig': {
     title: 'För dig',
     description: 'Välj ett upplägg som passar där du är just nu',

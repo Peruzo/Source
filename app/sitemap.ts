@@ -8,8 +8,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const routes = ['', '/tjanster', '/portfolio', '/om-oss', '/priser', '/kontakt', '/hjalp'];
   
-  const projects = ['fashion-store', 'saas-platform', 'restaurant', 'nonprofit'];
-  
+  // No project case studies are published yet — see publishedSlugs in
+  // app/portfolio/[slug]/page.tsx. Listing unpublished slugs here would submit
+  // 404s to search engines.
+  const projects: string[] = [];
+
   const helpCategories = [
     'kom-igang',
     'hemsidor-webbutveckling',
