@@ -1,9 +1,13 @@
 'use client';
 
 import Image from 'next/image';
+import { PrivatForDigSections } from '@/components/sections/for-dig/PrivatForDigSections';
 
 export default function PrivatStartPage() {
   return (
+    <>
+    {/* Hero – oförändrad. Rör inte blocket nedan; nytt innehåll läggs
+        under <PrivatForDigSections /> längre ner. */}
     <section className="relative w-full overflow-hidden bg-black text-white md:min-h-[100svh]">
       {/* Media band: fixed height on small screens, full-bleed background from md */}
       <div className="relative h-[60svh] min-h-[420px] w-full md:absolute md:inset-0 md:h-auto md:min-h-0">
@@ -71,5 +75,8 @@ export default function PrivatStartPage() {
         </div>
       </div>
     </section>
+
+      <PrivatForDigSections />
+    </>
   );
 }
