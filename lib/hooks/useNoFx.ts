@@ -2,7 +2,7 @@
 
 // TEMP: flicker bisect, remove after diagnosis
 //
-// Reads ?nofx=hero,noise,header,blur,progress,fade,glow,rock,laptop from the URL after mount
+// Reads ?nofx=hero,noise,header,blur,progress,fade,glow,rock from the URL after mount
 // and returns one boolean per effect. Without the parameter every flag is false
 // and no production code path changes. Read via window.location in an effect
 // (not next/navigation useSearchParams) so statically prerendered pages need no
@@ -19,7 +19,6 @@ export type NoFxFlags = {
   fade: boolean;
   glow: boolean;
   rock: boolean;
-  laptop: boolean;
 };
 
 const ALL_ON: NoFxFlags = {
@@ -31,7 +30,6 @@ const ALL_ON: NoFxFlags = {
   fade: false,
   glow: false,
   rock: false,
-  laptop: false,
 };
 
 export function useNoFx(): NoFxFlags {
@@ -58,7 +56,6 @@ export function useNoFx(): NoFxFlags {
       fade: off.has('fade'),
       glow: off.has('glow'),
       rock: off.has('rock'),
-      laptop: off.has('laptop'),
     });
   }, []);
 
