@@ -216,7 +216,7 @@ export function WhatWeDo() {
                       transition={{ duration: 0.4 }}
                       className="relative group"
                     >
-                      <div className="glass relative rounded-[2.5rem] md:rounded-[4rem] aspect-[4/3] flex items-center justify-center border border-white/20 overflow-hidden">
+                      <div className="glass relative rounded-[2.5rem] md:rounded-[4rem] aspect-[16/9] flex items-center justify-center border border-white/20 overflow-hidden">
                         {/* Placeholder content - replace with actual screenshots */}
                         {service.imageSrc ? (
                           <div className="absolute inset-0">
