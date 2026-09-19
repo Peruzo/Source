@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import {
   motion,
   useScroll,
@@ -73,11 +73,52 @@ export default function PlatformRock() {
   // hotspots visible). Every consumer below reads this locked value, never the raw one.
   const maxSeen = useRef(0);
   const progress = useMotionValue(0);
+
+  // Once the locked value reaches 1 the scene is complete (rock green, message in place, hotspots
+  // revealed) and never changes again, so the pinned 240vh scroll run has nothing left to drive.
+  // `done` collapses the section to a plain 100vh block and releases the sticky layer, so scrolling
+  // back up through it costs no extra scroll distance.
+  const [done, setDone] = useState(false);
+  const doneRef = useRef(false);
+  const heightBeforeUnpin = useRef(0);
+
   useMotionValueEvent(scrollYProgress, 'change', (p) => {
-    if (p <= maxSeen.current) return;
+    // After the unpin the target is 100vh tall and the raw progress is meaningless; ignore it.
+    if (doneRef.current || !(p > maxSeen.current)) return;
     maxSeen.current = p;
     progress.set(p);
+    if (p >= 1 && !reduce) {
+      doneRef.current = true;
+      heightBeforeUnpin.current = sectionRef.current?.offsetHeight ?? 0;
+      // Chrome and Firefox would otherwise anchor-adjust the scroll position themselves when the
+      // section shrinks; the compensation in the layout effect below must be the only adjustment.
+      document.documentElement.style.overflowAnchor = 'none';
+      setDone(true);
+    }
   });
+
+  // Runs after the DOM has the new 100vh height but before paint: move the scroll position by
+  // exactly the amount the visible content would otherwise jump, so nothing on screen moves.
+  // The section's top does not change, only its height, so everything from the sticky layer's
+  // pinned position downwards shifts up by min(scrollY - sectionTop, removed height).
+  useLayoutEffect(() => {
+    if (!done) return;
+    const section = sectionRef.current;
+    const html = document.documentElement;
+    if (!section) return;
+
+    const removed = heightBeforeUnpin.current - section.offsetHeight;
+    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+    const delta = Math.min(Math.max(window.scrollY - sectionTop, 0), removed);
+    if (delta > 0) {
+      // globals.css sets scroll-behavior: smooth on everything; this correction must be instant.
+      const previousScrollBehavior = html.style.scrollBehavior;
+      html.style.scrollBehavior = 'auto';
+      window.scrollBy(0, -delta);
+      html.style.scrollBehavior = previousScrollBehavior;
+    }
+    html.style.overflowAnchor = '';
+  }, [done]);
 
   // Mät sticky-containern -> chip-positioner i px (GPU-accelererat, responsivt)
   useEffect(() => {
@@ -135,13 +176,13 @@ export default function PlatformRock() {
   return (
     <section
       ref={sectionRef}
-      style={{ position: 'relative', height: reduce ? '100vh' : '240vh' }}
+      style={{ position: 'relative', height: reduce || done ? '100vh' : '240vh' }}
       aria-label="Hela din verksamhet, samlad"
     >
       <div
         ref={stickyRef}
         style={{
-          position: 'sticky',
+          position: done ? 'relative' : 'sticky',
           top: 0,
           height: '100vh',
           overflow: 'hidden',
