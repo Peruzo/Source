@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -19,6 +20,10 @@ const DRAG_THRESHOLD = 8;
 const FLICK_MIN_DISTANCE = 36; // px
 const FLICK_DISTANCE_RATIO = 0.12; // of card width
 const FLICK_VELOCITY = 0.35; // px per ms
+/** Fewer cards than this cannot fill both sides of the centre, so the track stays finite. */
+const MIN_WRAP_COUNT = 3;
+/** The track counts as at rest once no scroll event has arrived for this long. */
+const SCROLL_SETTLE_MS = 120;
 
 interface PortfolioCarouselProps {
   projects: PortfolioProject[];
@@ -26,6 +31,18 @@ interface PortfolioCarouselProps {
   label?: string;
 }
 
+/**
+ * Infinite, centred card carousel on a native scroll-snap track.
+ *
+ * The cards are rendered in an odd number of identical sets (normally three).
+ * The middle set holds the real, focusable cards; the outer sets are clones so
+ * there is always something on both sides of the centre. Scrolling is entirely
+ * native (touch, wheel, keyboard, smooth scrollTo); the only trick is that once
+ * the track comes to rest with the centre card in an outer set, the scroll
+ * position is moved by exactly one set width with an instant scroll. The content
+ * is identical, so the jump is invisible. It never happens mid-gesture or
+ * mid-momentum, which is what iOS cannot cope with.
+ */
 export function PortfolioCarousel({
   projects,
   label = 'Våra projekt',
@@ -33,7 +50,22 @@ export function PortfolioCarousel({
   const trackRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  const count = projects.length;
+  const wrap = count >= MIN_WRAP_COUNT;
+
+  // Normally three sets. On very wide viewports with few cards a single flanking
+  // set cannot cover half the track, so more sets are rendered (measured below).
+  const [sets, setSets] = useState(wrap ? 3 : 1);
+  const homeSet = Math.floor(sets / 2);
+  const slotCount = count * sets;
+  const toIndex = useCallback(
+    (slot: number) => (count ? ((slot % count) + count) % count : 0),
+    [count]
+  );
+
+  // `slot` is the physical card position on the track; `index` the logical project.
+  const [activeSlot, setActiveSlot] = useState(homeSet * count);
+  const activeIndex = toIndex(activeSlot);
   const [edgePadding, setEdgePadding] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -44,9 +76,10 @@ export function PortfolioCarousel({
   const [isPageHidden, setIsPageHidden] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  const activeIndexRef = useRef(0);
+  const activeSlotRef = useRef(homeSet * count);
   const resumeTimerRef = useRef<number | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
+  const settleTimerRef = useRef<number | null>(null);
   const suppressClickRef = useRef(false);
   const dragRef = useRef({
     active: false,
@@ -56,16 +89,14 @@ export function PortfolioCarousel({
     startX: 0,
     lastX: 0,
     startTime: 0,
-    startIndex: 0,
+    startSlot: 0,
     startScrollLeft: 0,
     distance: 0,
   });
 
-  const count = projects.length;
-
   useEffect(() => {
-    activeIndexRef.current = activeIndex;
-  }, [activeIndex]);
+    activeSlotRef.current = activeSlot;
+  }, [activeSlot]);
 
   /* ---------------------------------------------------------------- motion */
 
@@ -86,77 +117,129 @@ export function PortfolioCarousel({
 
   /* --------------------------------------------------------------- layout */
 
-  // Side padding keeps the first and last card centerable, so every card
-  // reaches the exact same position when it snaps.
+  const centreOffset = useCallback((slot: number) => {
+    const track = trackRef.current;
+    const card = cardRefs.current[slot];
+    if (!track || !card) return null;
+    return card.offsetLeft - (track.clientWidth - card.clientWidth) / 2;
+  }, []);
+
+  const scrollToSlot = useCallback(
+    (slot: number, smooth = true) => {
+      const track = trackRef.current;
+      const left = centreOffset(slot);
+      if (!track || left === null) return;
+      track.scrollTo({
+        left,
+        behavior: (smooth && !prefersReducedMotion ? 'smooth' : 'instant') as ScrollBehavior,
+      });
+    },
+    [centreOffset, prefersReducedMotion]
+  );
+
+  // Measure: how many sets are needed so a flanking set covers half the track,
+  // and (finite track only) the side padding that lets the end cards centre.
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
 
     const measure = () => {
-      const card = cardRefs.current[0];
-      if (!card) return;
-      setEdgePadding(Math.max(0, (track.clientWidth - card.clientWidth) / 2));
+      const first = cardRefs.current[0];
+      const second = cardRefs.current[1];
+      if (!first) return;
+
+      if (wrap && second) {
+        const pitch = second.offsetLeft - first.offsetLeft;
+        const setWidth = pitch * count;
+        const flanking = Math.max(1, Math.ceil(track.clientWidth / 2 / setWidth));
+        setSets(flanking * 2 + 1);
+        setEdgePadding(0);
+      } else {
+        setEdgePadding(Math.max(0, (track.clientWidth - first.clientWidth) / 2));
+      }
     };
 
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(track);
-    const firstCard = cardRefs.current[0];
-    if (firstCard) observer.observe(firstCard);
-
     return () => observer.disconnect();
-  }, [count]);
+  }, [count, wrap]);
 
-  const scrollToIndex = useCallback(
-    (index: number, smooth = true) => {
-      const track = trackRef.current;
-      const card = cardRefs.current[index];
-      if (!track || !card) return;
-
-      track.scrollTo({
-        left: card.offsetLeft - (track.clientWidth - card.clientWidth) / 2,
-        behavior: (smooth && !prefersReducedMotion
-          ? 'smooth'
-          : 'instant') as ScrollBehavior,
-      });
-    },
-    [prefersReducedMotion]
-  );
+  // Start (and re-centre after the set count changes) on the first real card,
+  // before paint so the outer clones are never seen as the start of the track.
+  useLayoutEffect(() => {
+    const slot = homeSet * count + toIndex(activeSlotRef.current);
+    activeSlotRef.current = slot;
+    setActiveSlot(slot);
+    scrollToSlot(slot, false);
+    // scrollToSlot only changes with reduced-motion, which is irrelevant for an instant scroll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count, sets, homeSet, toIndex]);
 
   /* -------------------------------------------------------- active tracking */
 
-  const syncActiveIndex = useCallback(() => {
+  const syncActiveSlot = useCallback(() => {
     const track = trackRef.current;
-    if (!track) return activeIndexRef.current;
+    if (!track) return activeSlotRef.current;
 
     const trackCenter = track.scrollLeft + track.clientWidth / 2;
     let nearest = 0;
     let nearestDistance = Number.POSITIVE_INFINITY;
 
-    cardRefs.current.forEach((card, index) => {
+    cardRefs.current.forEach((card, slot) => {
       if (!card) return;
       const cardCenter = card.offsetLeft + card.clientWidth / 2;
       const distance = Math.abs(cardCenter - trackCenter);
       if (distance < nearestDistance) {
         nearestDistance = distance;
-        nearest = index;
+        nearest = slot;
       }
     });
 
-    // Kept in sync here as well as in the effect below, so callers that need the
-    // index in the same tick (drag release) don't read a stale value.
-    activeIndexRef.current = nearest;
-    setActiveIndex(nearest);
+    // Kept in sync here as well as in the effect above, so callers that need the
+    // slot in the same tick (drag release) don't read a stale value.
+    activeSlotRef.current = nearest;
+    setActiveSlot(nearest);
     return nearest;
   }, []);
 
-  const handleScroll = useCallback(() => {
-    if (scrollFrameRef.current !== null) return;
-    scrollFrameRef.current = window.requestAnimationFrame(() => {
-      scrollFrameRef.current = null;
-      syncActiveIndex();
+  // At rest with the centre card in an outer set: move one set width, instantly.
+  const normalize = useCallback(() => {
+    if (!wrap || dragRef.current.active) return;
+    const track = trackRef.current;
+    const first = cardRefs.current[0];
+    const firstOfNext = cardRefs.current[count];
+    if (!track || !first || !firstOfNext) return;
+
+    const slot = activeSlotRef.current;
+    const set = Math.floor(slot / count);
+    if (set === homeSet) return;
+
+    const setWidth = firstOfNext.offsetLeft - first.offsetLeft;
+    const home = slot + (homeSet - set) * count;
+    activeSlotRef.current = home;
+    setActiveSlot(home);
+    track.scrollTo({
+      left: track.scrollLeft + (homeSet - set) * setWidth,
+      behavior: 'instant' as ScrollBehavior,
     });
-  }, [syncActiveIndex]);
+  }, [count, homeSet, wrap]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollFrameRef.current === null) {
+      scrollFrameRef.current = window.requestAnimationFrame(() => {
+        scrollFrameRef.current = null;
+        syncActiveSlot();
+      });
+    }
+    if (settleTimerRef.current !== null) {
+      window.clearTimeout(settleTimerRef.current);
+    }
+    settleTimerRef.current = window.setTimeout(() => {
+      settleTimerRef.current = null;
+      normalize();
+    }, SCROLL_SETTLE_MS);
+  }, [normalize, syncActiveSlot]);
 
   useEffect(() => {
     return () => {
@@ -164,8 +247,34 @@ export function PortfolioCarousel({
         window.cancelAnimationFrame(scrollFrameRef.current);
         scrollFrameRef.current = null;
       }
+      if (settleTimerRef.current !== null) {
+        window.clearTimeout(settleTimerRef.current);
+        settleTimerRef.current = null;
+      }
     };
   }, []);
+
+  /* ------------------------------------------------------------- navigation */
+
+  const clampSlot = useCallback(
+    (slot: number) => (wrap ? slot : Math.min(count - 1, Math.max(0, slot))),
+    [count, wrap]
+  );
+
+  // Dots: go to the copy of that project nearest the current position, so a dot
+  // never scrolls the long way round.
+  const goToIndex = useCallback(
+    (index: number) => {
+      const current = activeSlotRef.current;
+      let best = homeSet * count + index;
+      for (let set = 0; set < sets; set++) {
+        const candidate = set * count + index;
+        if (Math.abs(candidate - current) < Math.abs(best - current)) best = candidate;
+      }
+      scrollToSlot(best);
+    },
+    [count, homeSet, scrollToSlot, sets]
+  );
 
   /* ------------------------------------------------------------- autoplay */
 
@@ -201,11 +310,12 @@ export function PortfolioCarousel({
     if (autoplayPaused) return;
 
     const timer = window.setInterval(() => {
-      scrollToIndex((activeIndexRef.current + 1) % count);
+      const next = wrap ? activeSlotRef.current + 1 : (activeSlotRef.current + 1) % count;
+      scrollToSlot(next);
     }, AUTOPLAY_INTERVAL);
 
     return () => window.clearInterval(timer);
-  }, [autoplayPaused, count, scrollToIndex]);
+  }, [autoplayPaused, count, scrollToSlot, wrap]);
 
   /* ------------------------------------------------------------ keyboard */
 
@@ -215,8 +325,7 @@ export function PortfolioCarousel({
     markInteraction();
 
     const delta = event.key === 'ArrowRight' ? 1 : -1;
-    const next = Math.min(count - 1, Math.max(0, activeIndexRef.current + delta));
-    scrollToIndex(next);
+    scrollToSlot(clampSlot(activeSlotRef.current + delta));
   };
 
   /* ---------------------------------------------------------------- drag */
@@ -246,7 +355,7 @@ export function PortfolioCarousel({
       startX: event.clientX,
       lastX: event.clientX,
       startTime: event.timeStamp || performance.now(),
-      startIndex: activeIndexRef.current,
+      startSlot: activeSlotRef.current,
       startScrollLeft: track.scrollLeft,
       distance: 0,
     };
@@ -312,7 +421,7 @@ export function PortfolioCarousel({
     setIsDragging(false);
 
     // Where the release actually left us.
-    let target = syncActiveIndex();
+    let target = syncActiveSlot();
 
     // A quick, short throw never moves the centre past the neighbouring card,
     // so nearest-to-centre alone would snap straight back. Carry it one card in
@@ -320,19 +429,19 @@ export function PortfolioCarousel({
     const dx = drag.lastX - drag.startX;
     const elapsed = Math.max((event?.timeStamp || performance.now()) - drag.startTime, 1);
     const velocity = Math.abs(dx) / elapsed; // px per ms
-    const cardWidth = cardRefs.current[drag.startIndex]?.clientWidth ?? 0;
+    const cardWidth = cardRefs.current[drag.startSlot]?.clientWidth ?? 0;
     const isFlick =
       Math.abs(dx) > Math.max(FLICK_MIN_DISTANCE, cardWidth * FLICK_DISTANCE_RATIO) ||
       velocity > FLICK_VELOCITY;
 
-    if (isFlick && target === drag.startIndex && Math.abs(dx) > DRAG_THRESHOLD) {
-      target = Math.min(count - 1, Math.max(0, drag.startIndex + (dx < 0 ? 1 : -1)));
-      activeIndexRef.current = target;
-      setActiveIndex(target);
+    if (isFlick && target === drag.startSlot && Math.abs(dx) > DRAG_THRESHOLD) {
+      target = clampSlot(drag.startSlot + (dx < 0 ? 1 : -1));
+      activeSlotRef.current = target;
+      setActiveSlot(target);
     }
 
     const landing = target;
-    window.requestAnimationFrame(() => scrollToIndex(landing));
+    window.requestAnimationFrame(() => scrollToSlot(landing));
   };
 
   // Safety net: a drag that never grew past the capture threshold gets no
@@ -393,34 +502,44 @@ export function PortfolioCarousel({
           }
         }}
         style={{ paddingLeft: edgePadding, paddingRight: edgePadding }}
-        className={`carousel-track scrollbar-hide relative flex snap-x snap-mandatory gap-6 overflow-x-auto py-10 md:gap-8 md:py-14 outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-4 focus-visible:ring-offset-white rounded-3xl ${
+        // Vertical padding leaves room for the enlarged centre card and its shadow
+        // inside the section's overflow-hidden; horizontal overflow is the point.
+        className={`carousel-track scrollbar-hide relative flex snap-x snap-mandatory gap-4 overflow-x-auto py-12 md:gap-6 md:py-16 outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-4 focus-visible:ring-offset-white rounded-3xl ${
           isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'
         }`}
       >
-        {projects.map((project, index) => {
-          const isActive = index === activeIndex;
+        {Array.from({ length: slotCount }, (_, slot) => {
+          const index = toIndex(slot);
+          const project = projects[index];
+          const set = Math.floor(slot / count);
+          const isClone = set !== homeSet;
+          const isActive = slot === activeSlot;
 
           return (
             <article
-              key={project.slug}
+              key={`${project.slug}-${set}`}
               data-card
               ref={(node) => {
-                cardRefs.current[index] = node;
+                cardRefs.current[slot] = node;
               }}
               role="group"
               aria-roledescription="bild"
               aria-label={`${index + 1} av ${count}: ${project.title}`}
-              className="w-[260px] shrink-0 snap-center sm:w-[290px] md:w-[320px] lg:w-[340px]"
+              aria-hidden={isClone || undefined}
+              className="w-[72vw] shrink-0 snap-center md:w-[260px]"
             >
+              {/* Only the card entering or leaving the centre actually animates; the
+                  others hold scale 1 and never start a transition. */}
               <div
-                className={`transition-transform duration-500 ease-out will-change-transform ${
-                  isActive ? 'scale-[1.08]' : 'scale-100'
+                className={`will-change-transform transition-transform duration-500 ease-out motion-reduce:transition-none ${
+                  isActive ? 'scale-[1.04] md:scale-[1.12]' : 'scale-100'
                 }`}
               >
                 <PortfolioCard
                   project={project}
                   index={index}
                   isActive={isActive}
+                  isClone={isClone}
                   onClickCapture={handleCardClickCapture}
                 />
               </div>
@@ -429,7 +548,7 @@ export function PortfolioCarousel({
         })}
       </div>
 
-      {/* Pagination dots */}
+      {/* Pagination dots: one per project, never per clone */}
       <div className="mt-2 flex items-center justify-center gap-2 md:mt-4">
         {projects.map((project, index) => (
           <button
@@ -437,14 +556,14 @@ export function PortfolioCarousel({
             type="button"
             onClick={() => {
               markInteraction();
-              scrollToIndex(index);
+              goToIndex(index);
             }}
             aria-label={`Gå till projekt ${index + 1}: ${project.title}`}
             aria-current={index === activeIndex ? 'true' : undefined}
             className="group flex h-10 w-6 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2"
           >
             <span
-              className={`block h-2.5 rounded-full transition-all duration-300 ${
+              className={`block h-2.5 rounded-full transition-all duration-300 motion-reduce:transition-none ${
                 index === activeIndex
                   ? 'w-8 bg-teal'
                   : 'w-2.5 bg-gray-300 group-hover:bg-gray-400'
@@ -461,18 +580,28 @@ interface PortfolioCardProps {
   project: PortfolioProject;
   index: number;
   isActive: boolean;
+  /** Clones are visual only: hidden from assistive tech and out of the tab order. */
+  isClone: boolean;
   onClickCapture: (event: React.MouseEvent) => void;
 }
+
+const IMAGE_SIZES = '(max-width: 767px) 72vw, 260px';
 
 function PortfolioCard({
   project,
   index,
   isActive,
+  isClone,
   onClickCapture,
 }: PortfolioCardProps) {
+  // Logo by default, site on hover. Where hover does not exist the centre card
+  // shows the site instead, so touch users still see it.
+  const siteOnActive = isActive ? '[@media(hover:none)]:opacity-100' : '';
+  const logoOnActive = isActive ? '[@media(hover:none)]:opacity-0' : '';
+
   const card = (
     <div
-      className={`group relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 transition-shadow duration-500 ${
+      className={`group relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 ${
         isActive
           ? 'shadow-2xl shadow-black/25 ring-1 ring-teal/40'
           : 'shadow-lg shadow-black/10 ring-1 ring-black/5'
@@ -485,9 +614,9 @@ function PortfolioCard({
             alt={project.title}
             fill
             draggable={false}
-            sizes="(max-width: 640px) 260px, (max-width: 1024px) 320px, 340px"
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-              project.siteImage ? 'group-hover:opacity-0' : ''
+            sizes={IMAGE_SIZES}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 motion-reduce:transition-none ${
+              project.siteImage ? `group-hover:opacity-0 ${logoOnActive}` : ''
             }`}
           />
           {project.siteImage && (
@@ -497,8 +626,8 @@ function PortfolioCard({
               aria-hidden="true"
               fill
               draggable={false}
-              sizes="(max-width: 640px) 260px, (max-width: 1024px) 320px, 340px"
-              className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              sizes={IMAGE_SIZES}
+              className={`absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 motion-reduce:transition-none group-hover:opacity-100 ${siteOnActive}`}
             />
           )}
         </>
@@ -540,6 +669,7 @@ function PortfolioCard({
 
   const className =
     'block rounded-3xl outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2';
+  const tabIndex = isClone ? -1 : undefined;
 
   if (project.external) {
     return (
@@ -548,6 +678,7 @@ function PortfolioCard({
         target="_blank"
         rel="noopener noreferrer"
         draggable={false}
+        tabIndex={tabIndex}
         onClickCapture={onClickCapture}
         className={className}
       >
@@ -560,6 +691,7 @@ function PortfolioCard({
     <Link
       href={project.href}
       draggable={false}
+      tabIndex={tabIndex}
       onClickCapture={onClickCapture}
       className={className}
     >
