@@ -17,8 +17,8 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'Prognos: +100-200% trafik',
       slug: 'ecommerce-example',
-      image: '/forthewebsitesource.png',
-      hoverImage: '/forthebetterse.png',
+      logo: '/peran-logo.webp',
+      siteImage: '/peran-site.webp',
       link: 'https://peran.onrender.com/',
       external: true,
     },
@@ -27,8 +27,8 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'E-handel & varumärke',
       slug: 'glow-example',
-      image: '/glowanotherone.png',
-      hoverImage: '/glowkundcase.png',
+      logo: '/glow-logo.webp',
+      siteImage: '/glow-site.webp',
       link: 'https://glow-test.onrender.com/',
       external: true,
     },
@@ -37,8 +37,8 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'Wellness & digital närvaro',
       slug: 'minti-example',
-      image: '/mintilogo.png',
-      hoverImage: '/mintiwebsite.png',
+      logo: '/minti-logo.webp',
+      siteImage: '/minti-site.webp',
       link: 'https://minti.onrender.com/',
       external: true,
     },
@@ -47,8 +47,8 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'Översvämningsskydd & fastighetsskydd',
       slug: 'vattentrygg-example',
-      image: '/Vattentrygg-logo-p-500.png',
-      hoverImage: '/vattentrygghovering.png',
+      logo: '/vattentrygg-logo.webp',
+      siteImage: '/vattentrygg-site.webp',
       // Samma mål som Vattentrygg-kortet i PortfolioCarousel — samma case ska
       // inte bete sig olika på startsidan och portfolio-sidan.
       link: '/kontakt',
@@ -59,8 +59,8 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'Prognos: +80% kundnöjdhet',
       slug: 'support-example',
-      image: null,
-      hoverImage: null,
+      logo: null,
+      siteImage: null,
       // Inget case utan ett tjänsteerbjudande: pekar på support-avsnittet på
       // tjänstesidan. Slugen /portfolio/support-example har aldrig funnits.
       link: '/tjanster#support',
@@ -71,8 +71,8 @@ export function PortfolioTeaser() {
       category: 'Exempel',
       metric: 'Prognos: Data-driven beslut',
       slug: 'analytics-example',
-      image: null,
-      hoverImage: null,
+      logo: null,
+      siteImage: null,
       // Inget case utan ett tjänsteerbjudande: /analys är den egna sidan för
       // det. Slugen /portfolio/analytics-example har aldrig funnits.
       link: '/analys',
@@ -205,21 +205,21 @@ export function PortfolioTeaser() {
                       >
                         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] border border-gray-200 cursor-pointer mb-4 group-hover:border-teal/50 transition-all duration-300">
                           {/* Main image */}
-                          {project.image && (
+                          {project.logo && (
                             <img
-                              src={project.image}
+                              src={project.logo}
                               alt={project.title}
                               className={`absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-500 ${
-                                project.hoverImage ? 'group-hover:opacity-0' : ''
+                                project.siteImage ? 'group-hover:opacity-0' : ''
                               }`}
                             />
                           )}
 
                           {/* Hover image (if available) */}
-                          {project.hoverImage && (
+                          {project.siteImage && (
                             <>
                               <img
-                                src={project.hoverImage}
+                                src={project.siteImage}
                                 alt={project.title}
                                 className="absolute inset-0 z-20 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                               />
@@ -235,7 +235,7 @@ export function PortfolioTeaser() {
                           )}
 
                           {/* Placeholder content when no image */}
-                          {!project.image && (
+                          {!project.logo && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="text-center">
                                 <p className="text-5xl font-bold text-white/10 mb-2">{String(index + 1).padStart(2, '0')}</p>
@@ -249,21 +249,21 @@ export function PortfolioTeaser() {
                       <Link href={project.link} className="block">
                         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] border border-gray-200 cursor-pointer mb-4 group-hover:border-teal/50 transition-all duration-300">
                           {/* Main image */}
-                          {project.image && (
+                          {project.logo && (
                             <img
-                              src={project.image}
+                              src={project.logo}
                               alt={project.title}
                               className={`absolute inset-0 z-10 w-full h-full object-cover transition-opacity duration-500 ${
-                                project.hoverImage ? 'group-hover:opacity-0' : ''
+                                project.siteImage ? 'group-hover:opacity-0' : ''
                               }`}
                             />
                           )}
 
                           {/* Hover image (if available) */}
-                          {project.hoverImage && (
+                          {project.siteImage && (
                             <>
                               <img
-                                src={project.hoverImage}
+                                src={project.siteImage}
                                 alt={project.title}
                                 className="absolute inset-0 z-20 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                               />
@@ -279,7 +279,7 @@ export function PortfolioTeaser() {
                           )}
 
                           {/* Placeholder content when no image */}
-                          {!project.image && (
+                          {!project.logo && (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="text-center">
                                 <p className="text-5xl font-bold text-white/10 mb-2">{String(index + 1).padStart(2, '0')}</p>

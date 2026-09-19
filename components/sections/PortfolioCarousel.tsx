@@ -478,21 +478,21 @@ function PortfolioCard({
           : 'shadow-lg shadow-black/10 ring-1 ring-black/5'
       }`}
     >
-      {project.image ? (
+      {project.logo ? (
         <>
           <Image
-            src={project.image}
+            src={project.logo}
             alt={project.title}
             fill
             draggable={false}
             sizes="(max-width: 640px) 260px, (max-width: 1024px) 320px, 340px"
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-              project.hoverImage ? 'group-hover:opacity-0' : ''
+              project.siteImage ? 'group-hover:opacity-0' : ''
             }`}
           />
-          {project.hoverImage && (
+          {project.siteImage && (
             <Image
-              src={project.hoverImage}
+              src={project.siteImage}
               alt=""
               aria-hidden="true"
               fill
