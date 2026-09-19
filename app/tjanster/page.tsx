@@ -279,7 +279,7 @@ export default function ServicesPage() {
               <AnimatedButton
                 href="/kontakt"
                 size="lg"
-                className="!px-10 !py-4 !rounded-full !bg-teal !text-white !font-semibold !shadow-[0_30px_80px_rgba(0,191,166,0.45)] hover:!bg-teal-hover"
+                className="!bg-teal !text-white !shadow-[0_30px_80px_rgba(0,191,166,0.45)] hover:!bg-teal-hover"
               >
                 Boka en demo
               </AnimatedButton>
@@ -360,7 +360,7 @@ export default function ServicesPage() {
                   <AnimatedButton
                     href="/kontakt"
                     size="lg"
-                    className="!bg-teal !text-white !font-semibold !px-8 !py-3 !rounded-full !shadow-[0_18px_45px_-15px_rgba(0,191,166,0.55)] hover:!bg-teal-hover"
+                    className="!bg-teal !text-white !shadow-[0_18px_45px_-15px_rgba(0,191,166,0.55)] hover:!bg-teal-hover"
                   >
                     Boka en demo
                   </AnimatedButton>

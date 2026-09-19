@@ -320,7 +320,7 @@ export function PortfolioTeaser() {
         <FadeIn delay={0.6} className="text-center">
           <Link
             href="/portfolio"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-teal hover:text-white transition-all duration-300 group"
+            className="group inline-flex items-center justify-center gap-2 rounded-full bg-white px-[22px] py-3 text-[15px] font-medium leading-tight text-black transition-colors duration-200 hover:bg-gray-100"
           >
             Se alla projekt
             <motion.span

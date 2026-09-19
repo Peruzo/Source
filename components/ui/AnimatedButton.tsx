@@ -38,18 +38,20 @@ export function AnimatedButton({
     setMousePosition({ x: 0, y: 0 });
   };
 
-  const baseStyles = 'relative inline-flex items-center justify-center font-semibold transition-all duration-300 overflow-hidden';
-  
+  // Same pill geometry as components/ui/Button: height from padding and line-height, 1px border on
+  // every variant (transparent on primary) so the variants line up, no fixed heights or widths.
+  const baseStyles = 'relative inline-flex items-center justify-center whitespace-nowrap rounded-full border font-medium leading-tight transition-colors duration-200 overflow-hidden';
+
   const variantStyles = {
-    primary: 'bg-teal text-white hover:bg-teal-hover',
-    secondary: 'bg-transparent text-teal border-2 border-teal hover:bg-teal hover:text-white',
-    ghost: 'bg-transparent text-current border border-gray-200 hover:border-teal hover:text-teal',
+    primary: 'border-transparent bg-teal text-white hover:bg-teal-hover',
+    secondary: 'border-teal bg-transparent text-teal hover:bg-teal/10',
+    ghost: 'border-gray-200 bg-transparent text-current hover:border-teal hover:text-teal',
   };
 
   const sizeStyles = {
-    sm: 'px-6 py-3 text-sm rounded-lg',
-    md: 'px-8 py-4 text-base rounded-xl',
-    lg: 'px-10 py-5 text-lg rounded-xl',
+    sm: 'px-3.5 py-2 text-[13px]',
+    md: 'px-[18px] py-2.5 text-sm',
+    lg: 'px-[22px] py-3 text-[15px]',
   };
 
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
@@ -81,7 +83,6 @@ export function AnimatedButton({
           ref={buttonRef as any}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="w-full h-full flex items-center justify-center"
         >
@@ -97,7 +98,6 @@ export function AnimatedButton({
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       className={combinedClassName}
     >

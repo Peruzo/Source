@@ -267,22 +267,13 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.35 }}
-          className="flex w-full flex-col items-stretch gap-3 md:w-auto md:flex-row md:flex-wrap md:items-center md:justify-center"
+          // Natural-width pills, centred, wrapping to a stack only when they do not fit side by side.
+          className="flex flex-wrap items-center justify-center gap-3"
         >
-          <AnimatedButton
-            href="/kontakt"
-            variant="primary"
-            size="lg"
-            className="w-full !py-4 md:w-auto md:!py-5"
-          >
+          <AnimatedButton href="/kontakt" variant="primary" size="lg">
             Boka demo
           </AnimatedButton>
-          <AnimatedButton
-            href="#next-section"
-            variant="secondary"
-            size="lg"
-            className="w-full !py-4 md:w-auto md:!py-5"
-          >
+          <AnimatedButton href="#next-section" variant="secondary" size="lg">
             Se hur det fungerar ↓
           </AnimatedButton>
         </motion.div>

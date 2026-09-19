@@ -230,7 +230,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-teal text-white font-semibold py-4 rounded-lg hover:bg-teal-hover transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full rounded-full bg-teal px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-teal-hover disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'Skickar...' : 'Skicka meddelande'}
       </button>
