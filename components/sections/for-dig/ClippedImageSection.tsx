@@ -1,0 +1,128 @@
+'use client';
+
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
+import type { SectionImage } from './types';
+import { useReveal } from './useReveal';
+
+type ClippedImageSectionProps = {
+  id?: string;
+  /** Small label above the heading. Optional. */
+  eyebrow?: string;
+  title: ReactNode;
+  /** One paragraph per array entry. */
+  body: string[];
+  image: SectionImage;
+  /** Which side the image sits on from `lg` and up. Mirror the layout with this. */
+  imageSide?: 'left' | 'right';
+  /** Keeps the text column pinned while the taller image column scrolls past. */
+  sticky?: boolean;
+  background?: 'white' | 'stone' | 'beige';
+  /** Extra content under the body – CTA, TODO-markers, list. */
+  children?: ReactNode;
+};
+
+const backgrounds: Record<NonNullable<ClippedImageSectionProps['background']>, string> = {
+  white: 'bg-white',
+  stone: 'bg-surface-stone',
+  beige: 'bg-beige-light',
+};
+
+/**
+ * Full-bleed section: an asymmetrically clipped image on one side, the message
+ * on the other. Sections 1, 4 and 6 of the Privat page – section 4 mirrors
+ * section 1 by flipping `imageSide`.
+ *
+ * The "sticky text while the image scrolls past" effect is pure CSS: the image
+ * column is taller than the viewport, the text column is `position: sticky`.
+ * No JS scroll listeners, so it degrades to a normal two-column layout below
+ * `lg` and costs nothing on mobile.
+ */
+export function ClippedImageSection({
+  id,
+  eyebrow,
+  title,
+  body,
+  image,
+  imageSide = 'right',
+  sticky = true,
+  background = 'white',
+  children,
+}: ClippedImageSectionProps) {
+  const { reveal } = useReveal();
+  const imageFirst = imageSide === 'left';
+
+  // Asymmetric rounded clip, mirrored so the deep corner always faces the page
+  // centre. Uses raw radii rather than a clip-path polygon so nothing of the
+  // image is sliced off at narrow widths.
+  const clip = imageFirst
+    ? 'rounded-[2rem] lg:rounded-l-none lg:rounded-tr-[10rem] lg:rounded-br-[3rem]'
+    : 'rounded-[2rem] lg:rounded-r-none lg:rounded-tl-[3rem] lg:rounded-bl-[10rem]';
+
+  return (
+    <section
+      id={id}
+      className={`relative w-full overflow-hidden ${backgrounds[background]}`}
+    >
+      <div className="grid grid-cols-1 items-start lg:grid-cols-2">
+        {/* Image column – taller than the viewport so the text can stick beside it. */}
+        <div
+          className={`relative px-6 pt-16 md:px-10 lg:px-0 lg:pt-0 ${
+            imageFirst ? 'lg:order-1' : 'lg:order-2'
+          }`}
+        >
+          <motion.div
+            {...reveal(0, 40)}
+            className={`relative h-[60svh] min-h-[380px] w-full overflow-hidden lg:h-[150vh] lg:min-h-[900px] ${clip}`}
+          >
+            <Image
+              src={image.src}
+              alt={image.alt}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        </div>
+
+        {/* Text column */}
+        <div
+          className={`px-6 py-20 md:px-10 md:py-28 lg:px-20 lg:py-32 ${
+            imageFirst ? 'lg:order-2' : 'lg:order-1'
+          } ${sticky ? 'lg:sticky lg:top-24 lg:self-start' : ''}`}
+        >
+          <div className="max-w-[34rem]">
+            {eyebrow ? (
+              <motion.p {...reveal(0)} className="text-overline mb-6 text-teal">
+                {eyebrow}
+              </motion.p>
+            ) : null}
+
+            <motion.h2 {...reveal(0.1)} className="text-section-title text-black">
+              {title}
+            </motion.h2>
+
+            <div className="mt-8 space-y-6">
+              {body.map((paragraph, i) => (
+                <motion.p
+                  key={i}
+                  {...reveal(0.2 + i * 0.08)}
+                  className="text-body-large text-gray-600"
+                >
+                  {paragraph}
+                </motion.p>
+              ))}
+            </div>
+
+            {children ? (
+              <motion.div {...reveal(0.4)} className="mt-10">
+                {children}
+              </motion.div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
