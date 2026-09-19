@@ -9,9 +9,10 @@ export interface PortfolioProject {
   categoryId: PortfolioCategoryId;
   /** Short result/metric line under the title */
   metric: string;
-  image?: string;
-  /** Optional second image revealed on hover */
-  hoverImage?: string;
+  /** Logotype, shown by default */
+  logo?: string;
+  /** Site screenshot, revealed on hover (or on the active card where hover is unavailable) */
+  siteImage?: string;
   href: string;
   external?: boolean;
   ctaLabel: string;
@@ -24,8 +25,8 @@ export const portfolioProjects: PortfolioProject[] = [
     category: 'E-handel',
     categoryId: 'ecommerce',
     metric: 'Prognos: +100–200% trafik',
-    image: '/forthewebsitesource.png',
-    hoverImage: '/forthebetterse.png',
+    logo: '/peran-logo.webp',
+    siteImage: '/peran-site.webp',
     href: 'https://peran.onrender.com/',
     external: true,
     ctaLabel: 'Besök sidan',
@@ -36,8 +37,8 @@ export const portfolioProjects: PortfolioProject[] = [
     category: 'E-handel',
     categoryId: 'ecommerce',
     metric: 'E-handel & varumärke',
-    image: '/glowanotherone.png',
-    hoverImage: '/glowkundcase.png',
+    logo: '/glow-logo.webp',
+    siteImage: '/glow-site.webp',
     href: 'https://glow-test.onrender.com/',
     external: true,
     ctaLabel: 'Besök sidan',
@@ -48,8 +49,8 @@ export const portfolioProjects: PortfolioProject[] = [
     category: 'Lokal Business',
     categoryId: 'local',
     metric: 'Wellness & digital närvaro',
-    image: '/mintiwebsite.png',
-    hoverImage: '/mintilogo.png',
+    logo: '/minti-logo.webp',
+    siteImage: '/minti-site.webp',
     href: 'https://minti.onrender.com/',
     external: true,
     ctaLabel: 'Besök sidan',
@@ -60,8 +61,8 @@ export const portfolioProjects: PortfolioProject[] = [
     category: 'Lokal Business',
     categoryId: 'local',
     metric: 'Översvämningsskydd & fastighetsskydd',
-    image: '/vattentrygghovering.png',
-    hoverImage: '/Vattentrygg-logo-p-500.png',
+    logo: '/vattentrygg-logo.webp',
+    siteImage: '/vattentrygg-site.webp',
     href: '/kontakt',
     ctaLabel: 'Fråga om caset',
   },

@@ -137,7 +137,7 @@ export default function PortfolioPage() {
                 key={capability.title}
                 className="rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-200 hover:-translate-y-1 hover:border-teal/40 hover:shadow-xl"
               >
-                <h3 className="text-section-subtitle text-black mb-3">
+                <h3 className="text-xl font-semibold md:text-2xl text-black mb-3">
                   {capability.title}
                 </h3>
                 <p className="text-body text-gray-700">{capability.desc}</p>
