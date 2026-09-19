@@ -29,10 +29,10 @@ export default function ForetagVaxandePage() {
           </p>
 
           <div className="flex gap-4 justify-center">
-            <button className="bg-[#00C2A8] text-black px-6 py-3 rounded-xl font-medium" type="button">
+            <button className="inline-flex items-center justify-center rounded-full bg-[#00C2A8] px-[22px] py-3 text-[15px] font-medium leading-tight text-black transition-colors hover:bg-[#00b39b]" type="button">
               Boka demo
             </button>
-            <button className="border border-white/30 px-6 py-3 rounded-xl" type="button">
+            <button className="inline-flex items-center justify-center rounded-full border border-white/30 px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-white/10" type="button">
               Se hur det fungerar
             </button>
           </div>

@@ -61,19 +61,16 @@ export default function PortfolioPage() {
               const isActive = filter === category.id;
 
               return (
-                <button
+                <Button
                   key={category.id}
                   type="button"
+                  size="sm"
+                  variant={isActive ? 'primary' : 'ghost'}
                   onClick={() => setFilter(category.id)}
                   aria-pressed={isActive}
-                  className={`inline-flex min-h-[40px] items-center justify-center whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 ${
-                    isActive
-                      ? 'bg-teal text-white shadow-md shadow-teal/25'
-                      : 'border border-gray-200 bg-transparent text-black hover:border-teal hover:text-teal'
-                  }`}
                 >
                   {category.label}
-                </button>
+                </Button>
               );
             })}
           </div>
