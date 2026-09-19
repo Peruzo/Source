@@ -172,14 +172,14 @@ export function Header() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.5 }}
                       className="relative group"
-                      onMouseEnter={() => {
-                        // Touch devices fire mouseenter on tap, which would open the
-                        // menu just before the click toggles it shut again. Only
-                        // pointers that can genuinely hover open on hover.
+                      onPointerEnter={(e) => {
+                        // Touch and pen taps fire enter events too, and opening there
+                        // would only race the click toggle. pointerType identifies the
+                        // device per event, so a hybrid machine still hover-opens from
+                        // its mouse while a tap goes through the click toggle instead.
+                        if (e.pointerType !== 'mouse') return;
                         if (link.hasMenu) {
-                          if (window.matchMedia('(hover: hover)').matches) {
-                            handleMenuEnter(link.menuKey || null);
-                          }
+                          handleMenuEnter(link.menuKey || null);
                         } else {
                           handleMenuLeave();
                         }
