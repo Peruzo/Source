@@ -1,4 +1,4 @@
-export type PortfolioCategoryId = 'ecommerce' | 'saas' | 'local' | 'other';
+export type PortfolioCategoryId = 'ecommerce' | 'local';
 
 export interface PortfolioProject {
   slug: string;
@@ -16,14 +16,6 @@ export interface PortfolioProject {
   external?: boolean;
   ctaLabel: string;
 }
-
-export const portfolioCategories: { id: 'all' | PortfolioCategoryId; label: string }[] = [
-  { id: 'all', label: 'Alla' },
-  { id: 'ecommerce', label: 'E-handel' },
-  { id: 'saas', label: 'SaaS' },
-  { id: 'local', label: 'Lokal Business' },
-  { id: 'other', label: 'Övrigt' },
-];
 
 export const portfolioProjects: PortfolioProject[] = [
   {
@@ -73,40 +65,21 @@ export const portfolioProjects: PortfolioProject[] = [
     href: '/kontakt',
     ctaLabel: 'Fråga om caset',
   },
-  {
-    slug: 'fashion-store',
-    title: 'Fashion E-commerce Store',
-    category: 'E-handel',
-    categoryId: 'ecommerce',
-    metric: '+200% trafik på 3 månader',
-    href: '/portfolio/fashion-store',
-    ctaLabel: 'Visa projekt',
-  },
-  {
-    slug: 'saas-platform',
-    title: 'Tech Startup Platform',
-    category: 'SaaS',
-    categoryId: 'saas',
-    metric: 'Lanserat på 4 veckor',
-    href: '/portfolio/saas-platform',
-    ctaLabel: 'Visa projekt',
-  },
-  {
-    slug: 'restaurant',
-    title: 'Restaurant Website',
-    category: 'Lokal Business',
-    categoryId: 'local',
-    metric: '+150% bokningar',
-    href: '/portfolio/restaurant',
-    ctaLabel: 'Visa projekt',
-  },
-  {
-    slug: 'nonprofit',
-    title: 'Non-Profit Organization',
-    category: 'Organisation',
-    categoryId: 'other',
-    metric: '+150% donationer online',
-    href: '/portfolio/nonprofit',
-    ctaLabel: 'Visa projekt',
-  },
+];
+
+const categoryLabels: Record<PortfolioCategoryId, string> = {
+  ecommerce: 'E-handel',
+  local: 'Lokal Business',
+};
+
+/**
+ * Derived from the projects rather than hard-coded, so a filter chip can never
+ * be rendered with nothing behind it. Add a project in a new category and its
+ * chip appears; remove the last project in a category and its chip goes away.
+ */
+export const portfolioCategories: { id: 'all' | PortfolioCategoryId; label: string }[] = [
+  { id: 'all', label: 'Alla' },
+  ...(Object.keys(categoryLabels) as PortfolioCategoryId[])
+    .filter((id) => portfolioProjects.some((project) => project.categoryId === id))
+    .map((id) => ({ id, label: categoryLabels[id] })),
 ];

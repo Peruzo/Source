@@ -13,6 +13,9 @@ import {
 export default function PortfolioPage() {
   const [filter, setFilter] = useState<string>('all');
 
+  // "Alla" plus a single category is not a choice, so the chips are dropped.
+  const showFilters = portfolioCategories.length > 2;
+
   const filteredProjects = useMemo(
     () =>
       filter === 'all'
@@ -45,7 +48,8 @@ export default function PortfolioPage() {
         </Container>
       </section>
 
-      {/* Filter */}
+      {/* Filter — hidden entirely when there is nothing to filter between */}
+      {showFilters && (
       <section className="sticky top-12 z-40 border-b border-gray-200 bg-white/95 py-5 backdrop-blur md:top-14 lg:top-16">
         <Container>
           <div
@@ -75,6 +79,7 @@ export default function PortfolioPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* Projects carousel */}
       <section className="overflow-hidden bg-[#F4F7F6] py-20 md:py-32">
