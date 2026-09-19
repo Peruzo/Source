@@ -3,7 +3,6 @@ import { ValueProposition } from '@/components/sections/ValueProposition';
 import PlatformRock from '@/components/sections/PlatformRock';
 import { WhatWeDo } from '@/components/sections/WhatWeDo';
 import { PortfolioTeaser } from '@/components/sections/PortfolioTeaser';
-import { AIAgentTestimonials } from '@/components/sections/AIAgentTestimonials';
 import { FAQ } from '@/components/sections/FAQ';
 import { PricingTeaser } from '@/components/sections/PricingTeaser';
 import { FinalCTA } from '@/components/sections/FinalCTA';
@@ -21,7 +20,9 @@ export default function Home() {
       <DataGrowthSlideshow />
       <AIAssistant />
       <PortfolioTeaser />
-      <AIAgentTestimonials />
+      {/* AIAgentTestimonials är avstängd: de tre citaten är påhittade personer.
+          Komponenten ligger kvar i components/sections/ och kan återinföras när
+          vi har riktiga kundcitat. */}
       <FAQ />
       <PricingTeaser />
       <FinalCTA />

@@ -80,13 +80,28 @@ const projectsData = {
   },
 };
 
+/**
+ * Case studies that may be served publicly.
+ *
+ * Every entry in `projectsData` above is an invented example with made-up
+ * result figures, so none of them is published. The content is kept so a real
+ * case can take its place; until then these slugs 404 and are absent from both
+ * the static export and the sitemap. Add a slug here once its case is real.
+ */
+const publishedSlugs: (keyof typeof projectsData)[] = [];
+
 export function generateStaticParams() {
-  return Object.keys(projectsData).map((slug) => ({ slug }));
+  return publishedSlugs.map((slug) => ({ slug }));
+}
+
+function getPublishedProject(slug: string) {
+  if (!(publishedSlugs as string[]).includes(slug)) return null;
+  return projectsData[slug as keyof typeof projectsData] ?? null;
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const project = projectsData[params.slug as keyof typeof projectsData];
-  
+  const project = getPublishedProject(params.slug);
+
   if (!project) {
     return {
       title: 'Projekt ej funnet',
@@ -100,7 +115,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const project = projectsData[params.slug as keyof typeof projectsData];
+  const project = getPublishedProject(params.slug);
 
   if (!project) {
     notFound();
