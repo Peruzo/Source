@@ -49,8 +49,10 @@ export function PortfolioTeaser() {
       slug: 'vattentrygg-example',
       image: '/Vattentrygg-logo-p-500.png',
       hoverImage: '/vattentrygghovering.png',
-      link: '#',
-      external: true,
+      // Samma mål som Vattentrygg-kortet i PortfolioCarousel — samma case ska
+      // inte bete sig olika på startsidan och portfolio-sidan.
+      link: '/kontakt',
+      external: false,
     },
     {
       title: 'Support & Service',
@@ -59,7 +61,9 @@ export function PortfolioTeaser() {
       slug: 'support-example',
       image: null,
       hoverImage: null,
-      link: '/portfolio/support-example',
+      // Inget case utan ett tjänsteerbjudande: pekar på support-avsnittet på
+      // tjänstesidan. Slugen /portfolio/support-example har aldrig funnits.
+      link: '/tjanster#support',
       external: false,
     },
     {
@@ -69,7 +73,9 @@ export function PortfolioTeaser() {
       slug: 'analytics-example',
       image: null,
       hoverImage: null,
-      link: '/portfolio/analytics-example',
+      // Inget case utan ett tjänsteerbjudande: /analys är den egna sidan för
+      // det. Slugen /portfolio/analytics-example har aldrig funnits.
+      link: '/analys',
       external: false,
     },
   ];
