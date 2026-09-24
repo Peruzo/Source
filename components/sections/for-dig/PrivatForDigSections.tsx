@@ -5,6 +5,7 @@ import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
 import { HorizontalScrollSection, type ScrollPanel } from './HorizontalScrollSection';
+import { PaymentCards } from './PaymentCards';
 
 /*
  * INNEHÅLL – "För dig / Privat"
@@ -116,7 +117,9 @@ export function PrivatForDigSections() {
         </Button>
       </ClippedImageSection>
 
-      {/* 2 – Börja ta betalt. */}
+      {/* 2 – Börja ta betalt. Ingen bakgrundsbild – visualen är de tre
+          betalkorten. Kortens exempelinnehåll (fiktiv butik, kundens belopp,
+          inte våra priser) ligger i for-dig/payment-cards/content.ts. */}
       <FullBleedImageSection
         id="borja-ta-betalt"
         eyebrow="BETALNINGAR"
@@ -128,11 +131,9 @@ export function PrivatForDigSections() {
           'Här står ett andra stycke om vad som ingår och vad du slipper hålla reda på. Två till tre meningar.',
           // TODO: verifiera att vi inte tar transaktionsavgift
         ]}
-        image={{
-          src: `${IMG}/02-borja-ta-betalt.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för sektionen Börja ta betalt',
-        }}
-      />
+      >
+        <PaymentCards />
+      </FullBleedImageSection>
 
       {/* 3 – Horisontell scroll. */}
       <HorizontalScrollSection

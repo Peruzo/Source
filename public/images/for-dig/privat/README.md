@@ -23,7 +23,7 @@ Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per panelbild.
 | Filnamn | Sektion | Typ | Rek. upplösning | Format (aspect ratio) | Anmärkning |
 |---|---|---|---|---|---|
 | `01-vi-bygger.svg` | 1. Vi bygger din hemsida | Clipped, höger sida | 1600 × 2000 | **4:5** (stående) | Beskärs med rundad, asymmetrisk mask. Håll motivet centrerat – kanterna kapas. Scrollar förbi sticky text på desktop, så bildens överkant och underkant syns aldrig samtidigt. |
-| `02-borja-ta-betalt.svg` | 2. Börja ta betalt | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | `object-cover` över hela sektionen. Text ligger centrerad ovanpå – undvik motiv med viktiga detaljer i mitten. Mörk overlay läggs på automatiskt. |
+| *(ingen fil)* | 2. Börja ta betalt | Ingen bakgrundsbild | – | – | Sektionen visar tre UI-kort (`PaymentCards`). Mittenkortets bildyta tar en valfri `checkout.image` (ca 4:3, motivet beskärs till en bred remsa); utan bild visas en CSS-platshållare. |
 | `03-panel-produkter.svg` | 3. Allt du kan göra → panel 1 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Visas i rundad ruta, `object-cover`. |
 | `03-panel-fakturor.svg` | 3. Allt du kan göra → panel 2 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
 | `03-panel-kampanjer.svg` | 3. Allt du kan göra → panel 3 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
