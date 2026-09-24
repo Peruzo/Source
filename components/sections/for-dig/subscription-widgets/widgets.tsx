@@ -14,11 +14,11 @@ import { Field, RADIUS, formatMoney } from '../payment-cards/primitives';
  * The subscription widgets – the running side of a subscription business:
  * money coming in, who pays for what, and adding one more. Built from the
  * payment-cards primitives (radii card 24 / field 12 / control pill,
- * `.text-ui-*`) like the other panels.
+ * `.text-ui-*`) like the other widget sets.
  *
  * The interval is the one piece of state, so it is a real radio group.
  * Everything else that looks like a control is illustration, not focusable.
- * Every widget fills the box it is given and knows nothing about the page,
+ * Every widget sizes itself from its content and knows nothing about the page,
  * so each can be rendered on its own (Remotion texture).
  */
 
@@ -27,39 +27,52 @@ type Summary = ReturnType<typeof summarize>;
 
 /**
  * 1 – Incoming payments: this month's recurring revenue, active subscribers
- * and the upcoming autogiro runs. `charges={false}` drops the run list for
- * the smallest box.
+ * and the upcoming autogiro runs. `charges={false}` drops the run list;
+ * `split` puts the run list beside the total once the nearest @container is
+ * at least 48rem wide; below that it stays under the total.
  */
 export function IncomingPayments({
   content,
   summary,
   charges = true,
+  split = false,
   currency,
   locale,
 }: {
   content: IncomingPaymentsContent;
   summary: Summary;
   charges?: boolean;
+  split?: boolean;
 } & MoneyFormat) {
   const titleId = useId();
   const count = new Intl.NumberFormat(locale);
 
   return (
-    <div role="group" aria-labelledby={titleId} className="w-full text-left text-black">
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 id={titleId} className="text-ui-body font-semibold">
-          {content.title}
-        </h3>
-        <p className="text-ui-label text-gray-600">{content.periodLabel}</p>
+    <div
+      role="group"
+      aria-labelledby={titleId}
+      className={`w-full text-left text-black ${
+        split ? '@3xl:grid @3xl:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] @3xl:items-start @3xl:gap-10' : ''
+      }`}
+    >
+      <div>
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 id={titleId} className="text-ui-body font-semibold">
+            {content.title}
+          </h3>
+          <p className="text-ui-label text-gray-600">{content.periodLabel}</p>
+        </div>
+
+        <p className={`text-ui-amount mt-1 tabular-nums ${split ? '@3xl:mt-3' : ''}`}>
+          {formatMoney(summary.total, currency, locale)}
+        </p>
+        <p className="text-ui-label mt-1 text-gray-600">
+          <span className="tabular-nums text-black">{count.format(summary.active)}</span> {content.activeLabel}
+        </p>
       </div>
 
-      <p className="text-ui-amount mt-1 tabular-nums">{formatMoney(summary.total, currency, locale)}</p>
-      <p className="text-ui-label mt-1 text-gray-600">
-        <span className="tabular-nums text-black">{count.format(summary.active)}</span> {content.activeLabel}
-      </p>
-
       {charges ? (
-        <div className="mt-3">
+        <div className={`mt-3 ${split ? '@3xl:mt-0' : ''}`}>
           <div className="flex items-center justify-between gap-3">
             <p className="text-ui-label font-semibold text-gray-600">{content.upcomingLabel}</p>
             {/* TODO: verifiera att autogiro faktiskt stöds */}
@@ -94,32 +107,38 @@ export function IncomingPayments({
  * price, what is included, subscriber count. The level with most subscribers
  * gets the "Populärast" mark – derived, not configured, so it cannot drift
  * from the numbers. The mark is a word plus an accent outline, never colour
- * alone. `includes={false}` drops the included lines for smaller boxes.
+ * alone. `includes={false}` drops the included lines. `className` sets the
+ * columns (default three); `tiles` gives each level the card radius and
+ * padding, for layouts where the levels are top-level tiles, not a sub-list.
  */
 export function SubscriptionTiers({
   content,
   includes = true,
+  className = 'grid-cols-3',
+  tiles = false,
   currency,
   locale,
-}: { content: TiersContent; includes?: boolean } & MoneyFormat) {
+}: { content: TiersContent; includes?: boolean; className?: string; tiles?: boolean } & MoneyFormat) {
   const top = Math.max(...content.tiers.map((tier) => tier.subscribers));
   const count = new Intl.NumberFormat(locale);
 
   return (
-    <ul aria-label={content.label} className="grid h-full w-full grid-cols-3 gap-2">
+    <ul aria-label={content.label} className={`grid w-full ${tiles ? 'gap-4' : 'gap-2'} ${className}`}>
       {content.tiers.map((tier) => {
         const popular = tier.subscribers === top;
         return (
           <li
             key={tier.id}
-            className={`relative flex min-w-0 flex-col border bg-white p-2.5 text-left text-black ${RADIUS.field} ${
+            className={`relative flex min-w-0 flex-col border bg-white text-left text-black ${
+              tiles ? `p-5 ${RADIUS.card}` : `p-2.5 ${RADIUS.field}`
+            } ${
               popular ? 'border-teal-dark ring-1 ring-teal-dark' : 'border-gray-200'
             }`}
           >
             {/* Sits on the top border so the names stay aligned across levels. */}
             {popular ? (
               <span
-                className={`text-ui-label absolute -top-2.5 left-2 whitespace-nowrap bg-teal-dark px-2 py-px text-white ${RADIUS.control}`}
+                className={`text-ui-label absolute -top-2.5 whitespace-nowrap ${tiles ? 'left-4' : 'left-2'} bg-teal-dark px-2 py-px text-white ${RADIUS.control}`}
               >
                 {content.popularLabel}
               </span>
@@ -149,7 +168,7 @@ export function SubscriptionTiers({
 
 /**
  * The "Ny prenumeration" button. `pressed` freezes it mid-click. Illustration
- * only. (Same look as the pressed buttons in the invoice and campaign panels –
+ * only. (Same look as the pressed buttons in the invoice and campaign widgets –
  * candidate for payment-cards/primitives once those branches are merged.)
  */
 export function NewSubscriptionButton({ label, pressed = false }: { label: string; pressed?: boolean }) {

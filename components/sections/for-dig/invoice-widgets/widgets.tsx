@@ -17,7 +17,7 @@ import { FauxButton, Field, RADIUS, formatMoney } from '../payment-cards/primiti
  *
  * Nothing here is interactive: there is no state to convey, so there are no
  * controls and no tab stops. Buttons are look-alikes (see FauxButton).
- * Each widget fills the box it is given and knows nothing about the page, so
+ * Each widget sizes itself from its content and knows nothing about the page, so
  * it can be rendered on its own (Remotion texture).
  */
 
@@ -49,7 +49,7 @@ export function InvoicePreview({
   return (
     <article
       aria-label={content.label}
-      className={`flex h-full w-full flex-col bg-white px-5 py-5 text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.field}`}
+      className={`flex w-full flex-col bg-white px-5 py-5 text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.field}`}
     >
       <div className="min-w-0">
         <p className="text-ui-body font-semibold">{content.sender.name}</p>
@@ -242,9 +242,9 @@ export function StatusBadge({ status, label }: { status: InvoiceStatus; label: s
  * at and never draws a logo itself. Rows without a mark keep the empty slot
  * so recipients stay aligned. `actions` sits in the header next to "Se alla
  * fakturor" – the composition puts the pressed "Skapa faktura" button there.
- * `dense` tightens spacing for the two smaller boxes. `showTitle={false}`
+ * `dense` tightens spacing for narrow containers. `showTitle={false}`
  * keeps the heading for screen readers only; `maxRows`
- * trims the list so no row is ever cut off by the box.
+ * shows only the first N rows.
  */
 export function InvoiceList({
   content,
@@ -258,17 +258,17 @@ export function InvoiceList({
   content: InvoiceListContent;
   actions?: ReactNode;
   showTitle?: boolean;
-  /** Show only the first N rows – the composition sizes this to its box. */
+  /** Show only the first N rows. Omit to show all. */
   maxRows?: number;
-  /** Tighter rows and gaps and a 16px logo slot, for the two smaller boxes. */
+  /** Tighter rows and gaps and a 16px logo slot, for narrow containers. */
   dense?: boolean;
 } & MoneyFormat) {
   const titleId = useId();
   const integrations = new Map(content.integrations.map((i) => [i.id, i]));
 
   return (
-    <div role="group" aria-labelledby={titleId} className="flex h-full w-full flex-col text-left text-black">
-      <div className="flex items-center gap-2">
+    <div role="group" aria-labelledby={titleId} className="flex w-full min-w-0 flex-col text-left text-black">
+      <div className="flex flex-wrap items-center gap-2">
         <h3 id={titleId} className={showTitle ? 'text-ui-title mr-auto' : 'sr-only'}>
           {content.title}
         </h3>

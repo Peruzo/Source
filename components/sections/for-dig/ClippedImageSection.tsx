@@ -19,6 +19,12 @@ type ClippedImageSectionProps = {
    * precedence over `image`.
    */
   video?: SectionVideo;
+  /**
+   * Live content in the clipped shape instead of `image` or `video` (e.g.
+   * ProductWidgets). Takes precedence over both. Sets its own height and
+   * background – the shape wraps it instead of imposing the tall photo height.
+   */
+  media?: ReactNode;
   /** Which side the image sits on from `lg` and up. Mirror the layout with this. */
   imageSide?: 'left' | 'right';
   /** Keeps the text column pinned while the taller image column scrolls past. */
@@ -51,6 +57,7 @@ export function ClippedImageSection({
   body,
   image,
   video,
+  media,
   imageSide = 'right',
   sticky = true,
   background = 'white',
@@ -132,61 +139,67 @@ export function ClippedImageSection({
                   }
                 : undefined
             }
-            className={`relative h-[60svh] min-h-[380px] w-full overflow-hidden lg:h-[150vh] lg:min-h-[900px] ${clip}`}
+            className={`relative w-full overflow-hidden ${
+              media ? '' : 'h-[60svh] min-h-[380px] lg:h-[150vh] lg:min-h-[900px]'
+            } ${clip}`}
           >
-            {video && showVideo ? (
-              <video
-                ref={videoRef}
-                src={video.src}
-                poster={video.poster}
-                aria-label={video.alt}
-                autoPlay
-                muted
-                playsInline
-                loop
-                preload="metadata"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : still ? (
-              <Image
-                src={still.src}
-                alt={still.alt}
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-              />
-            ) : null}
+            {media ?? (
+              <>
+                {video && showVideo ? (
+                  <video
+                    ref={videoRef}
+                    src={video.src}
+                    poster={video.poster}
+                    aria-label={video.alt}
+                    autoPlay
+                    muted
+                    playsInline
+                    loop
+                    preload="metadata"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : still ? (
+                  <Image
+                    src={still.src}
+                    alt={still.alt}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                ) : null}
 
-            {wantsVideo ? (
-              <span
-                ref={sentinelRef}
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-0 h-px w-px"
-              />
-            ) : null}
+                {wantsVideo ? (
+                  <span
+                    ref={sentinelRef}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-0 h-px w-px"
+                  />
+                ) : null}
 
-            {/* WCAG 2.2.2 – a looping video needs a way to stop it. Bottom
-                corner away from the fixed chat button, inset on lg so it
-                clears the 10rem curve. Quiet at rest, clear on hover/focus. */}
-            {showVideo ? (
-              <button
-                type="button"
-                onClick={() => setPaused((p) => !p)}
-                aria-label={paused ? 'Spela videon' : 'Pausa videon'}
-                className="absolute bottom-4 left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/25 text-white/60 backdrop-blur-sm transition-colors duration-200 hover:bg-black/70 hover:text-white focus-visible:bg-black/70 focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:bottom-14 lg:left-14"
-              >
-                {paused ? (
-                  <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-                    <path d="M4.5 2.8v10.4a.6.6 0 0 0 .9.5l8.3-5.2a.6.6 0 0 0 0-1L5.4 2.3a.6.6 0 0 0-.9.5Z" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden="true">
-                    <rect x="3.5" y="2.5" width="3" height="11" rx="0.75" />
-                    <rect x="9.5" y="2.5" width="3" height="11" rx="0.75" />
-                  </svg>
-                )}
-              </button>
-            ) : null}
+                {/* WCAG 2.2.2 – a looping video needs a way to stop it. Bottom
+                    corner away from the fixed chat button, inset on lg so it
+                    clears the 10rem curve. Quiet at rest, clear on hover/focus. */}
+                {showVideo ? (
+                  <button
+                    type="button"
+                    onClick={() => setPaused((p) => !p)}
+                    aria-label={paused ? 'Spela videon' : 'Pausa videon'}
+                    className="absolute bottom-4 left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/25 text-white/60 backdrop-blur-sm transition-colors duration-200 hover:bg-black/70 hover:text-white focus-visible:bg-black/70 focus-visible:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:bottom-14 lg:left-14"
+                  >
+                    {paused ? (
+                      <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                        <path d="M4.5 2.8v10.4a.6.6 0 0 0 .9.5l8.3-5.2a.6.6 0 0 0 0-1L5.4 2.3a.6.6 0 0 0-.9.5Z" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                        <rect x="3.5" y="2.5" width="3" height="11" rx="0.75" />
+                        <rect x="9.5" y="2.5" width="3" height="11" rx="0.75" />
+                      </svg>
+                    )}
+                  </button>
+                ) : null}
+              </>
+            )}
           </motion.div>
         </div>
 

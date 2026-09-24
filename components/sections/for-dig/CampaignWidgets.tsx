@@ -4,7 +4,7 @@ import { campaignWidgetsDefaults, type CampaignWidgetsContent } from './campaign
 import { RADIUS } from './payment-cards/primitives';
 import {
   CampaignCode,
-  CampaignScreenHeader,
+  CreateCampaignButton,
   CreateCampaignDialog,
   SaleGrid,
   SaleProductCard,
@@ -23,21 +23,18 @@ export {
 type CampaignWidgetsProps = Partial<CampaignWidgetsContent>;
 
 /**
- * Visual for the "Kampanjer" panel in HorizontalScrollSection: a grid of
- * discounted products with "Skapa kampanj" pressed and the "Ny kampanj"
- * dialog open over it, and – where there is room – the discount code and a
- * single discounted product card beside it.
+ * Visual for "Kampanjer": a compact collage read at a glance – the opposite
+ * rhythm of the tall scrolling column in the products section. The "Ny
+ * kampanj" dialog, the discounted product card overlapping its edge, the
+ * discount code laid over the card's foot like a coupon, and a row of
+ * discounted products below. Overlaps only ever cover padding, never text.
  *
- * Fills its parent box – built for the panel's 4:3 media box (662 × 497 px at
- * a 1440 px viewport, 332 × 249 px at 390 px). Reads only its OWN width via
- * container queries, never the viewport, so it renders the same in isolation
- * (Remotion texture). Same three steps as ProductWidgets and InvoiceWidgets:
- *   < 448 px  sale grid only, 3 × 1. The dialog would cover every product,
- *             and the single card is the grid's job at this size anyway.
- *   448–575   sale grid + short dialog: name, value, discount type
- *   ≥ 576     sale grid + full dialog; code and product card beside it
- * Text never scales down; the content is trimmed instead. Hidden layouts are
- * `display: none`, so they are out of the accessibility tree and tab order.
+ * Natural height, transparent, reads only its OWN width (container queries)
+ * so it renders the same in isolation (Remotion texture). Two steps:
+ *   < 576 px  stacked: product card → code → dialog → 3 × 2 sale grid
+ *   ≥ 576 px  overlapping collage, sale grid 6 × 1
+ * Overlap is plain grid placement + negative margins; no transforms, so the
+ * cards keep their exact sizes.
  */
 export function CampaignWidgets(props: CampaignWidgetsProps) {
   const { currency, locale, discountRate, priceLabels, create, code, card, grid } = {
@@ -47,43 +44,28 @@ export function CampaignWidgets(props: CampaignWidgetsProps) {
   const money = { currency, locale };
   const sale = { rate: discountRate, labels: priceLabels, ...money };
 
-  const screen = (dialog: 'medium' | 'full' | null, columns: number, rows: number) => (
-    <div className={`relative isolate flex h-full flex-col overflow-hidden bg-white p-3 ${RADIUS.card}`}>
-      <CampaignScreenHeader title={grid.title} buttonLabel={create.buttonLabel} pressed={dialog !== null} />
-      <div className="mt-2.5 min-h-0 flex-1">
-        <SaleGrid products={grid.products} columns={columns} rows={rows} badges={dialog !== 'medium'} {...sale} />
-      </div>
-
-      {dialog ? (
-        <>
-          {/* Soft dim – the grid still reads as "sale on" behind the dialog. */}
-          <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
-          <div className="absolute inset-x-2 bottom-2">
-            <CreateCampaignDialog content={create} products={grid.products} fields={dialog} {...money} />
-          </div>
-        </>
-      ) : null}
-    </div>
-  );
-
   return (
-    <div
-      className="@container relative h-full w-full overflow-hidden"
-      style={{
-        background:
-          'radial-gradient(120% 90% at 100% 0%, rgba(0,128,109,0.55) 0%, transparent 60%), var(--color-black-tertiary)',
-      }}
-    >
-      <div className="h-full p-2 @md:hidden">{screen(null, 3, 1)}</div>
+    <div className="@container w-full text-left">
+      <div className="grid grid-cols-1 gap-4 @xl:grid-cols-12 @xl:gap-0">
+        <div className="order-3 @xl:order-none @xl:col-span-7 @xl:col-start-1 @xl:row-start-1">
+          <div className="mb-3">
+            <CreateCampaignButton label={create.buttonLabel} pressed />
+          </div>
+          <CreateCampaignDialog content={create} products={grid.products} fields="full" {...money} />
+        </div>
 
-      <div className="hidden h-full p-3 @md:block @xl:hidden">{screen('medium', 4, 2)}</div>
+        <div className="relative z-10 order-1 @xl:order-none @xl:col-span-5 @xl:col-start-8 @xl:row-start-1 @xl:-ml-3 @xl:mt-12">
+          <SaleProductCard product={card.product} {...sale} />
+        </div>
 
-      <div className="hidden h-full gap-4 p-4 @xl:flex">
-        <div className="min-w-0 flex-1">{screen('full', 3, 2)}</div>
-        <div className="flex w-[14.5rem] flex-shrink-0 flex-col gap-4">
+        <div className="relative z-20 order-2 @xl:order-none @xl:col-span-5 @xl:col-start-8 @xl:row-start-2 @xl:-mt-3 @xl:ml-6 @xl:-mr-2">
           <CampaignCode content={code} rate={discountRate} locale={locale} />
-          <div className="min-h-0 flex-1">
-            <SaleProductCard product={card.product} {...sale} />
+        </div>
+
+        <div className="order-4 @xl:order-none @xl:col-span-12 @xl:row-start-3 @xl:mt-8">
+          <div className={`bg-white p-4 ${RADIUS.card}`}>
+            <h3 className="text-ui-title mb-3 text-black">{grid.title}</h3>
+            <SaleGrid products={grid.products} className="grid-cols-3 @xl:grid-cols-6" {...sale} />
           </div>
         </div>
       </div>

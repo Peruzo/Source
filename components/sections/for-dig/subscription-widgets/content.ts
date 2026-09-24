@@ -58,7 +58,6 @@ export type NewSubscriptionContent = {
 export type SubscriptionWidgetsContent = {
   currency: string;
   locale: string;
-  screenTitle: string;
   incoming: IncomingPaymentsContent;
   tiers: TiersContent;
   create: NewSubscriptionContent;
@@ -87,7 +86,6 @@ export function summarize(tiers: SubscriptionTier[]) {
 export const subscriptionWidgetsDefaults: SubscriptionWidgetsContent = {
   currency: 'SEK',
   locale: 'sv-SE',
-  screenTitle: 'Prenumerationer',
   incoming: {
     title: 'Inkommande betalningar',
     periodLabel: 'Oktober',

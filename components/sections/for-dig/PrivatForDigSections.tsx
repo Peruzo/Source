@@ -6,7 +6,6 @@ import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { SubscriptionWidgets } from './SubscriptionWidgets';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
-import { HorizontalScrollSection, type ScrollPanel } from './HorizontalScrollSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
 import { PaymentCards } from './PaymentCards';
 import { ProductWidgets } from './ProductWidgets';
@@ -23,46 +22,22 @@ import { ProductWidgets } from './ProductWidgets';
  *
  * INGA priser, belopp eller procentsatser får stå på den här sidan förrän
  * prissättningen är bekräftad – se {TODO: pris}-markeringarna.
+ *
+ * Sektionsnumren i kommentarerna räknar heron som 1 och följer sidans ordning
+ * uppifrån – samma nummer som platshållarbilderna i bildmappen har.
  */
 
 const IMG = '/images/for-dig/privat';
 
-const panels: ScrollPanel[] = [
-  {
-    id: 'produkter',
-    title: 'Produkter & tjänster',
-    body: 'Här står en kort text om vad du kan lägga upp och hur du håller det uppdaterat. Två till tre rader är lagom i den här panelen.',
-    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktiv butik,
-    // kundens priser) ligger i for-dig/product-widgets/content.ts.
-    media: <ProductWidgets />,
-  },
-  {
-    id: 'fakturor',
-    title: 'Fakturor',
-    body: 'Här står en kort text om hur fakturorna skapas och följs upp. Håll den ungefär lika lång som de andra panelerna.',
-    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktivt gym,
-    // kundens belopp) ligger i for-dig/invoice-widgets/content.ts.
-    media: <InvoiceWidgets />,
-  },
-  {
-    id: 'kampanjer',
-    title: 'Kampanjer',
-    body: 'Här står en kort text om hur du sätter upp en kampanj och vad du kan styra. Två till tre rader.',
-    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktiv butik,
-    // kundens priser) ligger i for-dig/campaign-widgets/content.ts.
-    media: <CampaignWidgets />,
-  },
-  {
-    id: 'prenumerationer',
-    title: 'Prenumerationer',
-    body: 'Här står en kort text om återkommande betalningar och vad kunden ser. Två till tre rader.',
-    // Riktiga widgets i stället för bild: den löpande driften (sektion 3
-    // visar redan skapandet). Exempelinnehållet – ett fiktivt rosteri och
-    // dess egna nivåer, inte våra paket – ligger i
-    // for-dig/subscription-widgets/content.ts.
-    media: <SubscriptionWidgets />,
-  },
-];
+/*
+ * Mörk bakgrund bakom widgetarna i de klippta sektionerna (4 och 6). Luften
+ * på den sida där klippformen har sitt djupa hörn (10rem på lg) håller
+ * widgetarna fria från kurvan.
+ */
+const WIDGET_BACKDROP = {
+  background:
+    'radial-gradient(120% 90% at 100% 0%, rgba(0,128,109,0.55) 0%, transparent 60%), var(--color-black-tertiary)',
+};
 
 const steps: GettingStartedStep[] = [
   {
@@ -94,7 +69,7 @@ const steps: GettingStartedStep[] = [
 export function PrivatForDigSections() {
   return (
     <>
-      {/* 1 – Vi bygger din hemsida. Sidans viktigaste sektion.
+      {/* 2 – Vi bygger din hemsida. Sidans viktigaste sektion.
           Budskap att skriva fram: vi bygger din hemsida precis som du vill ha
           den. Du behöver inte kunna något tekniskt och inte ha något sedan
           innan. */}
@@ -153,7 +128,7 @@ export function PrivatForDigSections() {
         </p>
       </ClippedImageSection>
 
-      {/* 2 – Börja ta betalt. Ingen bakgrundsbild – visualen är de tre
+      {/* 3 – Börja ta betalt. Ingen bakgrundsbild – visualen är de tre
           betalkorten. Kortens exempelinnehåll (fiktiv butik, kundens belopp,
           inte våra priser) ligger i for-dig/payment-cards/content.ts. */}
       <FullBleedImageSection
@@ -171,18 +146,10 @@ export function PrivatForDigSections() {
         <PaymentCards />
       </FullBleedImageSection>
 
-      {/* 3 – Horisontell scroll. */}
-      <HorizontalScrollSection
-        id="allt-du-kan-gora"
-        eyebrow="ÖVERSIKT"
-        title="Allt du kan göra"
-        intro="Här står en kort ingress som förklarar vad panelerna visar. En till två meningar."
-        panels={panels}
-        regionLabel="Allt du kan göra – bläddra i sidled"
-        background="stone"
-      />
-
-      {/* 4 – Lägg upp dina produkter eller tjänster. Speglad mot sektion 1. */}
+      {/* 4 – Lägg upp dina produkter eller tjänster. Klippformen till vänster,
+          texten står fast medan butiken – en hög kolumn – scrollar förbi.
+          Exempelinnehållet (fiktiv butik, kundens priser) ligger i
+          for-dig/product-widgets/content.ts. */}
       <ClippedImageSection
         id="lagg-upp-produkter"
         eyebrow="PRODUKTER & TJÄNSTER"
@@ -193,13 +160,16 @@ export function PrivatForDigSections() {
           'Här står den bärande texten om hur du lägger upp det du säljer. Skriv ungefär så här mycket – tre till fyra rader på desktop.',
           'Här står ett andra stycke som förklarar vad du kan styra själv och vad vi gör åt dig.',
         ]}
-        image={{
-          src: `${IMG}/04-lagg-upp-produkter.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för sektionen Lägg upp dina produkter eller tjänster',
-        }}
+        media={
+          <div className="px-4 py-6 md:p-8 lg:px-14 lg:pb-16 lg:pt-28" style={WIDGET_BACKDROP}>
+            <ProductWidgets />
+          </div>
+        }
       />
 
-      {/* 5 – Fakturor. */}
+      {/* 5 – Fakturor. Ett brett appfönster under texten. Exempelinnehållet
+          (fiktivt gym, kundens belopp) ligger i
+          for-dig/invoice-widgets/content.ts. */}
       <FullBleedImageSection
         id="fakturor"
         eyebrow="EKONOMI"
@@ -208,30 +178,35 @@ export function PrivatForDigSections() {
           'Här står texten om fakturering. Två till tre meningar som förklarar vad som sker automatiskt och vad du själv styr över.',
           'Här står ett kort andra stycke om uppföljning och påminnelser.',
         ]}
-        image={{
-          src: `${IMG}/05-fakturor.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för sektionen Fakturor',
-        }}
-      />
+      >
+        <InvoiceWidgets />
+      </FullBleedImageSection>
 
-      {/* 6 – Kampanjer. Samma sida som sektion 1. */}
+      {/* 6 – Kampanjer. Klippformen till höger som sektion 2, men ett kompakt
+          kollage i stället för en hög kolumn – därför inte fastlåst text.
+          Exempelinnehållet ligger i for-dig/campaign-widgets/content.ts. */}
       <ClippedImageSection
         id="kampanjer"
         eyebrow="MARKNADSFÖRING"
         title="Kampanjer"
         imageSide="right"
+        sticky={false}
         background="white"
         body={[
-          'Här står den bärande texten om kampanjer. Skriv ungefär så här mycket text så att sektionen väger jämnt mot sektion 1 och 4.',
+          'Här står den bärande texten om kampanjer. Skriv ungefär så här mycket text så att sektionen väger jämnt mot sektion 2 och 4.',
           'Här står ett andra stycke om vad du kan mäta och följa upp.',
         ]}
-        image={{
-          src: `${IMG}/06-kampanjer.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för sektionen Kampanjer',
-        }}
+        media={
+          <div className="px-4 py-6 md:p-8 lg:px-14 lg:pb-28 lg:pt-16" style={WIDGET_BACKDROP}>
+            <CampaignWidgets />
+          </div>
+        }
       />
 
-      {/* 7 – Prenumerationer. */}
+      {/* 7 – Prenumerationer. Den löpande driften som ett rutnät med olika
+          stora rutor (sektion 3 visar redan skapandet). Exempelinnehållet –
+          ett fiktivt rosteri och dess egna nivåer, inte våra paket – ligger i
+          for-dig/subscription-widgets/content.ts. */}
       <FullBleedImageSection
         id="prenumerationer"
         eyebrow="ÅTERKOMMANDE INTÄKTER"
@@ -241,11 +216,9 @@ export function PrivatForDigSections() {
           // TODO: pris
           'Här står ett andra stycke. Om prisnivån ska nämnas någonstans är det troligen här – den får inte in förrän prissättningen är bekräftad.',
         ]}
-        image={{
-          src: `${IMG}/07-prenumerationer.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för sektionen Prenumerationer',
-        }}
-      />
+      >
+        <SubscriptionWidgets />
+      </FullBleedImageSection>
 
       {/* 8 – Så kommer du igång. */}
       <GettingStartedSection

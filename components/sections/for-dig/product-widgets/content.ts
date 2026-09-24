@@ -18,7 +18,7 @@ export type Product = { id: string; name: string; price: number; image: ProductI
 export type ProductGridContent = {
   /** Accessible name for the product list. */
   label: string;
-  /** At most 15 are shown (the widest layout); the order decides which. */
+  /** Shown in order: all 16 on wide containers, the first 9 on narrow ones. */
   products: Product[];
 };
 

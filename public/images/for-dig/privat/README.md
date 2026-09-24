@@ -16,33 +16,34 @@ bilder. Ersätt dem en och en med riktiga bilder.
 
 Sidan körs med `images.unoptimized: true` i `next.config.ts`, så bilderna
 serveras exakt som de laddas upp – **komprimera innan du lägger in dem.**
-Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per panelbild.
+Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per klippt bild.
 
 ## Bildplatser
 
+Sektionsnumren räknar heron som 1 och följer sidans ordning uppifrån – samma
+nummer som i kommentarerna i `PrivatForDigSections.tsx`. Filnamnens prefix
+är sektionens nummer.
+
 | Filnamn | Sektion | Typ | Rek. upplösning | Format (aspect ratio) | Anmärkning |
 |---|---|---|---|---|---|
-| *(video, se nedan)* | 1. Vi bygger din hemsida | Clipped, höger sida, **video** | 1080 × 1920 | **9:16** (stående) | Loopande video i stället för bild – se [Video](#video--vi-bygger-din-hemsida). Beskärs med samma rundade, asymmetriska mask. |
-| *(ingen fil)* | 2. Börja ta betalt | Ingen bakgrundsbild | – | – | Sektionen visar tre UI-kort (`PaymentCards`). Mittenkortets bildyta tar en valfri `checkout.image` (ca 4:3, motivet beskärs till en bred remsa); utan bild visas en CSS-platshållare. |
-| *(ingen fil)* | 3. Allt du kan göra → panel 1 | Widgets i stället för bild | – | – | Panelen visar `ProductWidgets` (produktgrid, dialogen Lägg till ny produkt, bokningsbar tjänst). Produktbilderna ligger i `produkter/`, se nedan. |
-| *(ingen fil)* | 3. Allt du kan göra → panel 2 | Widgets i stället för bild | – | – | Panelen visar `InvoiceWidgets` (fakturalista, dialogen Ny faktura, förhandsgranskad faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
-| *(ingen fil)* | 3. Allt du kan göra → panel 3 | Widgets i stället för bild | – | – | Panelen visar `CampaignWidgets` (grid med nedsatta produkter, dialogen Ny kampanj, kampanjkod, nedsatt produktkort). Alla produktbilder pekar på den befintliga `produkter/13-sneakers.svg` – byt `src` per produkt i `campaign-widgets/content.ts`. |
-| *(ingen fil)* | 3. Allt du kan göra → panel 4 | Widgets i stället för bild | – | – | Panelen visar `SubscriptionWidgets` (inkommande betalningar, kundens tre prenumerationsnivåer, dialogen Ny prenumeration). Inga bilder. |
-| `04-lagg-upp-produkter.svg` | 4. Lägg upp dina produkter eller tjänster | Clipped, **vänster** sida | 1600 × 2000 | **4:5** (stående) | Speglad mot sektion 1 – masken är spegelvänd. |
-| `05-fakturor.svg` | 5. Fakturor | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Som sektion 2. |
-| `06-kampanjer.svg` | 6. Kampanjer | Clipped, höger sida | 1600 × 2000 | **4:5** (stående) | Samma sida som sektion 1. |
-| `07-prenumerationer.svg` | 7. Prenumerationer | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Som sektion 2. |
+| *(video, se nedan)* | 2. Vi bygger din hemsida | Clipped, höger sida, **video** | 1080 × 1920 | **9:16** (stående) | Loopande video i stället för bild – se [Video](#video--vi-bygger-din-hemsida). Beskärs med samma rundade, asymmetriska mask. |
+| *(ingen fil)* | 3. Börja ta betalt | Ingen bakgrundsbild | – | – | Sektionen visar tre UI-kort (`PaymentCards`). Mittenkortets bildyta tar en valfri `checkout.image` (ca 4:3, motivet beskärs till en bred remsa); utan bild visas en CSS-platshållare. |
+| *(ingen fil)* | 4. Lägg upp dina produkter eller tjänster | Clipped, vänster – widgets | – | – | Klippformen visar `ProductWidgets` (produktgrid, dialogen Lägg till ny produkt, bokningsbar tjänst). Produktbilderna ligger i `produkter/`, se nedan. |
+| *(ingen fil)* | 5. Fakturor | Fullbredd, svart – widgets | – | – | Under texten ligger `InvoiceWidgets` som ett appfönster (fakturalista, förhandsgranskad faktura, dialogen Ny faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
+| *(ingen fil)* | 6. Kampanjer | Clipped, höger – widgets | – | – | Klippformen visar `CampaignWidgets` som kollage (dialogen Ny kampanj, nedsatt produktkort, kampanjkod, rad med nedsatta produkter). Alla produktbilder pekar på `produkter/13-sneakers.svg` – byt `src` per produkt i `campaign-widgets/content.ts`. |
+| *(ingen fil)* | 7. Prenumerationer | Fullbredd, svart – widgets | – | – | Under texten ligger `SubscriptionWidgets` som ett rutnät (inkommande betalningar, kundens tre nivåer, dialogen Ny prenumeration). Inga bilder. |
 | `09-avslutande-cta.svg` | 9. Avslutande CTA | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Mörkare motiv fungerar bäst – knapparna ligger ovanpå. |
 
 ### Produktbilder – `produkter/`
 
-Bildplatser i produktgriden i panelen *Produkter & tjänster*. 16 filer,
+Bildplatser i produktgriden i sektion 4, *Lägg upp dina produkter eller
+tjänster*. 16 filer,
 `01-loparsko.svg` … `16-kappa.svg`, kopplade via `id` i
 `components/sections/for-dig/product-widgets/content.ts`.
 
 | Filnamn | Typ | Rek. upplösning | Format (aspect ratio) | Anmärkning |
 |---|---|---|---|---|
-| `01-loparsko.svg` … `16-kappa.svg` | Produktbild i grid | 800 × 800 | **1:1** (kvadrat) | Visas som miniatyr, ca 70–90 px bred. Rutans höjd följer panelen, så bilden beskärs lätt (`object-cover`) till mellan ca 4:5 och 5:4 – håll plagget centrerat med luft runt. Ljus, lugn bakgrund; inga loggor på plaggen. |
+| `01-loparsko.svg` … `16-kappa.svg` | Produktbild i grid | 800 × 800 | **1:1** (kvadrat) | Visas kvadratisk, ca 95–135 px bred (3 kolumner i mobil, 4 på desktop). Håll plagget centrerat med luft runt. Ljus, lugn bakgrund; inga loggor på plaggen. |
 
 Platshållarna saknar måttetikett i själva bilden, till skillnad från övriga
 platshållare – i miniatyrstorlek blir texten bara brus. Måtten står här.
@@ -50,9 +51,12 @@ platshållare – i miniatyrstorlek blir texten bara brus. Måtten står här.
 Sektion **8 (Så kommer du igång)** har medvetet ingen bild – den är ren
 typografi.
 
+Sektionen *Allt du kan göra* (horisontell scroll med fyra paneler) är
+borttagen; dess widgets ligger nu i sektion 4–7 ovan.
+
 ## Video – Vi bygger din hemsida
 
-Sektion 1 visar en video i stället för bild. Filerna ligger **inte** i den här
+Sektion 2 visar en video i stället för bild. Filerna ligger **inte** i den här
 mappen utan i `public/videos/`:
 
 | Fil | Innehåll |
@@ -89,12 +93,13 @@ omräknade, modellen skalad och placerad för scenen.
 
 Licensen kräver attribution där verket används – alltså även i den här sidan,
 inte bara i source-motion. Den synliga krediteringen för besökare står som en
-grå rad under CTA:n i sektion 1 (`PrivatForDigSections.tsx`). Ta inte bort den
+grå rad under CTA:n i sektion 2 (`PrivatForDigSections.tsx`). Ta inte bort den
 eller den här noteringen så länge videon används.
 
 ## Kontrast – läs innan du väljer bild
 
-Text ligger ovanpå bild i sektion 2, 5, 7 och 9. De sektionerna lägger på en
+Text ligger ovanpå bild bara i sektion 9 (avslutande CTA). Fullbredds-
+sektionen lägger på en
 dubbel overlay (`bg-black/55` + en radiell vinjett) som ger ca 84 % effektiv
 svärta i mitten. Det räcker för vit text (≈ 5:1) **även mot en helvit bild**.
 
