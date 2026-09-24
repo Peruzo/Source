@@ -29,16 +29,6 @@ import { ProductWidgets } from './ProductWidgets';
 
 const IMG = '/images/for-dig/privat';
 
-/*
- * Mörk bakgrund bakom widgetarna i de klippta sektionerna (4 och 6). Luften
- * på den sida där klippformen har sitt djupa hörn (10rem på lg) håller
- * widgetarna fria från kurvan.
- */
-const WIDGET_BACKDROP = {
-  background:
-    'radial-gradient(120% 90% at 100% 0%, rgba(0,128,109,0.55) 0%, transparent 60%), var(--color-black-tertiary)',
-};
-
 const steps: GettingStartedStep[] = [
   {
     number: '01',
@@ -78,6 +68,7 @@ export function PrivatForDigSections() {
         eyebrow="DIN HEMSIDA"
         title="Vi bygger din hemsida"
         imageSide="right"
+        sticky={false}
         background="white"
         body={[
           'Här står den bärande texten i sektionen. Den får vara några rader längre än på övriga sektioner, eftersom det är den här sidan ska landa hos besökaren. Skriv ungefär så här mycket.',
@@ -146,8 +137,8 @@ export function PrivatForDigSections() {
         <PaymentCards />
       </FullBleedImageSection>
 
-      {/* 4 – Lägg upp dina produkter eller tjänster. Klippformen till vänster,
-          texten står fast medan butiken – en hög kolumn – scrollar förbi.
+      {/* 4 – Lägg upp dina produkter eller tjänster. Widgetarna till vänster
+          på vit bakgrund, texten centrerad bredvid.
           Exempelinnehållet (fiktiv butik, kundens priser) ligger i
           for-dig/product-widgets/content.ts. */}
       <ClippedImageSection
@@ -155,13 +146,14 @@ export function PrivatForDigSections() {
         eyebrow="PRODUKTER & TJÄNSTER"
         title="Lägg upp dina produkter eller tjänster"
         imageSide="left"
+        sticky={false}
         background="white"
         body={[
           'Här står den bärande texten om hur du lägger upp det du säljer. Skriv ungefär så här mycket – tre till fyra rader på desktop.',
           'Här står ett andra stycke som förklarar vad du kan styra själv och vad vi gör åt dig.',
         ]}
         media={
-          <div className="px-4 py-6 md:p-8 lg:px-14 lg:pb-16 lg:pt-28" style={WIDGET_BACKDROP}>
+          <div className="lg:py-16 lg:pl-20 lg:pr-4">
             <ProductWidgets />
           </div>
         }
@@ -182,8 +174,8 @@ export function PrivatForDigSections() {
         <InvoiceWidgets />
       </FullBleedImageSection>
 
-      {/* 6 – Kampanjer. Klippformen till höger som sektion 2, men ett kompakt
-          kollage i stället för en hög kolumn – därför inte fastlåst text.
+      {/* 6 – Kampanjer. Kollaget till höger på vit bakgrund, texten
+          centrerad bredvid.
           Exempelinnehållet ligger i for-dig/campaign-widgets/content.ts. */}
       <ClippedImageSection
         id="kampanjer"
@@ -197,7 +189,7 @@ export function PrivatForDigSections() {
           'Här står ett andra stycke om vad du kan mäta och följa upp.',
         ]}
         media={
-          <div className="px-4 py-6 md:p-8 lg:px-14 lg:pb-28 lg:pt-16" style={WIDGET_BACKDROP}>
+          <div className="lg:py-16 lg:pl-4 lg:pr-20">
             <CampaignWidgets />
           </div>
         }

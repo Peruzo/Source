@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import type { AddProductContent, ProductGridContent, ServiceBookingContent } from './content';
 import {
+  CARD_EDGE,
   Field,
   PlusIcon,
   RADIUS,
@@ -156,7 +157,9 @@ export function PressedAddButton() {
 }
 
 /**
- * 3 – A bookable service instead of a product. The time slots are the one
+ * 3 – A bookable service instead of a product. In a container of 36rem or
+ * more it lays out wide – name and price left, times and button right – so it
+ * carries the same weight as the product grid above it. The time slots are the one
  * thing here that carries state, so they are real radio buttons (native
  * inputs, arrow keys move between them); the book button is illustration.
  */
@@ -174,48 +177,52 @@ export function ServiceBooking({
     <div
       role="group"
       aria-labelledby={titleId}
-      className={`w-full bg-white p-5 text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.card}`}
+      className={`w-full bg-white p-5 text-left text-black @xl:grid @xl:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] @xl:items-end @xl:gap-8 @xl:p-7 ${CARD_EDGE} ${RADIUS.card}`}
     >
-      <h3 id={titleId} className="text-ui-title">
-        {content.name}
-      </h3>
-      <p className="text-ui-label mt-0.5 text-gray-600">{content.details}</p>
-      <p className="text-ui-amount mt-4 tabular-nums">{formatMoney(content.price, currency, locale)}</p>
-
-      <div className="mt-5">
-        <p id={timesId} className="text-ui-label font-semibold text-gray-600">
-          {content.timesHeading}
-        </p>
-        <div role="radiogroup" aria-labelledby={timesId} className="mt-2 grid grid-cols-3 gap-2">
-          {content.times.map((time) => {
-            const checked = time.id === selected;
-            return (
-              <label key={time.id} className="relative block cursor-pointer">
-                <input
-                  type="radio"
-                  name={groupName}
-                  value={time.id}
-                  checked={checked}
-                  onChange={() => setSelected(time.id)}
-                  className="peer sr-only"
-                />
-                <span
-                  className={`text-ui-body block border py-1.5 text-center tabular-nums transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-teal peer-focus-visible:ring-offset-2 ${RADIUS.control} ${
-                    checked
-                      ? 'border-teal-dark bg-teal-dark text-white'
-                      : 'border-gray-500 bg-white text-black'
-                  }`}
-                >
-                  {time.label}
-                </span>
-              </label>
-            );
-          })}
-        </div>
+      <div>
+        <h3 id={titleId} className="text-ui-title">
+          {content.name}
+        </h3>
+        <p className="text-ui-label mt-0.5 text-gray-600">{content.details}</p>
+        <p className="text-ui-amount mt-4 tabular-nums">{formatMoney(content.price, currency, locale)}</p>
       </div>
 
-      <div className="mt-5">
-        <FauxBlockButton tone="dark">{content.bookLabel}</FauxBlockButton>
+      <div>
+        <div className="mt-5 @xl:mt-0">
+          <p id={timesId} className="text-ui-label font-semibold text-gray-600">
+            {content.timesHeading}
+          </p>
+          <div role="radiogroup" aria-labelledby={timesId} className="mt-2 grid grid-cols-3 gap-2">
+            {content.times.map((time) => {
+              const checked = time.id === selected;
+              return (
+                <label key={time.id} className="relative block cursor-pointer">
+                  <input
+                    type="radio"
+                    name={groupName}
+                    value={time.id}
+                    checked={checked}
+                    onChange={() => setSelected(time.id)}
+                    className="peer sr-only"
+                  />
+                  <span
+                    className={`text-ui-body block border py-1.5 text-center tabular-nums transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-teal peer-focus-visible:ring-offset-2 ${RADIUS.control} ${
+                      checked
+                        ? 'border-teal-dark bg-teal-dark text-white'
+                        : 'border-gray-500 bg-white text-black'
+                    }`}
+                  >
+                    {time.label}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-5 @xl:mt-4">
+          <FauxBlockButton tone="dark">{content.bookLabel}</FauxBlockButton>
+        </div>
       </div>
     </div>
   );

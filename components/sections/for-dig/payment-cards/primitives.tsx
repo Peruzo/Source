@@ -17,6 +17,13 @@ export const RADIUS = {
   control: 'rounded-full',
 } as const;
 
+/**
+ * Edge for cards that sit on a WHITE page background: a hairline plus a soft
+ * shadow, so a white card still reads as a card without a dark backdrop.
+ * The line is decoration, not a control boundary (no 3:1 requirement).
+ */
+export const CARD_EDGE = 'ring-1 ring-gray-200 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.25)]';
+
 /** Swedish money format: "1 245,00 kr". Non-breaking space as thousands separator. */
 export function formatMoney(amount: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
