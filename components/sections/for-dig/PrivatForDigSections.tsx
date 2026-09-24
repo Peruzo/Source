@@ -8,6 +8,7 @@ import { GettingStartedSection, type GettingStartedStep } from './GettingStarted
 import { HorizontalScrollSection, type ScrollPanel } from './HorizontalScrollSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
 import { PaymentCards } from './PaymentCards';
+import { ProductWidgets } from './ProductWidgets';
 
 /*
  * INNEHÅLL – "För dig / Privat"
@@ -30,10 +31,9 @@ const panels: ScrollPanel[] = [
     id: 'produkter',
     title: 'Produkter & tjänster',
     body: 'Här står en kort text om vad du kan lägga upp och hur du håller det uppdaterat. Två till tre rader är lagom i den här panelen.',
-    image: {
-      src: `${IMG}/03-panel-produkter.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Produkter & tjänster',
-    },
+    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktiv butik,
+    // kundens priser) ligger i for-dig/product-widgets/content.ts.
+    media: <ProductWidgets />,
   },
   {
     id: 'fakturor',
