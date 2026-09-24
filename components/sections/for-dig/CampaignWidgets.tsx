@@ -25,16 +25,18 @@ type CampaignWidgetsProps = Partial<CampaignWidgetsContent>;
 /**
  * Visual for "Kampanjer": a compact collage read at a glance – the opposite
  * rhythm of the tall scrolling column in the products section. The "Ny
- * kampanj" dialog, the discounted product card overlapping its edge, the
- * discount code laid over the card's foot like a coupon, and a row of
- * discounted products below. Overlaps only ever cover padding, never text.
+ * kampanj" dialog with the discount code tucked under it, the discounted
+ * product card standing tall beside both (overlapping the dialog's edge), and
+ * a row of discounted products below. Both columns carry content all the way
+ * down – no hole – and overlaps only ever cover padding, never text.
  *
  * Natural height, transparent – built to sit on a white page: every card has
  * a hairline and a soft shadow (CARD_EDGE) instead of relying on a dark
  * backdrop. Reads only its OWN width (container queries) so it renders the
  * same in isolation (Remotion texture). Two steps:
  *   < 576 px  stacked: product card → code → dialog → 3 × 2 sale grid
- *   ≥ 576 px  overlapping collage, sale grid 6 × 1
+ *   ≥ 576 px  collage: dialog + code left, tall product card right,
+ *             sale grid 6 × 1 below
  * Overlap is plain grid placement + negative margins; no transforms, so the
  * cards keep their exact sizes.
  */
@@ -56,11 +58,11 @@ export function CampaignWidgets(props: CampaignWidgetsProps) {
           <CreateCampaignDialog content={create} products={grid.products} fields="full" {...money} />
         </div>
 
-        <div className="relative z-10 order-1 @xl:order-none @xl:col-span-5 @xl:col-start-8 @xl:row-start-1 @xl:-ml-3 @xl:mt-12">
-          <SaleProductCard product={card.product} {...sale} />
+        <div className="relative z-10 order-1 @xl:order-none @xl:col-span-5 @xl:col-start-8 @xl:row-span-2 @xl:row-start-1 @xl:-ml-3 @xl:self-center">
+          <SaleProductCard product={card.product} imageClassName="aspect-[4/3] @xl:aspect-[4/5]" {...sale} />
         </div>
 
-        <div className="relative z-20 order-2 @xl:order-none @xl:col-span-5 @xl:col-start-8 @xl:row-start-2 @xl:-mt-3 @xl:ml-6 @xl:-mr-2">
+        <div className="relative z-20 order-2 @xl:order-none @xl:col-span-6 @xl:col-start-2 @xl:row-start-2 @xl:mt-4">
           <CampaignCode content={code} rate={discountRate} locale={locale} />
         </div>
 

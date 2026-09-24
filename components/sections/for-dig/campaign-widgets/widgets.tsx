@@ -80,14 +80,18 @@ function PriceRow({
   );
 }
 
-/** 3 – The discounted product, as a card: photo, name, prices, badge. */
+/**
+ * 3 – The discounted product, as a card: photo, name, prices, badge.
+ * `imageClassName` sets the photo's aspect ratio (default 4:3).
+ */
 export function SaleProductCard({
   product,
   rate,
   labels,
   currency,
   locale,
-}: { product: SaleProduct; rate: number; labels: PriceLabels } & MoneyFormat) {
+  imageClassName = 'aspect-[4/3]',
+}: { product: SaleProduct; rate: number; labels: PriceLabels; imageClassName?: string } & MoneyFormat) {
   const titleId = useId();
 
   return (
@@ -96,7 +100,7 @@ export function SaleProductCard({
       aria-labelledby={titleId}
       className={`flex w-full flex-col overflow-hidden bg-white text-left text-black ${CARD_EDGE} ${RADIUS.card}`}
     >
-      <div className="relative aspect-[4/3] bg-gray-100">
+      <div className={`relative bg-gray-100 ${imageClassName}`}>
         {/* Plain <img>: must render outside Next (Remotion). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
