@@ -109,14 +109,48 @@ export function PrivatForDigSections() {
           'Här står ett andra stycke som tar hand om invändningen. Två till tre meningar räcker – det ska kännas lugnt, inte som en argumentlista.',
           'Här står ett kort avslutande stycke som leder vidare till nästa sektion.',
         ]}
-        image={{
-          src: `${IMG}/01-vi-bygger.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för sektionen Vi bygger din hemsida',
+        // Renderad i ~/projects/source-motion, se README i public/images/for-dig/privat/.
+        video={{
+          src: '/videos/vi-bygger-din-hemsida.mp4',
+          poster: '/videos/vi-bygger-din-hemsida-poster.webp',
+          alt: 'En laptop där en webbutik byggs upp på skärmen och scrollas igenom, från tom skärm till färdig startsida med produkter och erbjudanden.',
         }}
       >
         <Button href="/kontakt" variant="primary" size="lg">
           Placeholder – primär knapp
         </Button>
+        {/* CC BY 4.0 kräver synlig kreditering där verket används. Ta bort
+            raden bara om videon tas bort. Se README i public/images/for-dig/privat/. */}
+        <p className="mt-6 text-xs leading-relaxed text-gray-500">
+          3D-modell i videon:{' '}
+          <a
+            href="https://sketchfab.com/3d-models/modern-slim-laptop-fbf172f8b14241feab581dcb1fbcd475"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-gray-700"
+          >
+            ”Modern Slim Laptop”
+          </a>{' '}
+          av{' '}
+          <a
+            href="https://sketchfab.com/Mraz3D"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 hover:text-gray-700"
+          >
+            Blaž Mraz
+          </a>
+          ,{' '}
+          <a
+            href="http://creativecommons.org/licenses/by/4.0/"
+            target="_blank"
+            rel="noopener noreferrer license"
+            className="underline underline-offset-2 hover:text-gray-700"
+          >
+            CC BY 4.0
+          </a>
+          , bearbetad.
+        </p>
       </ClippedImageSection>
 
       {/* 2 – Börja ta betalt. Ingen bakgrundsbild – visualen är de tre

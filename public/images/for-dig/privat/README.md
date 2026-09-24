@@ -22,7 +22,7 @@ Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per panelbild.
 
 | Filnamn | Sektion | Typ | Rek. upplösning | Format (aspect ratio) | Anmärkning |
 |---|---|---|---|---|---|
-| `01-vi-bygger.svg` | 1. Vi bygger din hemsida | Clipped, höger sida | 1600 × 2000 | **4:5** (stående) | Beskärs med rundad, asymmetrisk mask. Håll motivet centrerat – kanterna kapas. Scrollar förbi sticky text på desktop, så bildens överkant och underkant syns aldrig samtidigt. |
+| *(video, se nedan)* | 1. Vi bygger din hemsida | Clipped, höger sida, **video** | 1080 × 1920 | **9:16** (stående) | Loopande video i stället för bild – se [Video](#video--vi-bygger-din-hemsida). Beskärs med samma rundade, asymmetriska mask. |
 | *(ingen fil)* | 2. Börja ta betalt | Ingen bakgrundsbild | – | – | Sektionen visar tre UI-kort (`PaymentCards`). Mittenkortets bildyta tar en valfri `checkout.image` (ca 4:3, motivet beskärs till en bred remsa); utan bild visas en CSS-platshållare. |
 | *(ingen fil)* | 3. Allt du kan göra → panel 1 | Widgets i stället för bild | – | – | Panelen visar `ProductWidgets` (produktgrid, dialogen Lägg till ny produkt, bokningsbar tjänst). Produktbilderna ligger i `produkter/`, se nedan. |
 | *(ingen fil)* | 3. Allt du kan göra → panel 2 | Widgets i stället för bild | – | – | Panelen visar `InvoiceWidgets` (fakturalista, dialogen Ny faktura, förhandsgranskad faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
@@ -49,6 +49,48 @@ platshållare – i miniatyrstorlek blir texten bara brus. Måtten står här.
 
 Sektion **8 (Så kommer du igång)** har medvetet ingen bild – den är ren
 typografi.
+
+## Video – Vi bygger din hemsida
+
+Sektion 1 visar en video i stället för bild. Filerna ligger **inte** i den här
+mappen utan i `public/videos/`:
+
+| Fil | Innehåll |
+|---|---|
+| `vi-bygger-din-hemsida.mp4` | 15 s, 1080 × 1920, H.264, inget ljud, ca 2,3 MB. Spelas `autoplay muted loop playsinline`. |
+| `vi-bygger-din-hemsida-poster.webp` | Stillbild från 14,5 s (slutläget – sidan är färdigbyggd). Visas innan videon startar och **i stället för** videon för den som valt minskad rörelse (`prefers-reduced-motion`). |
+
+**Källa:** videon renderas i Remotion-projektet `~/projects/source-motion`.
+Byt inte ut den här för hand – ändra där och rendera om:
+
+```bash
+cd ~/projects/source-motion && npm run render:web
+```
+
+Det skriver `out/web.mp4`. Kopiera den hit som `vi-bygger-din-hemsida.mp4` och
+ta fram en ny poster från samma ögonblick (ffmpeg-bygget saknar WebP-encoder,
+så gå via PNG):
+
+```bash
+ffmpeg -ss 14.5 -i public/videos/vi-bygger-din-hemsida.mp4 -frames:v 1 poster.png
+node -e "require('sharp')('poster.png').webp({quality:82}).toFile('public/videos/vi-bygger-din-hemsida-poster.webp')"
+```
+
+Justera `-ss` om videons längd ändras – postern ska vara slutläget.
+
+### Attribution (CC BY 4.0) – krävs
+
+Laptopmodellen i videon är
+["Modern Slim Laptop"](https://sketchfab.com/3d-models/modern-slim-laptop-fbf172f8b14241feab581dcb1fbcd475)
+av [Blaž Mraz (Mraz3D)](https://sketchfab.com/Mraz3D), licensierad under
+[CC BY 4.0](http://creativecommons.org/licenses/by/4.0/).
+Ändringar: skärmens material ersatt med en egen textur, skärmens UV-koordinater
+omräknade, modellen skalad och placerad för scenen.
+
+Licensen kräver attribution där verket används – alltså även i den här sidan,
+inte bara i source-motion. Den synliga krediteringen för besökare står som en
+grå rad under CTA:n i sektion 1 (`PrivatForDigSections.tsx`). Ta inte bort den
+eller den här noteringen så länge videon används.
 
 ## Kontrast – läs innan du väljer bild
 
