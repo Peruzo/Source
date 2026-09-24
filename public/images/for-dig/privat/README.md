@@ -26,7 +26,7 @@ Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per panelbild.
 | *(ingen fil)* | 2. Börja ta betalt | Ingen bakgrundsbild | – | – | Sektionen visar tre UI-kort (`PaymentCards`). Mittenkortets bildyta tar en valfri `checkout.image` (ca 4:3, motivet beskärs till en bred remsa); utan bild visas en CSS-platshållare. |
 | `03-panel-produkter.svg` | 3. Allt du kan göra → panel 1 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Visas i rundad ruta, `object-cover`. |
 | `03-panel-fakturor.svg` | 3. Allt du kan göra → panel 2 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
-| `03-panel-kampanjer.svg` | 3. Allt du kan göra → panel 3 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
+| *(ingen fil)* | 3. Allt du kan göra → panel 3 | Widgets i stället för bild | – | – | Panelen visar `CampaignWidgets` (grid med nedsatta produkter, dialogen Ny kampanj, kampanjkod, nedsatt produktkort). Alla produktbilder pekar på den befintliga `produkter/13-sneakers.svg` – byt `src` per produkt i `campaign-widgets/content.ts`. |
 | `03-panel-prenumerationer.svg` | 3. Allt du kan göra → panel 4 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
 | `04-lagg-upp-produkter.svg` | 4. Lägg upp dina produkter eller tjänster | Clipped, **vänster** sida | 1600 × 2000 | **4:5** (stående) | Speglad mot sektion 1 – masken är spegelvänd. |
 | `05-fakturor.svg` | 5. Fakturor | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Som sektion 2. |
