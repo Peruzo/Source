@@ -61,7 +61,7 @@ export type SaleProductCardContent = {
 
 export type SaleGridContent = {
   title: string;
-  /** Shown in order; the layout decides how many fit. */
+  /** Shown in order – all of them (six by default). */
   products: SaleProduct[];
 };
 
@@ -114,5 +114,5 @@ export const campaignWidgetsDefaults: CampaignWidgetsContent = {
     usage: { label: 'Får användas', value: '100 gånger' },
   },
   card: { product: products[0] },
-  grid: { title: 'Kampanjer', products },
+  grid: { title: 'På rea nu', products },
 };

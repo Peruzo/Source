@@ -6,7 +6,6 @@ import {
   Field,
   PlusIcon,
   RADIUS,
-  Subheading,
   formatMoney,
 } from '../payment-cards/primitives';
 
@@ -15,39 +14,31 @@ import {
  * primitives, the three radii (card 24 / field 12 / control pill) and the
  * `.text-ui-*` scale are shared – so both sections read as one product.
  *
- * Every widget fills the box it is given and nothing more; none of them know
+ * Every widget sizes itself from its content and its own width; none of them know
  * about the page, so each can be rendered on its own (Remotion texture).
  */
 
 type MoneyFormat = { currency: string; locale: string };
 
 /**
- * 1 – Dense product grid. Shows exactly `columns × rows` products and stretches
- * the rows to fill the height, so the grid always ends flush with its box –
- * no half-cut row at the bottom. The photo takes the slack (object-cover), the
- * name and price never shrink.
+ * 1 – Dense product grid with square photos, so it has a natural height and
+ * never depends on the box around it. `className` sets the column count and
+ * may hide trailing items per container width, e.g.
+ * `grid-cols-3 @xl:grid-cols-4 [&>li:nth-child(n+10)]:hidden
+ * @xl:[&>li:nth-child(n+10)]:flex`. Hidden items are `display: none`, so they
+ * are out of the accessibility tree as well.
  */
 export function ProductGrid({
   content,
-  columns,
-  rows,
+  className = 'grid-cols-4',
   currency,
   locale,
-}: { content: ProductGridContent; columns: number; rows: number } & MoneyFormat) {
-  const visible = content.products.slice(0, columns * rows);
-
+}: { content: ProductGridContent; className?: string } & MoneyFormat) {
   return (
-    <ul
-      aria-label={content.label}
-      className="grid h-full w-full gap-x-2 gap-y-2.5"
-      style={{
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-      }}
-    >
-      {visible.map((product) => (
-        <li key={product.id} className="flex min-h-0 flex-col">
-          <div className={`relative min-h-0 flex-1 overflow-hidden bg-gray-100 ${RADIUS.field}`}>
+    <ul aria-label={content.label} className={`grid w-full gap-x-2.5 gap-y-3 ${className}`}>
+      {content.products.map((product) => (
+        <li key={product.id} className="flex min-w-0 flex-col">
+          <div className={`relative aspect-square overflow-hidden bg-gray-100 ${RADIUS.field}`}>
             {/* Plain <img>: must render outside Next (Remotion), see PaymentCards. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -155,7 +146,7 @@ export function PressedAddButton() {
   return (
     <span
       aria-hidden="true"
-      className={`flex h-11 w-11 scale-95 items-center justify-center bg-teal-dark text-white shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] ring-4 ring-white/70 ${RADIUS.control}`}
+      className={`relative z-10 flex h-11 w-11 scale-95 items-center justify-center bg-teal-dark text-white shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] ring-4 ring-white/70 ${RADIUS.control}`}
     >
       <span className="scale-[1.4]">
         <PlusIcon />
@@ -192,9 +183,9 @@ export function ServiceBooking({
       <p className="text-ui-amount mt-4 tabular-nums">{formatMoney(content.price, currency, locale)}</p>
 
       <div className="mt-5">
-        <Subheading>
-          <span id={timesId}>{content.timesHeading}</span>
-        </Subheading>
+        <p id={timesId} className="text-ui-label font-semibold text-gray-600">
+          {content.timesHeading}
+        </p>
         <div role="radiogroup" aria-labelledby={timesId} className="mt-2 grid grid-cols-3 gap-2">
           {content.times.map((time) => {
             const checked = time.id === selected;

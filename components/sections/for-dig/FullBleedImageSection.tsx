@@ -14,7 +14,7 @@ type FullBleedImageSectionProps = {
   body: string[];
   /**
    * Background photo. Omit it for a plain black section whose visual is the
-   * `children` instead – section 3 carries PaymentCards that way.
+   * `children` instead – sections 3, 5 and 7 carry their UI widgets that way.
    */
   image?: SectionImage;
   /** `tall` fills the viewport, `regular` is a calmer band. */
@@ -30,7 +30,7 @@ const heights: Record<NonNullable<FullBleedImageSectionProps['height']>, string>
 
 /**
  * Full-bleed section: image covers the whole section, text centred on top.
- * Sections 2, 5, 7 and 9 of the Privat page.
+ * Sections 3, 5, 7 and 9 of the Privat page (the hero counts as 1).
  *
  * Contrast: a flat `bg-black/55` plus a centred radial vignette gives roughly
  * 84% effective black where the text sits. White text clears WCAG AA (~5:1)

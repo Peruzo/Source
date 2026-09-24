@@ -18,7 +18,7 @@ import { Field, RADIUS, formatMoney } from '../payment-cards/primitives';
  *
  * The discount type is the one piece of state here, so it is a real radio
  * group. Everything else that looks like a control is illustration and is
- * not focusable. Every widget fills the box it is given and knows nothing
+ * not focusable. Every widget sizes itself from its content and knows nothing
  * about the page, so each can be rendered on its own (Remotion texture).
  */
 
@@ -94,9 +94,9 @@ export function SaleProductCard({
     <div
       role="group"
       aria-labelledby={titleId}
-      className={`flex h-full w-full flex-col overflow-hidden bg-white text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.card}`}
+      className={`flex w-full flex-col overflow-hidden bg-white text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.card}`}
     >
-      <div className="relative min-h-0 flex-1 bg-gray-100">
+      <div className="relative aspect-[4/3] bg-gray-100">
         {/* Plain <img>: must render outside Next (Remotion). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -121,14 +121,13 @@ export function SaleProductCard({
 }
 
 /**
- * 3, narrow fallback – a small grid of discounted products. Shows exactly
- * `columns × rows`; rows stretch to fill the height and the photo takes the
- * slack, so no tile is ever cut off by the box.
+ * 3, as a grid – several discounted products with square photos (natural
+ * height). `className` sets the column count and may hide trailing items per
+ * container width, like ProductGrid.
  */
 export function SaleGrid({
   products,
-  columns,
-  rows,
+  className = 'grid-cols-3',
   rate,
   labels,
   currency,
@@ -136,24 +135,16 @@ export function SaleGrid({
   badges = true,
 }: {
   products: SaleProduct[];
-  columns: number;
-  rows: number;
+  className?: string;
   rate: number;
   labels: PriceLabels;
-  /** Off where a dialog's edge would slice through the badges. */
   badges?: boolean;
 } & MoneyFormat) {
   return (
-    <ul
-      className="grid h-full w-full gap-x-2 gap-y-2.5"
-      style={{
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-      }}
-    >
-      {products.slice(0, columns * rows).map((product) => (
-        <li key={product.id} className="flex min-h-0 flex-col">
-          <div className={`relative min-h-0 flex-1 overflow-hidden bg-gray-100 ${RADIUS.field}`}>
+    <ul className={`grid w-full gap-x-2.5 gap-y-3 ${className}`}>
+      {products.map((product) => (
+        <li key={product.id} className="flex min-w-0 flex-col">
+          <div className={`relative aspect-square overflow-hidden bg-gray-100 ${RADIUS.field}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.image.src}
@@ -171,24 +162,6 @@ export function SaleGrid({
         </li>
       ))}
     </ul>
-  );
-}
-
-/** Screen chrome around the grid: heading and the "Skapa kampanj" button. */
-export function CampaignScreenHeader({
-  title,
-  buttonLabel,
-  pressed,
-}: {
-  title: string;
-  buttonLabel: string;
-  pressed: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <h3 className="text-ui-title mr-auto">{title}</h3>
-      <CreateCampaignButton label={buttonLabel} pressed={pressed} />
-    </div>
   );
 }
 
@@ -339,7 +312,7 @@ export function CreateCampaignDialog({
         <DiscountTypeControl content={content.discountType} value={type} onChange={setType} />
 
         {fields === 'full' ? (
-          <div className="grid grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)] gap-2">
+          <div className="grid grid-cols-1 gap-2 @sm:grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)]">
             {valueField}
             <Field label={content.period.label}>
               <span className="block truncate tabular-nums">

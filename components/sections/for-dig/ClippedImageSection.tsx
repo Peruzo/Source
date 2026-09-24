@@ -13,7 +13,13 @@ type ClippedImageSectionProps = {
   title: ReactNode;
   /** One paragraph per array entry. */
   body: string[];
-  image: SectionImage;
+  image?: SectionImage;
+  /**
+   * Live content in the clipped shape instead of `image` (e.g. ProductWidgets).
+   * Takes precedence over `image`. Sets its own height and background – the
+   * shape wraps it instead of imposing the tall photo height.
+   */
+  media?: ReactNode;
   /** Which side the image sits on from `lg` and up. Mirror the layout with this. */
   imageSide?: 'left' | 'right';
   /** Keeps the text column pinned while the taller image column scrolls past. */
@@ -45,6 +51,7 @@ export function ClippedImageSection({
   title,
   body,
   image,
+  media,
   imageSide = 'right',
   sticky = true,
   background = 'white',
@@ -74,15 +81,20 @@ export function ClippedImageSection({
         >
           <motion.div
             {...reveal(0, 40)}
-            className={`relative h-[60svh] min-h-[380px] w-full overflow-hidden lg:h-[150vh] lg:min-h-[900px] ${clip}`}
+            className={`relative w-full overflow-hidden ${
+              media ? '' : 'h-[60svh] min-h-[380px] lg:h-[150vh] lg:min-h-[900px]'
+            } ${clip}`}
           >
-            <Image
-              src={image.src}
-              alt={image.alt}
-              fill
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover"
-            />
+            {media ??
+              (image ? (
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover"
+                />
+              ) : null)}
           </motion.div>
         </div>
 
