@@ -27,7 +27,7 @@ Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per panelbild.
 | `03-panel-produkter.svg` | 3. Allt du kan göra → panel 1 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Visas i rundad ruta, `object-cover`. |
 | *(ingen fil)* | 3. Allt du kan göra → panel 2 | Widgets i stället för bild | – | – | Panelen visar `InvoiceWidgets` (fakturalista, dialogen Ny faktura, förhandsgranskad faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
 | `03-panel-kampanjer.svg` | 3. Allt du kan göra → panel 3 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
-| `03-panel-prenumerationer.svg` | 3. Allt du kan göra → panel 4 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
+| *(ingen fil)* | 3. Allt du kan göra → panel 4 | Widgets i stället för bild | – | – | Panelen visar `SubscriptionWidgets` (inkommande betalningar, kundens tre prenumerationsnivåer, dialogen Ny prenumeration). Inga bilder. |
 | `04-lagg-upp-produkter.svg` | 4. Lägg upp dina produkter eller tjänster | Clipped, **vänster** sida | 1600 × 2000 | **4:5** (stående) | Speglad mot sektion 1 – masken är spegelvänd. |
 | `05-fakturor.svg` | 5. Fakturor | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Som sektion 2. |
 | `06-kampanjer.svg` | 6. Kampanjer | Clipped, höger sida | 1600 × 2000 | **4:5** (stående) | Samma sida som sektion 1. |

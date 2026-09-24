@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/Button';
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
+import { SubscriptionWidgets } from './SubscriptionWidgets';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
 import { HorizontalScrollSection, type ScrollPanel } from './HorizontalScrollSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
@@ -55,10 +56,11 @@ const panels: ScrollPanel[] = [
     id: 'prenumerationer',
     title: 'Prenumerationer',
     body: 'Här står en kort text om återkommande betalningar och vad kunden ser. Två till tre rader.',
-    image: {
-      src: `${IMG}/03-panel-prenumerationer.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Prenumerationer',
-    },
+    // Riktiga widgets i stället för bild: den löpande driften (sektion 3
+    // visar redan skapandet). Exempelinnehållet – ett fiktivt rosteri och
+    // dess egna nivåer, inte våra paket – ligger i
+    // for-dig/subscription-widgets/content.ts.
+    media: <SubscriptionWidgets />,
   },
 ];
 
