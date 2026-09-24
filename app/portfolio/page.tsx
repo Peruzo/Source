@@ -36,7 +36,7 @@ export default function PortfolioPage() {
 
         <Container className="relative z-10">
           <FadeIn className="mx-auto max-w-3xl text-center">
-            <p className="text-overline text-teal mb-6">PORTFOLIO</p>
+            <p className="text-overline text-teal-dark mb-6">PORTFOLIO</p>
             <h1 className="text-section-title text-white">
               Projekt vi är{' '}
               <span className="underline-draw inline-block">stolta</span> över
@@ -82,7 +82,7 @@ export default function PortfolioPage() {
       <section className="overflow-hidden bg-[#F4F7F6] py-20 md:py-32">
         <Container>
           <FadeIn className="mx-auto mb-4 max-w-2xl text-center md:mb-8">
-            <p className="text-overline text-teal mb-4">UTVALDA CASE</p>
+            <p className="text-overline text-teal-dark mb-4">UTVALDA CASE</p>
             <h2 className="text-section-title text-black mb-6">Våra projekt</h2>
             <p className="text-body-large text-gray-600">
               Ett urval av vad vi byggt och bygger just nu. Svep, dra eller
@@ -108,7 +108,7 @@ export default function PortfolioPage() {
       <section className="bg-white py-20 md:py-32">
         <Container size="lg">
           <FadeIn className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="text-overline text-teal mb-4">VAD VI BYGGER</p>
+            <p className="text-overline text-teal-dark mb-4">VAD VI BYGGER</p>
             <h2 className="text-section-title text-black mb-6">
               Vad vi kan bygga åt dig
             </h2>
@@ -135,7 +135,7 @@ export default function PortfolioPage() {
             ].map((capability) => (
               <div
                 key={capability.title}
-                className="rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-200 hover:-translate-y-1 hover:border-teal/40 hover:shadow-xl"
+                className="rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-200 hover:-translate-y-1 hover:border-teal-dark/40 hover:shadow-xl"
               >
                 <h3 className="text-xl font-semibold md:text-2xl text-black mb-3">
                   {capability.title}
@@ -157,7 +157,7 @@ export default function PortfolioPage() {
       <section className="bg-[#FDF8F3] py-20 md:py-32">
         <Container>
           <FadeIn className="mx-auto mb-16 max-w-2xl text-center">
-            <p className="text-overline text-teal mb-4">SÅ ARBETAR VI</p>
+            <p className="text-overline text-teal-dark mb-4">SÅ ARBETAR VI</p>
             <h2 className="text-section-title text-black mb-6">Vår process</h2>
             <p className="text-body-large text-gray-600">
               Från första samtalet till löpande tillväxt – fem steg vi kör
@@ -174,7 +174,7 @@ export default function PortfolioPage() {
               { num: '5', title: 'Tillväxt', desc: 'Kontinuerlig optimering och utveckling' },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal text-xl font-bold text-white">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-dark text-xl font-bold text-white">
                   {step.num}
                 </div>
                 <h3 className="mb-2 font-bold text-black">{step.title}</h3>
@@ -200,7 +200,7 @@ export default function PortfolioPage() {
               <Button href="/kontakt" variant="primary" size="lg">
                 Boka ett möte
               </Button>
-              <Button href="/priser" variant="secondary" size="lg">
+              <Button href="/priser" variant="secondary" size="lg" onDark>
                 Se priser
               </Button>
             </div>

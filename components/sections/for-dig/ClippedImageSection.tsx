@@ -211,7 +211,7 @@ export function ClippedImageSection({
         >
           <div className="max-w-[34rem]">
             {eyebrow ? (
-              <motion.p {...reveal(0)} className="text-overline mb-6 text-teal">
+              <motion.p {...reveal(0)} className="text-overline mb-6 text-teal-dark">
                 {eyebrow}
               </motion.p>
             ) : null}

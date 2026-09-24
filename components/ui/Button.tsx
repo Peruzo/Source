@@ -10,6 +10,8 @@ interface ButtonProps {
   className?: string;
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
+  /** Sätt på mörk sektion: secondary/ghost byter till vitt, som teal inte klarar mot svart. */
+  onDark?: boolean;
   'aria-pressed'?: boolean;
 }
 
@@ -27,15 +29,24 @@ export function Button({
   className = '',
   type = 'button',
   disabled = false,
+  onDark = false,
   'aria-pressed': ariaPressed,
 }: ButtonProps) {
   const baseStyles =
-    'inline-flex items-center justify-center whitespace-nowrap rounded-full border font-medium leading-tight transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center whitespace-nowrap rounded-full border font-medium leading-tight transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-dark focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed';
 
+  // teal-dark (4.87:1 mot vitt) bär vit text i primary på både ljus och mörk
+  // botten. secondary/ghost sätter däremot teal som TEXT, och där räcker
+  // teal-dark bara mot ljus botten – mot svart ger den 4.31:1. Därför byter de
+  // till vitt (21:1) när knappen står på en mörk sektion.
   const variants = {
-    primary: 'border-transparent bg-teal text-white hover:bg-teal-hover active:bg-teal-dark disabled:bg-gray-400',
-    secondary: 'border-teal bg-transparent text-teal hover:bg-teal/10',
-    ghost: 'border-gray-200 bg-transparent text-black hover:border-teal hover:text-teal',
+    primary: 'border-transparent bg-teal-dark text-white hover:bg-teal-darker active:bg-teal-darkest disabled:bg-gray-400',
+    secondary: onDark
+      ? 'border-white bg-transparent text-white hover:bg-white/10'
+      : 'border-teal-dark bg-transparent text-teal-dark hover:bg-teal-dark/10',
+    ghost: onDark
+      ? 'border-white/40 bg-transparent text-white hover:border-white hover:bg-white/10'
+      : 'border-gray-200 bg-transparent text-black hover:border-teal-dark hover:text-teal-dark',
   };
 
   const sizes = {

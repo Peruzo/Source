@@ -273,7 +273,7 @@ export function Hero() {
           <AnimatedButton href="/kontakt" variant="primary" size="lg">
             Boka demo
           </AnimatedButton>
-          <AnimatedButton href="#next-section" variant="secondary" size="lg">
+          <AnimatedButton href="#next-section" variant="secondary" size="lg" onDark>
             Se hur det fungerar ↓
           </AnimatedButton>
         </motion.div>

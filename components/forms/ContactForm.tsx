@@ -71,7 +71,7 @@ export function ContactForm() {
         </p>
         <button
           onClick={() => setSubmitStatus('idle')}
-          className="mt-6 text-teal hover:text-teal-hover font-medium"
+          className="mt-6 text-teal-dark hover:text-teal-hover font-medium"
         >
           Skicka ett nytt meddelande
         </button>
@@ -84,13 +84,13 @@ export function ContactForm() {
       {/* Name */}
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-          Namn <span className="text-teal">*</span>
+          Namn <span className="text-teal-dark">*</span>
         </label>
         <input
           {...register('name')}
           type="text"
           id="name"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal focus:outline-none transition-colors"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-dark focus:outline-none transition-colors"
           placeholder="Ditt fullständiga namn"
         />
         {errors.name && (
@@ -101,13 +101,13 @@ export function ContactForm() {
       {/* Email */}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-          E-post <span className="text-teal">*</span>
+          E-post <span className="text-teal-dark">*</span>
         </label>
         <input
           {...register('email')}
           type="email"
           id="email"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal focus:outline-none transition-colors"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-dark focus:outline-none transition-colors"
           placeholder="din@email.com"
         />
         {errors.email && (
@@ -124,7 +124,7 @@ export function ContactForm() {
           {...register('phone')}
           type="tel"
           id="phone"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal focus:outline-none transition-colors"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-dark focus:outline-none transition-colors"
           placeholder="+46 70 123 45 67"
         />
       </div>
@@ -138,7 +138,7 @@ export function ContactForm() {
           {...register('company')}
           type="text"
           id="company"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal focus:outline-none transition-colors"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-dark focus:outline-none transition-colors"
           placeholder="Ditt företagsnamn"
         />
       </div>
@@ -146,7 +146,7 @@ export function ContactForm() {
       {/* Needs */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Vad behöver du hjälp med? <span className="text-teal">*</span>
+          Vad behöver du hjälp med? <span className="text-teal-dark">*</span>
         </label>
         <div className="space-y-3">
           {[
@@ -175,13 +175,13 @@ export function ContactForm() {
       {/* Message */}
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-          Meddelande <span className="text-teal">*</span>
+          Meddelande <span className="text-teal-dark">*</span>
         </label>
         <textarea
           {...register('message')}
           id="message"
           rows={6}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal focus:outline-none transition-colors resize-vertical"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-dark focus:outline-none transition-colors resize-vertical"
           placeholder="Berätta om ditt projekt..."
         />
         {errors.message && (
@@ -230,7 +230,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-teal px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-teal-hover disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full rounded-full bg-teal-dark px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-teal-darker disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'Skickar...' : 'Skicka meddelande'}
       </button>
