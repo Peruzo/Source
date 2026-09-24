@@ -9,7 +9,7 @@ import type {
   PriceLabels,
   SaleProduct,
 } from './content';
-import { Field, RADIUS, formatMoney } from '../payment-cards/primitives';
+import { CARD_EDGE, Field, RADIUS, formatMoney } from '../payment-cards/primitives';
 
 /*
  * The campaign widgets. Built from the payment-cards primitives – same three
@@ -94,7 +94,7 @@ export function SaleProductCard({
     <div
       role="group"
       aria-labelledby={titleId}
-      className={`flex w-full flex-col overflow-hidden bg-white text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.card}`}
+      className={`flex w-full flex-col overflow-hidden bg-white text-left text-black ${CARD_EDGE} ${RADIUS.card}`}
     >
       <div className="relative aspect-[4/3] bg-gray-100">
         {/* Plain <img>: must render outside Next (Remotion). */}
@@ -174,7 +174,7 @@ export function CreateCampaignButton({ label, pressed = false }: { label: string
   return (
     <span
       className={`text-ui-label inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap bg-teal-dark px-3.5 py-1.5 text-white ${RADIUS.control} ${
-        pressed ? 'relative z-10 scale-95 shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] ring-4 ring-white/70' : ''
+        pressed ? 'relative z-10 scale-95 shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] ring-4 ring-teal-dark/20' : ''
       }`}
     >
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
@@ -297,7 +297,7 @@ export function CreateCampaignDialog({
     <div
       role="group"
       aria-labelledby={titleId}
-      className={`w-full bg-white p-4 text-left text-black shadow-[0_24px_48px_-12px_rgba(0,0,0,0.45),0_0_0_1px_rgba(0,0,0,0.04)] ${RADIUS.card}`}
+      className={`w-full bg-white p-4 text-left text-black ${CARD_EDGE} ${RADIUS.card}`}
     >
       <h3 id={titleId} className="text-ui-title">
         {content.title}
@@ -354,7 +354,7 @@ export function CampaignCode({
     <div
       role="group"
       aria-labelledby={titleId}
-      className={`w-full bg-white p-4 text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.5)] ${RADIUS.card}`}
+      className={`w-full bg-white p-4 text-left text-black ${CARD_EDGE} ${RADIUS.card}`}
     >
       <h3 id={titleId} className="text-ui-title">
         {content.title}
