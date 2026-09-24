@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { CampaignWidgets } from './CampaignWidgets';
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { SubscriptionWidgets } from './SubscriptionWidgets';
@@ -47,10 +48,9 @@ const panels: ScrollPanel[] = [
     id: 'kampanjer',
     title: 'Kampanjer',
     body: 'Här står en kort text om hur du sätter upp en kampanj och vad du kan styra. Två till tre rader.',
-    image: {
-      src: `${IMG}/03-panel-kampanjer.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Kampanjer',
-    },
+    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktiv butik,
+    // kundens priser) ligger i for-dig/campaign-widgets/content.ts.
+    media: <CampaignWidgets />,
   },
   {
     id: 'prenumerationer',
