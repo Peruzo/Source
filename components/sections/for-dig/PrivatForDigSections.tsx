@@ -221,7 +221,7 @@ export function PrivatForDigSections() {
         <SubscriptionWidgets />
       </FullBleedImageSection>
 
-      {/* 8 – Så kommer du igång. Fullbreddsbild med grön gradient från vänster. */}
+      {/* 8 – Så kommer du igång. Fullbreddsbild med mörk gradient från vänster. */}
       <GettingStartedSection
         id="sa-kommer-du-igang"
         eyebrow="KOM IGÅNG"
@@ -234,7 +234,7 @@ export function PrivatForDigSections() {
       >
         {/* TODO: pris */}
         {/* secondary, inte primary: vit text på teal är bara 2,26:1. Teal på
-            sektionens gröna (#00332C) är 5,95:1. */}
+            sektionens mörka ton (#001310) är 8,1:1. */}
         <Button href="/kontakt" variant="secondary" size="lg">
           Placeholder – knapp under stegen
         </Button>

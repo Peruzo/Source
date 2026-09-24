@@ -32,7 +32,7 @@ nummer som i kommentarerna i `PrivatForDigSections.tsx`. Filnamnens prefix
 | *(ingen fil)* | 5. Fakturor | Fullbredd, svart – widgets | – | – | Under texten ligger `InvoiceWidgets` som ett appfönster (fakturalista, förhandsgranskad faktura, dialogen Ny faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
 | *(ingen fil)* | 6. Kampanjer | Clipped, höger – widgets | – | – | Klippformen visar `CampaignWidgets` som kollage (dialogen Ny kampanj, nedsatt produktkort, kampanjkod, rad med nedsatta produkter). Alla produktbilder pekar på `produkter/13-sneakers.svg` – byt `src` per produkt i `campaign-widgets/content.ts`. |
 | *(ingen fil)* | 7. Prenumerationer | Fullbredd, svart – widgets | – | – | Under texten ligger `SubscriptionWidgets` som ett rutnät (inkommande betalningar, kundens tre nivåer, dialogen Ny prenumeration). Inga bilder. |
-| `08-sa-kommer-du-igang.webp` | 8. Så kommer du igång | Fullbredd, grön gradient från vänster | 2880 × 1620 (**nu 2048 × 1152**, se TODO) | **16:9** (liggande) | Motivet måste ligga i **högra halvan** – vänstra ~45 % täcks helt av gradienten från `lg`, och på mobil beskärs bilden till 4:3 kring ca 75 % av bredden. Se [Sektion 8](#sektion-8--så-kommer-du-igång). |
+| `08-sa-kommer-du-igang.webp` | 8. Så kommer du igång | Fullbredd, mörk gradient från vänster | 2880 × 1620 (**nu 2048 × 1152**, se TODO) | **16:9** (liggande) | Motivet måste ligga i **högra halvan** – från 1280 px täcks allt till vänster om 680 px helt av gradienten, och under 1280 beskärs bilden till 4:3 (md: 16:9) kring ca 75 % av bredden. Se [Sektion 8](#sektion-8--så-kommer-du-igång). |
 | `09-avslutande-cta.svg` | 9. Avslutande CTA | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Mörkare motiv fungerar bäst – knapparna ligger ovanpå. |
 
 ### Produktbilder – `produkter/`
@@ -68,11 +68,17 @@ node -e "require('sharp')('assets/originals/for-dig/privat/08-sa-kommer-du-igang
 (bilden täcker hela bredden och behöver ~2880 px). Generera om i 2880 × 1620
 om det syns, lägg den nya PNG:en som original ovan och kör kommandot igen.
 
-**Kontrast:** texten ligger på en solid grön (`teal-dark` 40 % + svart,
-`#00332C`) – vit 13,9:1, vit 80 % 9,4:1, teal 5,95:1. Byter du bild: behåll
-motivet i högra halvan. Den vänstra delen syns inte ändå, men om något ljust
-ligger i övergången (45–70 % av bredden) och texten når dit, verifiera
-kontrasten mot bildens pixlar.
+**Kontrast:** texten ligger på en nästan svart ton med grön underton
+(`teal-dark` 15 % + svart, `#001310`), mätt på den byggda sidan: vit 18,9:1,
+vit 85 % 13,7:1, teal 8,1:1.
+
+**Komposition:** från 1280 px (`xl`) ligger bilden bakom texten med gradienten
+solid till 680 px och borta vid 1000 px, och bilden är placerad med
+`object-position: 30% 50%`. Kvinnans ansikte ligger då fritt från toningen på
+1280, 1440 och 1920. Ryggen på tröjan beskärs av högerkanten på 1280–1440,
+eftersom sektionen är högre än bildens 16:9 och bilden skalas upp. Under 1280
+ligger bilden ovanför texten. Byter du bild: håll motivet i högra halvan och
+kontrollera att ansiktet hamnar till höger om 1000 px på 1280–1920.
 
 ## Video – Vi bygger din hemsida
 
