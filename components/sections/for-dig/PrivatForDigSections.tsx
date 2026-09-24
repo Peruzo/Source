@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/Button';
 import { CampaignWidgets } from './CampaignWidgets';
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
+import { SubscriptionWidgets } from './SubscriptionWidgets';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
 import { HorizontalScrollSection, type ScrollPanel } from './HorizontalScrollSection';
+import { InvoiceWidgets } from './InvoiceWidgets';
 import { PaymentCards } from './PaymentCards';
+import { ProductWidgets } from './ProductWidgets';
 
 /*
  * INNEHÅLL – "För dig / Privat"
@@ -29,19 +32,17 @@ const panels: ScrollPanel[] = [
     id: 'produkter',
     title: 'Produkter & tjänster',
     body: 'Här står en kort text om vad du kan lägga upp och hur du håller det uppdaterat. Två till tre rader är lagom i den här panelen.',
-    image: {
-      src: `${IMG}/03-panel-produkter.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Produkter & tjänster',
-    },
+    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktiv butik,
+    // kundens priser) ligger i for-dig/product-widgets/content.ts.
+    media: <ProductWidgets />,
   },
   {
     id: 'fakturor',
     title: 'Fakturor',
     body: 'Här står en kort text om hur fakturorna skapas och följs upp. Håll den ungefär lika lång som de andra panelerna.',
-    image: {
-      src: `${IMG}/03-panel-fakturor.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Fakturor',
-    },
+    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktivt gym,
+    // kundens belopp) ligger i for-dig/invoice-widgets/content.ts.
+    media: <InvoiceWidgets />,
   },
   {
     id: 'kampanjer',
@@ -55,10 +56,11 @@ const panels: ScrollPanel[] = [
     id: 'prenumerationer',
     title: 'Prenumerationer',
     body: 'Här står en kort text om återkommande betalningar och vad kunden ser. Två till tre rader.',
-    image: {
-      src: `${IMG}/03-panel-prenumerationer.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Prenumerationer',
-    },
+    // Riktiga widgets i stället för bild: den löpande driften (sektion 3
+    // visar redan skapandet). Exempelinnehållet – ett fiktivt rosteri och
+    // dess egna nivåer, inte våra paket – ligger i
+    // for-dig/subscription-widgets/content.ts.
+    media: <SubscriptionWidgets />,
   },
 ];
 
