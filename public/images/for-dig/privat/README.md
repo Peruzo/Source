@@ -32,6 +32,7 @@ nummer som i kommentarerna i `PrivatForDigSections.tsx`. Filnamnens prefix
 | *(ingen fil)* | 5. Fakturor | Fullbredd, svart – widgets | – | – | Under texten ligger `InvoiceWidgets` som ett appfönster (fakturalista, förhandsgranskad faktura, dialogen Ny faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
 | *(ingen fil)* | 6. Kampanjer | Clipped, höger – widgets | – | – | Klippformen visar `CampaignWidgets` som kollage (dialogen Ny kampanj, nedsatt produktkort, kampanjkod, rad med nedsatta produkter). Alla produktbilder pekar på `produkter/13-sneakers.svg` – byt `src` per produkt i `campaign-widgets/content.ts`. |
 | *(ingen fil)* | 7. Prenumerationer | Fullbredd, svart – widgets | – | – | Under texten ligger `SubscriptionWidgets` som ett rutnät (inkommande betalningar, kundens tre nivåer, dialogen Ny prenumeration). Inga bilder. |
+| `08-sa-kommer-du-igang.webp` | 8. Så kommer du igång | Fullbredd, grön gradient från vänster | 2880 × 1620 (**nu 2048 × 1152**, se TODO) | **16:9** (liggande) | Motivet måste ligga i **högra halvan** – vänstra ~45 % täcks helt av gradienten från `lg`, och på mobil beskärs bilden till 4:3 kring ca 75 % av bredden. Se [Sektion 8](#sektion-8--så-kommer-du-igång). |
 | `09-avslutande-cta.svg` | 9. Avslutande CTA | Fullbredd, fulltäckande | 2880 × 1620 | **16:9** (liggande) | Mörkare motiv fungerar bäst – knapparna ligger ovanpå. |
 
 ### Produktbilder – `produkter/`
@@ -48,11 +49,30 @@ tjänster*. 16 filer,
 Platshållarna saknar måttetikett i själva bilden, till skillnad från övriga
 platshållare – i miniatyrstorlek blir texten bara brus. Måtten står här.
 
-Sektion **8 (Så kommer du igång)** har medvetet ingen bild – den är ren
-typografi.
-
 Sektionen *Allt du kan göra* (horisontell scroll med fyra paneler) är
 borttagen; dess widgets ligger nu i sektion 4–7 ovan.
+
+## Sektion 8 – Så kommer du igång
+
+`08-sa-kommer-du-igang.webp` – 2048 × 1152 (16:9), WebP kvalitet 82, ca 203 kB.
+
+**Original:** `assets/originals/for-dig/privat/08-sa-kommer-du-igang.png`
+(PNG, 2048 × 1152, 3,1 MB). Ligger utanför `public/` så att den inte serveras.
+Generera WebP:en från originalet, aldrig från WebP:en:
+
+```bash
+node -e "require('sharp')('assets/originals/for-dig/privat/08-sa-kommer-du-igang.png').webp({quality:82}).toFile('public/images/for-dig/privat/08-sa-kommer-du-igang.webp')"
+```
+
+**TODO – upplösning:** 2048 px bred blir mjuk på retinaskärmar från 1440 px
+(bilden täcker hela bredden och behöver ~2880 px). Generera om i 2880 × 1620
+om det syns, lägg den nya PNG:en som original ovan och kör kommandot igen.
+
+**Kontrast:** texten ligger på en solid grön (`teal-dark` 40 % + svart,
+`#00332C`) – vit 13,9:1, vit 80 % 9,4:1, teal 5,95:1. Byter du bild: behåll
+motivet i högra halvan. Den vänstra delen syns inte ändå, men om något ljust
+ligger i övergången (45–70 % av bredden) och texten når dit, verifiera
+kontrasten mot bildens pixlar.
 
 ## Video – Vi bygger din hemsida
 
