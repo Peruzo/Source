@@ -25,7 +25,7 @@ Riktmärke: max ~300 kB per fullbreddsbild, ~150 kB per panelbild.
 | `01-vi-bygger.svg` | 1. Vi bygger din hemsida | Clipped, höger sida | 1600 × 2000 | **4:5** (stående) | Beskärs med rundad, asymmetrisk mask. Håll motivet centrerat – kanterna kapas. Scrollar förbi sticky text på desktop, så bildens överkant och underkant syns aldrig samtidigt. |
 | *(ingen fil)* | 2. Börja ta betalt | Ingen bakgrundsbild | – | – | Sektionen visar tre UI-kort (`PaymentCards`). Mittenkortets bildyta tar en valfri `checkout.image` (ca 4:3, motivet beskärs till en bred remsa); utan bild visas en CSS-platshållare. |
 | `03-panel-produkter.svg` | 3. Allt du kan göra → panel 1 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Visas i rundad ruta, `object-cover`. |
-| `03-panel-fakturor.svg` | 3. Allt du kan göra → panel 2 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
+| *(ingen fil)* | 3. Allt du kan göra → panel 2 | Widgets i stället för bild | – | – | Panelen visar `InvoiceWidgets` (fakturalista, dialogen Ny faktura, förhandsgranskad faktura). Integrationsmarkeringarna ligger i `integrationer/`, se längst ned. |
 | `03-panel-kampanjer.svg` | 3. Allt du kan göra → panel 3 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
 | `03-panel-prenumerationer.svg` | 3. Allt du kan göra → panel 4 | Panel i horisontell scroll | 1400 × 1050 | **4:3** (liggande) | Samma som ovan. |
 | `04-lagg-upp-produkter.svg` | 4. Lägg upp dina produkter eller tjänster | Clipped, **vänster** sida | 1600 × 2000 | **4:5** (stående) | Speglad mot sektion 1 – masken är spegelvänd. |
@@ -52,3 +52,21 @@ tillgänglighetspanel innan du släpper den.
 
 Heron högst upp på sidan (`/privatstart.png`) hör **inte** hit och ska inte
 röras – den ligger kvar i `public/` och är oförändrad.
+
+## Integrationsmarkeringar – `integrationer/`
+
+Små logotypplatser bredvid raderna i fakturalistan i panelen *Fakturor*.
+Kopplas via `integrations` i
+`components/sections/for-dig/invoice-widgets/content.ts` – där står även
+namnet (`label`) som används i alt-texten.
+
+| Filnamn | Typ | Rek. upplösning | Format (aspect ratio) | Anmärkning |
+|---|---|---|---|---|
+| `bokforing-a.svg` | Logotypplats, fakturarad | 64 × 64 (SVG föredras) | **1:1** (kvadrat) | Visas i 20 × 20 px (16 × 16 px i smala layouter), `object-contain`, inga rundade hörn. |
+| `bokforing-b.svg` | Logotypplats, fakturarad | 64 × 64 (SVG föredras) | **1:1** (kvadrat) | Som ovan. |
+
+Filerna är **neutrala platshållare** (grå ruta med bokstav). Rita aldrig av
+en leverantörs logotyp i CSS eller SVG – hämta originalfilen från respektive
+leverantörs presskit, lägg den här och uppdatera `src` och `label` i
+content-filen. Följ leverantörens riktlinjer för frizon och minsta storlek;
+om 20 px är under deras minimum, ta upp det innan logotypen läggs in.

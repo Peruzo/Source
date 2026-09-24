@@ -5,6 +5,7 @@ import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
 import { HorizontalScrollSection, type ScrollPanel } from './HorizontalScrollSection';
+import { InvoiceWidgets } from './InvoiceWidgets';
 import { PaymentCards } from './PaymentCards';
 
 /*
@@ -37,10 +38,9 @@ const panels: ScrollPanel[] = [
     id: 'fakturor',
     title: 'Fakturor',
     body: 'Här står en kort text om hur fakturorna skapas och följs upp. Håll den ungefär lika lång som de andra panelerna.',
-    image: {
-      src: `${IMG}/03-panel-fakturor.svg`,
-      alt: 'TODO: alt-text – beskriv vad som syns i panelbilden för Fakturor',
-    },
+    // Riktiga widgets i stället för bild. Exempelinnehållet (fiktivt gym,
+    // kundens belopp) ligger i for-dig/invoice-widgets/content.ts.
+    media: <InvoiceWidgets />,
   },
   {
     id: 'kampanjer',

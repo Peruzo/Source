@@ -14,7 +14,13 @@ export type ScrollPanel = {
   id: string;
   title: string;
   body: string;
-  image: SectionImage;
+  /** Panel photo, shown in the 4:3 box. */
+  image?: SectionImage;
+  /**
+   * Live content for the 4:3 box instead of a photo (e.g. ProductWidgets).
+   * Takes precedence over `image`. Must fill the box, not size itself.
+   */
+  media?: ReactNode;
   /** Optional deep link for the panel. */
   href?: string;
 };
@@ -186,13 +192,16 @@ export function HorizontalScrollSection({
             const content = (
               <>
                 <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl">
-                  <Image
-                    src={panel.image.src}
-                    alt={panel.image.alt}
-                    fill
-                    sizes="(min-width: 1024px) 46vw, (min-width: 768px) 60vw, 85vw"
-                    className="object-cover"
-                  />
+                  {panel.media ??
+                    (panel.image ? (
+                      <Image
+                        src={panel.image.src}
+                        alt={panel.image.alt}
+                        fill
+                        sizes="(min-width: 1024px) 46vw, (min-width: 768px) 60vw, 85vw"
+                        className="object-cover"
+                      />
+                    ) : null)}
                 </div>
 
                 <h3 className="mt-8 text-2xl font-bold md:text-3xl lg:text-4xl">
