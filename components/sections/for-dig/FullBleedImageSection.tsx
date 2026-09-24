@@ -12,10 +12,14 @@ type FullBleedImageSectionProps = {
   title: ReactNode;
   /** One paragraph per array entry. */
   body: string[];
-  image: SectionImage;
+  /**
+   * Background photo. Omit it for a plain black section whose visual is the
+   * `children` instead – section 3 carries PaymentCards that way.
+   */
+  image?: SectionImage;
   /** `tall` fills the viewport, `regular` is a calmer band. */
   height?: 'regular' | 'tall';
-  /** Extra content under the body – CTA buttons, TODO-markers. */
+  /** Extra content under the body – CTA buttons, TODO-markers, UI cards. */
   children?: ReactNode;
 };
 
@@ -30,7 +34,8 @@ const heights: Record<NonNullable<FullBleedImageSectionProps['height']>, string>
  *
  * Contrast: a flat `bg-black/55` plus a centred radial vignette gives roughly
  * 84% effective black where the text sits. White text clears WCAG AA (~5:1)
- * even against a pure-white photo, which a single overlay would not.
+ * even against a pure-white photo, which a single overlay would not. Without an
+ * image both layers are skipped – white on plain black needs no help.
  */
 export function FullBleedImageSection({
   id,
@@ -48,25 +53,29 @@ export function FullBleedImageSection({
       id={id}
       className={`relative isolate w-full overflow-hidden bg-black text-white ${heights[height]}`}
     >
-      <Image
-        src={image.src}
-        alt={image.alt}
-        fill
-        sizes="100vw"
-        className="absolute inset-0 -z-10 object-cover"
-      />
+      {image ? (
+        <>
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            sizes="100vw"
+            className="absolute inset-0 -z-10 object-cover"
+          />
 
-      {/* Layer 1 – flat scrim. */}
-      <div className="absolute inset-0 -z-10 bg-black/55" aria-hidden="true" />
-      {/* Layer 2 – radial vignette, darkest exactly where the text sits. */}
-      <div
-        className="absolute inset-0 -z-10"
-        aria-hidden="true"
-        style={{
-          background:
-            'radial-gradient(ellipse at center, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0.35) 100%)',
-        }}
-      />
+          {/* Layer 1 – flat scrim. */}
+          <div className="absolute inset-0 -z-10 bg-black/55" aria-hidden="true" />
+          {/* Layer 2 – radial vignette, darkest exactly where the text sits. */}
+          <div
+            className="absolute inset-0 -z-10"
+            aria-hidden="true"
+            style={{
+              background:
+                'radial-gradient(ellipse at center, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0.35) 100%)',
+            }}
+          />
+        </>
+      ) : null}
 
       <div className="relative mx-auto flex max-w-[1440px] flex-col items-center px-6 text-center md:px-10 lg:px-20">
         {eyebrow ? (
@@ -95,7 +104,7 @@ export function FullBleedImageSection({
         </div>
 
         {children ? (
-          <motion.div {...reveal(0.4)} className="mt-12">
+          <motion.div {...reveal(0.4)} className="mt-12 w-full">
             {children}
           </motion.div>
         ) : null}
