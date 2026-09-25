@@ -308,7 +308,7 @@ export default function AboutPage() {
               <Button href="/kontakt" variant="primary" size="lg">
                 Boka ett möte
               </Button>
-              <Button href="/tjanster" variant="secondary" size="lg">
+              <Button href="/tjanster" variant="secondary" size="lg" onDark>
                 Se våra tjänster
               </Button>
             </div>

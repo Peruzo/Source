@@ -56,7 +56,7 @@ export function PortalPreview() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-overline text-teal mb-4"
+            className="text-overline text-teal-dark mb-4"
           >
             KRAFTFULL KUNDPORTAL
           </motion.p>

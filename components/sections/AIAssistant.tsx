@@ -44,9 +44,9 @@ export function AIAssistant() {
               transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}
               className="absolute inset-0 flex items-center justify-center gap-3 md:gap-4"
             >
-              <span className="ai-bubble-loading ai-bubble-loading-1 inline-block h-4 w-4 md:h-5 md:w-5 rounded-full bg-teal" />
-              <span className="ai-bubble-loading ai-bubble-loading-2 inline-block h-4 w-4 md:h-5 md:w-5 rounded-full bg-teal" />
-              <span className="ai-bubble-loading ai-bubble-loading-3 inline-block h-4 w-4 md:h-5 md:w-5 rounded-full bg-teal" />
+              <span className="ai-bubble-loading ai-bubble-loading-1 inline-block h-4 w-4 md:h-5 md:w-5 rounded-full bg-teal-dark" />
+              <span className="ai-bubble-loading ai-bubble-loading-2 inline-block h-4 w-4 md:h-5 md:w-5 rounded-full bg-teal-dark" />
+              <span className="ai-bubble-loading ai-bubble-loading-3 inline-block h-4 w-4 md:h-5 md:w-5 rounded-full bg-teal-dark" />
             </motion.div>
 
             {/* Floating bubbles state */}
@@ -58,7 +58,7 @@ export function AIAssistant() {
               className="relative h-32 w-32 md:h-40 md:w-40 flex items-center justify-center"
             >
               {/* Center bubble */}
-              <div className="ai-bubble ai-bubble-1 relative z-10 h-16 w-16 md:h-24 md:w-24 rounded-full bg-teal shadow-2xl shadow-teal/40" />
+              <div className="ai-bubble ai-bubble-1 relative z-10 h-16 w-16 md:h-24 md:w-24 rounded-full bg-teal-dark shadow-2xl shadow-teal/40" />
 
               {/* Left bubble */}
               <div className="ai-bubble ai-bubble-2 absolute left-0 bottom-2 h-8 w-8 md:h-12 md:w-12 rounded-full bg-teal-light shadow-xl shadow-teal/20" />
@@ -75,7 +75,7 @@ export function AIAssistant() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.4 }}
-              className="text-overline text-teal"
+              className="text-overline text-teal-dark"
             >
               SOURCE AI ASSISTENT
             </motion.p>
@@ -121,7 +121,7 @@ export function AIAssistant() {
             >
               <Link
                 href="/ai-assistent"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-teal px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors duration-200 hover:bg-teal-hover"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-teal-dark px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors duration-200 hover:bg-teal-darker"
               >
                 Utforska Source AI
                 <svg

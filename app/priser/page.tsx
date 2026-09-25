@@ -160,7 +160,7 @@ export default function PricingPage() {
               <h1 className="text-section-title text-white mb-8">
                 Transparent.<br />
                 Förutsägbart.<br />
-                <span className="text-teal">Inga överraskningar.</span>
+                <span className="text-teal-dark">Inga överraskningar.</span>
               </h1>
               <p className="text-body-large text-gray-300 mb-8">
                 Prenumeration istället för projektpriser. Ingen bindningstid.
@@ -169,7 +169,7 @@ export default function PricingPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-6xl md:text-7xl lg:text-8xl font-bold text-teal"
+                className="text-6xl md:text-7xl lg:text-8xl font-bold text-teal-dark"
               >
                 Från 799 kr
               </motion.p>
@@ -192,7 +192,7 @@ export default function PricingPage() {
                 transition={{ delay: index * 0.1, duration: 0.6 }}
                 className={`relative rounded-3xl p-8 md:p-10 border transition-all duration-300 ${
                   plan.featured
-                    ? 'bg-gradient-to-br from-teal/5 to-teal/10 border-teal border-2 md:scale-105 shadow-xl'
+                    ? 'bg-gradient-to-br from-teal/5 to-teal/10 border-teal-dark border-2 md:scale-105 shadow-xl'
                     : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-lg'
                 }`}
               >
@@ -201,7 +201,7 @@ export default function PricingPage() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + index * 0.1 }}
-                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-teal text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg"
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-teal-dark text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg"
                   >
                     {plan.badge}
                   </motion.div>
@@ -209,7 +209,7 @@ export default function PricingPage() {
 
                 <h2 className="text-3xl font-bold text-black mb-3">{plan.name}</h2>
                 <div className="mb-6">
-                  <p className="text-5xl md:text-6xl font-bold text-teal">
+                  <p className="text-5xl md:text-6xl font-bold text-teal-dark">
                     {plan.price.includes('Pris på förfrågan') ? (
                       <span className="text-2xl md:text-3xl">{plan.price}</span>
                     ) : plan.price.includes('Från') ? (
@@ -246,7 +246,7 @@ export default function PricingPage() {
                         className="flex items-start gap-3 text-gray-700"
                       >
                         <svg
-                          className="w-5 h-5 text-teal flex-shrink-0 mt-0.5"
+                          className="w-5 h-5 text-teal-dark flex-shrink-0 mt-0.5"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -271,8 +271,8 @@ export default function PricingPage() {
                   disabled={submittingPlanId !== null}
                   className={`block w-full text-center font-semibold transition-all duration-300 px-8 py-4 text-base rounded-xl disabled:opacity-60 disabled:cursor-not-allowed ${
                     plan.featured
-                      ? 'bg-teal text-white hover:bg-teal-hover'
-                      : 'bg-transparent text-teal border-2 border-teal hover:bg-teal hover:text-white'
+                      ? 'bg-teal-dark text-white hover:bg-teal-darker'
+                      : 'bg-transparent text-teal-dark border-2 border-teal-dark hover:bg-teal-darker hover:text-white'
                   }`}
                 >
                   {submittingPlanId === plan.planId ? 'Skickar...' : plan.cta}
@@ -309,10 +309,10 @@ export default function PricingPage() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05, duration: 0.4 }}
-                className="flex justify-between items-center py-5 px-6 rounded-xl bg-gray-50 hover:bg-teal/5 border border-gray-200 hover:border-teal/30 transition-all duration-300"
+                className="flex justify-between items-center py-5 px-6 rounded-xl bg-gray-50 hover:bg-teal-darker/5 border border-gray-200 hover:border-teal-dark/30 transition-all duration-300"
               >
                 <span className="font-medium text-black">{addon.name}</span>
-                <span className="text-teal font-semibold">{addon.price}</span>
+                <span className="text-teal-dark font-semibold">{addon.price}</span>
               </motion.div>
             ))}
           </div>
@@ -359,7 +359,7 @@ export default function PricingPage() {
               >
                 <h3 className="font-bold text-black mb-2 text-lg">{item.title}</h3>
                 <p className="text-gray-700 mb-2">{item.description}</p>
-                <p className="text-teal font-medium text-sm">{item.cost}</p>
+                <p className="text-teal-dark font-medium text-sm">{item.cost}</p>
               </motion.div>
             ))}
           </div>
@@ -389,7 +389,7 @@ export default function PricingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05, duration: 0.4 }}
-                className="border border-gray-200 rounded-2xl overflow-hidden hover:border-teal/30 transition-colors duration-300"
+                className="border border-gray-200 rounded-2xl overflow-hidden hover:border-teal-dark/30 transition-colors duration-300"
               >
                 <button
                   onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
@@ -401,7 +401,7 @@ export default function PricingPage() {
                   <motion.span
                     animate={{ rotate: expandedFAQ === index ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
-                    className="text-2xl text-teal flex-shrink-0"
+                    className="text-2xl text-teal-dark flex-shrink-0"
                   >
                     ↓
                   </motion.span>
@@ -430,7 +430,7 @@ export default function PricingPage() {
       {/* CTA */}
       <section className="py-24 md:py-40 bg-black text-white relative overflow-hidden">
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal/20 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-dark/20 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],

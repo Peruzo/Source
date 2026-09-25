@@ -200,7 +200,7 @@ export default function InventarierPage() {
                 <div className="flex w-full max-w-full gap-4 overflow-x-auto pb-1 md:w-auto md:overflow-visible">
                   <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[285px] md:px-6 md:py-[18px]">
                     <div className="flex items-center gap-3.5">
-                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal text-white">
+                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
                         <TruckIcon className="h-6 w-6" />
                       </div>
                       <div className="min-w-0">
@@ -214,7 +214,7 @@ export default function InventarierPage() {
 
                   <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[320px] md:px-6 md:py-[18px]">
                     <div className="flex items-center gap-3.5">
-                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal text-white">
+                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
                         <CubeIcon className="h-6 w-6" />
                       </div>
                       <div className="min-w-0">
@@ -228,7 +228,7 @@ export default function InventarierPage() {
 
                   <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[330px] md:px-6 md:py-[18px]">
                     <div className="flex items-center gap-3.5">
-                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal text-white">
+                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
                         <BanknotesIcon className="h-6 w-6" />
                       </div>
                       <div className="min-w-0">

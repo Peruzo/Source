@@ -79,7 +79,7 @@ export function FinalCTA() {
             <AnimatedButton href="/kontakt" variant="primary" size="lg">
               Boka en demo
             </AnimatedButton>
-            <AnimatedButton href="/priser" variant="secondary" size="lg">
+            <AnimatedButton href="/priser" variant="secondary" size="lg" onDark>
               Se priser
             </AnimatedButton>
           </motion.div>

@@ -46,7 +46,7 @@ export function GettingStartedSection({
       <div className="mx-auto max-w-[1440px] px-6 md:px-10 lg:px-20">
         <div className="max-w-[40rem]">
           {eyebrow ? (
-            <motion.p {...reveal(0)} className="text-overline mb-6 text-teal">
+            <motion.p {...reveal(0)} className="text-overline mb-6 text-teal-dark">
               {eyebrow}
             </motion.p>
           ) : null}

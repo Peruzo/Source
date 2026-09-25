@@ -243,7 +243,7 @@ export function PrivatForDigSections() {
           <Button href="/kontakt" variant="primary" size="lg">
             Placeholder – primär CTA
           </Button>
-          <Button href="/kontakt" variant="secondary" size="lg">
+          <Button href="/kontakt" variant="secondary" size="lg" onDark>
             Placeholder – sekundär CTA
           </Button>
         </div>
