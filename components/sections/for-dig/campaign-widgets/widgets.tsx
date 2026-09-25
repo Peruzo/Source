@@ -125,8 +125,8 @@ export function SaleProductCard({
 }
 
 /**
- * 3, as a grid – several discounted products with square photos (natural
- * height). `className` sets the column count and may hide trailing items per
+ * 3, as a grid – several discounted products. Square photos by default;
+ * with extra height the rows share it and the photos grow, like ProductGrid. `className` sets the column count and may hide trailing items per
  * container width, like ProductGrid.
  */
 export function SaleGrid({
@@ -145,10 +145,10 @@ export function SaleGrid({
   badges?: boolean;
 } & MoneyFormat) {
   return (
-    <ul className={`grid w-full gap-x-2.5 gap-y-3 ${className}`}>
+    <ul className={`grid w-full auto-rows-fr gap-x-2.5 gap-y-3 ${className}`}>
       {products.map((product) => (
         <li key={product.id} className="flex min-w-0 flex-col">
-          <div className={`relative aspect-square overflow-hidden bg-gray-100 ${RADIUS.field}`}>
+          <div className={`relative aspect-square grow overflow-hidden bg-gray-100 ${RADIUS.field}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.image.src}
@@ -308,7 +308,7 @@ export function CreateCampaignDialog({
       </h3>
 
       <div className="mt-3 space-y-2">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 @sm:grid-cols-2">
           {name}
           {fields === 'full' ? picker : valueField}
         </div>
@@ -317,6 +317,8 @@ export function CreateCampaignDialog({
 
         {fields === 'full' ? (
           <div className="grid grid-cols-1 gap-2 @sm:grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)]">
+            {/* Pairs sit side by side from a 24rem container; the composition
+                only gives the dialog a narrow column where that still fits. */}
             {valueField}
             <Field label={content.period.label}>
               <span className="block truncate tabular-nums">
