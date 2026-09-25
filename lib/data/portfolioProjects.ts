@@ -1,5 +1,13 @@
 export type PortfolioCategoryId = 'ecommerce' | 'local';
 
+/** 'client' är ett riktigt kunduppdrag, 'concept' en demosajt vi byggt själva. */
+export type PortfolioKind = 'client' | 'concept';
+
+export const portfolioKindLabels: Record<PortfolioKind, string> = {
+  client: 'Kundcase',
+  concept: 'Koncept',
+};
+
 export interface PortfolioProject {
   slug: string;
   title: string;
@@ -7,8 +15,11 @@ export interface PortfolioProject {
   category: string;
   /** Category used by the filter chips */
   categoryId: PortfolioCategoryId;
-  /** Short result/metric line under the title */
+  kind: PortfolioKind;
+  /** Short neutral line under the title – no results or forecasts */
   metric: string;
+  /** Longer neutral description, used where the project is featured */
+  description?: string;
   /** Logotype, shown by default */
   logo?: string;
   /** Site screenshot, revealed on hover (or on the active card where hover is unavailable) */
@@ -20,51 +31,57 @@ export interface PortfolioProject {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: 'vattentrygg',
+    title: 'Vattentrygg',
+    category: 'Lokal Business',
+    categoryId: 'local',
+    kind: 'client',
+    metric: 'Översvämningsskydd & fastighetsskydd',
+    description:
+      'Webbplats för Vattentrygg, som arbetar med översvämningsskydd och skydd av fastigheter.',
+    logo: '/vattentrygg-logo.webp',
+    siteImage: '/vattentrygg-site.webp',
+    href: '/kontakt',
+    ctaLabel: 'Fråga om caset',
+  },
+  {
     slug: 'peran',
     title: 'Perán',
     category: 'E-handel',
     categoryId: 'ecommerce',
-    metric: 'Prognos: +100–200% trafik',
+    kind: 'concept',
+    metric: 'Restaurang & bordsbokning',
     logo: '/peran-logo.webp',
     siteImage: '/peran-site.webp',
     href: 'https://peran.onrender.com/',
     external: true,
-    ctaLabel: 'Besök sidan',
+    ctaLabel: 'Se demo',
   },
   {
     slug: 'glow',
     title: 'GLOW',
     category: 'E-handel',
     categoryId: 'ecommerce',
+    kind: 'concept',
     metric: 'E-handel & varumärke',
     logo: '/glow-logo.webp',
     siteImage: '/glow-site.webp',
     href: 'https://glow-test.onrender.com/',
     external: true,
-    ctaLabel: 'Besök sidan',
+    ctaLabel: 'Se demo',
   },
   {
     slug: 'minti-wellness',
     title: 'Minti Wellness',
     category: 'Lokal Business',
     categoryId: 'local',
+    kind: 'concept',
     metric: 'Wellness & digital närvaro',
     logo: '/minti-logo.webp',
     siteImage: '/minti-site.webp',
     href: 'https://minti.onrender.com/',
     external: true,
-    ctaLabel: 'Besök sidan',
-  },
-  {
-    slug: 'vattentrygg',
-    title: 'Vattentrygg',
-    category: 'Lokal Business',
-    categoryId: 'local',
-    metric: 'Översvämningsskydd & fastighetsskydd',
-    logo: '/vattentrygg-logo.webp',
-    siteImage: '/vattentrygg-site.webp',
-    href: '/kontakt',
-    ctaLabel: 'Fråga om caset',
+    ctaLabel: 'Se demo',
   },
 ];
 

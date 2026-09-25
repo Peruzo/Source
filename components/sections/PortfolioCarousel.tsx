@@ -11,7 +11,7 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import type { PortfolioProject } from '@/lib/data/portfolioProjects';
+import { portfolioKindLabels, type PortfolioProject } from '@/lib/data/portfolioProjects';
 
 const AUTOPLAY_INTERVAL = 5000;
 const RESUME_AFTER_INTERACTION = 5000;
@@ -648,7 +648,7 @@ function PortfolioCard({
 
       {/* Title block — same position and size on every card */}
       <div className="absolute inset-x-0 top-0 p-5 md:p-6">
-        <span className="text-overline text-teal-dark">{project.category}</span>
+        <span className="text-overline text-teal">{portfolioKindLabels[project.kind]}</span>
         <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-snug text-white md:text-xl">
           {project.title}
         </h3>

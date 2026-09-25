@@ -16,11 +16,15 @@ export default function PortfolioPage() {
   // "Alla" plus a single category is not a choice, so the chips are dropped.
   const showFilters = portfolioCategories.length > 2;
 
+  // Kundcase först, sedan koncept. Sorteringen är stabil, så ordningen i datan
+  // gäller inom varje grupp.
   const filteredProjects = useMemo(
     () =>
-      filter === 'all'
-        ? portfolioProjects
-        : portfolioProjects.filter((project) => project.categoryId === filter),
+      [
+        ...(filter === 'all'
+          ? portfolioProjects
+          : portfolioProjects.filter((project) => project.categoryId === filter)),
+      ].sort((a, b) => Number(b.kind === 'client') - Number(a.kind === 'client')),
     [filter]
   );
 
