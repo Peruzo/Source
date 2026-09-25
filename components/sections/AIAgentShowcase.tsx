@@ -1,27 +1,18 @@
- 'use client';
+'use client';
 
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion } from 'framer-motion';
 
-const testimonials = [
-  {
-    quote:
-      'Vi trodde att e-handel skulle vara krångligt – med Source känns det bokstavligen lika enkelt som att skicka ett sms.',
-    name: 'Emma, grundare av en lokal butik',
-  },
-  {
-    quote:
-      'Vi är inga tekniker. Ändå lanserade vi vår shop på veckor istället för månader, och allt bara fungerar.',
-    name: 'Johan, e-handelsansvarig',
-  },
-  {
-    quote:
-      'Source gör att hela teamet kan jobba med e-handel utan att fastna i tekniska detaljer.',
-    name: 'Sara, marknadschef',
-  },
+// Hämtat från det sajten redan säger om AI:n (FAQ "AI & Automatisering" och
+// AIAssistant). Inga siffror, resultat eller kundnamn.
+const capabilities = [
+  'Analyserar din data och tar fram rapporter med insikter och rekommendationer.',
+  'Svarar på frågor om dina siffror och föreslår ett konkret nästa steg.',
+  'Skriver texter och föreslår innehåll och design för din sajt.',
+  'Automatiserar återkommande uppgifter som e-post, lagerstatus och rapporter.',
 ];
 
-export function AIAgentTestimonials() {
+export function AIAgentShowcase() {
   return (
     <section className="py-20 md:py-28 lg:py-32 bg-white relative overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
@@ -46,7 +37,7 @@ export function AIAgentTestimonials() {
           </p>
         </FadeIn>
 
-        {/* Layout: video + testimonials */}
+        {/* Layout: video + vad AI-agenten gör */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
           {/* Video side */}
           <motion.div
@@ -60,6 +51,8 @@ export function AIAgentTestimonials() {
               <video
                 className="w-full h-full object-cover"
                 src="/Aiagentvid.mp4"
+                poster="/Aiagentvid-poster.webp"
+                preload="metadata"
                 playsInline
                 autoPlay
                 loop
@@ -79,7 +72,7 @@ export function AIAgentTestimonials() {
             </div>
           </motion.div>
 
-          {/* Testimonials side */}
+          {/* Info side */}
           <motion.div
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -87,9 +80,8 @@ export function AIAgentTestimonials() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="lg:col-span-5 space-y-6"
           >
-            {/* Summary / social proof header */}
             <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-5 md:p-6">
-              <p className="text-sm font-semibold text-teal mb-1">
+              <p className="text-sm font-semibold text-teal-dark mb-1">
                 Byggd för entreprenörer, e-handlare och lokala verksamheter.
               </p>
               <p className="text-sm text-gray-600">
@@ -98,25 +90,24 @@ export function AIAgentTestimonials() {
               </p>
             </div>
 
-            {/* Individual quotes */}
-            <div className="space-y-4">
-              {testimonials.map((testimonial, index) => (
-                <motion.figure
-                  key={testimonial.name}
-                  initial={{ opacity: 0, x: 16 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.1 * index }}
-                  className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-[0_18px_45px_rgba(15,23,42,0.04)]"
-                >
-                  <blockquote className="text-sm md:text-base text-gray-800 leading-relaxed">
-                    “{testimonial.quote}”
-                  </blockquote>
-                  <figcaption className="mt-3 text-xs md:text-sm font-medium text-gray-500">
-                    {testimonial.name}
-                  </figcaption>
-                </motion.figure>
-              ))}
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6 shadow-[0_18px_45px_rgba(15,23,42,0.04)]">
+              <h3 className="text-base md:text-lg font-semibold text-black mb-4">
+                Det här gör AI-agenten
+              </h3>
+              <ul className="space-y-3">
+                {capabilities.map((capability) => (
+                  <li
+                    key={capability}
+                    className="flex gap-3 text-sm md:text-base text-gray-800 leading-relaxed"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-dark"
+                    />
+                    {capability}
+                  </li>
+                ))}
+              </ul>
             </div>
           </motion.div>
         </div>
