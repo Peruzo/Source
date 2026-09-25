@@ -135,7 +135,7 @@ export function PortfolioTeaser() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-overline text-teal mb-4"
+            className="text-overline text-teal-dark mb-4"
           >
             PORTFOLIO
           </motion.p>
@@ -153,7 +153,7 @@ export function PortfolioTeaser() {
           <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            className={`hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-teal hover:text-white hover:border-teal transition-all duration-300 ${
+            className={`hidden lg:flex absolute left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-teal-darker hover:text-white hover:border-teal-dark transition-all duration-300 ${
               canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
             }`}
             aria-label="Scroll left"
@@ -164,7 +164,7 @@ export function PortfolioTeaser() {
           <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            className={`hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-teal hover:text-white hover:border-teal transition-all duration-300 ${
+            className={`hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center rounded-full bg-white shadow-lg border border-gray-200 hover:bg-teal-darker hover:text-white hover:border-teal-dark transition-all duration-300 ${
               canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
             }`}
             aria-label="Scroll right"
@@ -203,7 +203,7 @@ export function PortfolioTeaser() {
                         rel="noopener noreferrer"
                         className="block"
                       >
-                        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] border border-gray-200 cursor-pointer mb-4 group-hover:border-teal/50 transition-all duration-300">
+                        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] border border-gray-200 cursor-pointer mb-4 group-hover:border-teal-dark/50 transition-all duration-300">
                           {/* Main image */}
                           {project.logo && (
                             <img
@@ -247,7 +247,7 @@ export function PortfolioTeaser() {
                       </a>
                     ) : (
                       <Link href={project.link} className="block">
-                        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] border border-gray-200 cursor-pointer mb-4 group-hover:border-teal/50 transition-all duration-300">
+                        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-gray-900 aspect-[4/3] border border-gray-200 cursor-pointer mb-4 group-hover:border-teal-dark/50 transition-all duration-300">
                           {/* Main image */}
                           {project.logo && (
                             <img
@@ -293,7 +293,7 @@ export function PortfolioTeaser() {
                     
                     {/* Text below card */}
                     <div className="px-1">
-                      <h3 className="text-base md:text-lg font-semibold text-black mb-1 group-hover:text-teal transition-colors duration-300 leading-tight">
+                      <h3 className="text-base md:text-lg font-semibold text-black mb-1 group-hover:text-teal-dark transition-colors duration-300 leading-tight">
                         {project.title} – {project.metric}
                       </h3>
                       {project.category && (

@@ -257,7 +257,7 @@ export default function ServicesPage() {
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight"
               >
                 Inte bara en tjänst.
-                <span className="block text-teal">En komplett lösning.</span>
+                <span className="block text-teal-dark">En komplett lösning.</span>
               </motion.h1>
 
               <motion.p
@@ -279,7 +279,7 @@ export default function ServicesPage() {
               <AnimatedButton
                 href="/kontakt"
                 size="lg"
-                className="!bg-teal !text-white !shadow-[0_30px_80px_rgba(0,191,166,0.45)] hover:!bg-teal-hover"
+                className="!bg-teal-dark !text-white !shadow-[0_30px_80px_rgba(0,191,166,0.45)] hover:!bg-teal-darker"
               >
                 Boka en demo
               </AnimatedButton>
@@ -360,7 +360,7 @@ export default function ServicesPage() {
                   <AnimatedButton
                     href="/kontakt"
                     size="lg"
-                    className="!bg-teal !text-white !shadow-[0_18px_45px_-15px_rgba(0,191,166,0.55)] hover:!bg-teal-hover"
+                    className="!bg-teal-dark !text-white !shadow-[0_18px_45px_-15px_rgba(0,191,166,0.55)] hover:!bg-teal-darker"
                   >
                     Boka en demo
                   </AnimatedButton>
@@ -495,7 +495,7 @@ export default function ServicesPage() {
                   transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
                   className="relative flex w-full justify-center lg:justify-end"
                 >
-                  <div className="absolute -top-24 -right-10 h-80 w-80 rounded-full bg-teal/15 blur-3xl"></div>
+                  <div className="absolute -top-24 -right-10 h-80 w-80 rounded-full bg-teal-dark/15 blur-3xl"></div>
                   <div className="absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-indigo-200/20 blur-3xl"></div>
                   <div className="relative w-full max-w-lg overflow-hidden rounded-[40px] border border-gray-200 bg-white shadow-[0_45px_120px_-60px_rgba(15,23,42,0.35)]">
                     <video
@@ -860,7 +860,7 @@ export default function ServicesPage() {
                     <div className="mt-6 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 md:text-base text-white/75">
                       {service.included.map((item) => (
                         <div key={item} className="flex items-center gap-3">
-                          <span className="inline-flex h-2 w-2 rounded-full bg-teal"></span>
+                          <span className="inline-flex h-2 w-2 rounded-full bg-teal-dark"></span>
                           <span>{item}</span>
                         </div>
                       ))}
@@ -918,7 +918,7 @@ export default function ServicesPage() {
                           transition={{ delay: 0.2 + i * 0.05, duration: 0.4 }}
                           className="flex items-start gap-3"
                         >
-                          <span className="text-teal mt-1 text-xl">•</span>
+                          <span className="text-teal-dark mt-1 text-xl">•</span>
                           <span className="text-base md:text-lg">{item}</span>
                         </motion.li>
                       ))}
@@ -974,7 +974,7 @@ export default function ServicesPage() {
                 transition={{ delay: i * 0.1, duration: 0.6 }}
                 className={`rounded-2xl p-8 ${
                   pkg.highlight
-                    ? 'bg-teal text-white'
+                    ? 'bg-teal-dark text-white'
                     : 'bg-white border border-gray-200'
                 }`}
               >
@@ -993,7 +993,7 @@ export default function ServicesPage() {
           <FadeIn delay={0.4} className="text-center mt-12">
             <Link
               href="/priser"
-              className="inline-flex items-center gap-2 text-teal hover:text-teal-hover font-semibold text-lg transition-colors"
+              className="inline-flex items-center gap-2 text-teal-dark hover:text-teal-hover font-semibold text-lg transition-colors"
             >
               Se detaljerade priser
               <span>→</span>
@@ -1013,7 +1013,7 @@ export default function ServicesPage() {
               <AnimatedButton href="/kontakt" variant="primary" size="lg">
                 Boka en demo
               </AnimatedButton>
-              <AnimatedButton href="/priser" variant="secondary" size="lg">
+              <AnimatedButton href="/priser" variant="secondary" size="lg" onDark>
                 Se priser
               </AnimatedButton>
             </div>

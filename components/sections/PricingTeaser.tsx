@@ -19,15 +19,15 @@ export function PricingTeaser() {
       <div className="absolute inset-0 bg-gradient-to-br from-white via-beige-light to-white"></div>
       {!nofx.glow && ( // TEMP: flicker bisect, remove after diagnosis
         <>
-          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal/5 blur-3xl rounded-full"></div>
-          <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-teal/5 blur-3xl rounded-full"></div>
+          <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-teal-dark/5 blur-3xl rounded-full"></div>
+          <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-teal-dark/5 blur-3xl rounded-full"></div>
         </>
       )}
 
       <div className="relative max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12 lg:mb-16">
-            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-overline text-teal mb-4">
+            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-overline text-teal-dark mb-4">
               TRANSPARENT PRISSÄTTNING
             </motion.p>
             <h2 className="text-section-title text-black mb-6">
@@ -38,7 +38,7 @@ export function PricingTeaser() {
           <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="relative">
             <div className="glass-light rounded-3xl p-8 md:p-12 border border-gray-200 relative overflow-hidden">
               {/* TEMP: flicker bisect, remove after diagnosis */}
-              {!nofx.glow && <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal/10 rounded-full blur-3xl"></div>}
+              {!nofx.glow && <div className="absolute -top-20 -right-20 w-64 h-64 bg-teal-dark/10 rounded-full blur-3xl"></div>}
               <div className="relative z-10">
                 <div className="text-center mb-12">
                   <motion.div initial={{ scale: 0.9, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="inline-block">
@@ -54,7 +54,7 @@ export function PricingTeaser() {
                   <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm md:text-base text-gray-700 mb-8">
                     {['Ingen bindningstid', 'Allt inkluderat', 'Inga dolda kostnader'].map((text) => (
                       <div key={text} className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-teal" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-teal-dark" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                         <span className="font-medium">{text}</span>
@@ -64,7 +64,7 @@ export function PricingTeaser() {
                   <div className="grid grid-cols-2 gap-4 mb-10">
                     {features.map((feature, i) => (
                       <motion.div key={feature.text} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }} className="flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-300 shadow-sm">
-                        <div className="w-2 h-2 bg-teal rounded-full flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-teal-dark rounded-full flex-shrink-0"></div>
                         <span className="text-sm md:text-base text-gray-700 font-medium">{feature.text}</span>
                       </motion.div>
                     ))}
@@ -79,7 +79,7 @@ export function PricingTeaser() {
               </div>
             </div>
 
-            <motion.div initial={{ opacity: 0, rotate: -10, scale: 0.8 }} whileInView={{ opacity: 1, rotate: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.4, duration: 0.6, type: 'spring' }} className="absolute -top-6 -right-6 bg-teal text-white px-6 py-3 rounded-full font-semibold shadow-lg hidden md:block">
+            <motion.div initial={{ opacity: 0, rotate: -10, scale: 0.8 }} whileInView={{ opacity: 1, rotate: 0, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.4, duration: 0.6, type: 'spring' }} className="absolute -top-6 -right-6 bg-teal-dark text-white px-6 py-3 rounded-full font-semibold shadow-lg hidden md:block">
               Mest valda: Growth
             </motion.div>
           </motion.div>

@@ -11,6 +11,8 @@ interface AnimatedButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /** Sätt på mörk sektion: secondary/ghost byter till vitt, som teal inte klarar mot svart. */
+  onDark?: boolean;
 }
 
 export function AnimatedButton({
@@ -20,6 +22,7 @@ export function AnimatedButton({
   variant = 'primary',
   size = 'md',
   className = '',
+  onDark = false,
 }: AnimatedButtonProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const buttonRef = useRef<HTMLButtonElement | HTMLAnchorElement>(null);
@@ -42,10 +45,15 @@ export function AnimatedButton({
   // every variant (transparent on primary) so the variants line up, no fixed heights or widths.
   const baseStyles = 'relative inline-flex items-center justify-center whitespace-nowrap rounded-full border font-medium leading-tight transition-colors duration-200 overflow-hidden';
 
+  // Se kommentaren i Button.tsx: teal-dark duger som text bara mot ljus botten.
   const variantStyles = {
-    primary: 'border-transparent bg-teal text-white hover:bg-teal-hover',
-    secondary: 'border-teal bg-transparent text-teal hover:bg-teal/10',
-    ghost: 'border-gray-200 bg-transparent text-current hover:border-teal hover:text-teal',
+    primary: 'border-transparent bg-teal-dark text-white hover:bg-teal-darker active:bg-teal-darkest',
+    secondary: onDark
+      ? 'border-white bg-transparent text-white hover:bg-white/10'
+      : 'border-teal-dark bg-transparent text-teal-dark hover:bg-teal-dark/10',
+    ghost: onDark
+      ? 'border-white/40 bg-transparent text-white hover:border-white hover:bg-white/10'
+      : 'border-gray-200 bg-transparent text-current hover:border-teal-dark hover:text-teal-dark',
   };
 
   const sizeStyles = {
