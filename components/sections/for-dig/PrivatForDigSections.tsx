@@ -139,7 +139,7 @@ export function PrivatForDigSections() {
       </FullBleedImageSection>
 
       {/* 4 – Lägg upp dina produkter eller tjänster. Widgetarna till vänster
-          på vit bakgrund, texten centrerad bredvid.
+          på en ljus panel som fyller klippformen, texten centrerad bredvid.
           Exempelinnehållet (fiktiv butik, kundens priser) ligger i
           for-dig/product-widgets/content.ts. */}
       <ClippedImageSection
@@ -154,7 +154,9 @@ export function PrivatForDigSections() {
           'Här står ett andra stycke som förklarar vad du kan styra själv och vad vi gör åt dig.',
         ]}
         media={
-          <div className="lg:py-16 lg:pl-20 lg:pr-4">
+          // Panel kant till kant i klippformen. Djupt hörn (10rem) uppe till
+          // höger på lg – därför 80px luft upptill mot 32px på sidan.
+          <div className="flex flex-col bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-12 lg:pl-8 lg:pr-8 lg:pt-20 xl:pl-12">
             <ProductWidgets />
           </div>
         }
@@ -175,8 +177,8 @@ export function PrivatForDigSections() {
         <InvoiceWidgets />
       </FullBleedImageSection>
 
-      {/* 6 – Kampanjer. Kollaget till höger på vit bakgrund, texten
-          centrerad bredvid.
+      {/* 6 – Kampanjer. Kollaget till höger på en ljus panel som fyller
+          klippformen, texten centrerad bredvid.
           Exempelinnehållet ligger i for-dig/campaign-widgets/content.ts. */}
       <ClippedImageSection
         id="kampanjer"
@@ -190,7 +192,9 @@ export function PrivatForDigSections() {
           'Här står ett andra stycke om vad du kan mäta och följa upp.',
         ]}
         media={
-          <div className="lg:py-16 lg:pl-4 lg:pr-20">
+          // Panel kant till kant i klippformen. Djupt hörn (10rem) nere till
+          // vänster på lg – därför 80px luft nedtill mot 32px på sidan.
+          <div className="flex flex-col bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-20 lg:pl-8 lg:pr-8 lg:pt-12 xl:pr-12">
             <CampaignWidgets />
           </div>
         }

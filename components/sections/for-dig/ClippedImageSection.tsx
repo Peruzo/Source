@@ -21,8 +21,9 @@ type ClippedImageSectionProps = {
   video?: SectionVideo;
   /**
    * Live content in the clipped shape instead of `image` or `video` (e.g.
-   * ProductWidgets). Takes precedence over both. Sets its own height and
-   * background; it is not clipped to the asymmetric shape.
+   * ProductWidgets). Takes precedence over both. Gets the same asymmetric clip
+   * and, on lg, the full height of the section; it supplies its own
+   * background and keeps its content clear of the clipped corners.
    */
   media?: ReactNode;
   /** Which side the image sits on from `lg` and up. Mirror the layout with this. */
@@ -45,9 +46,10 @@ const backgrounds: Record<NonNullable<ClippedImageSectionProps['background']>, s
  * on the other. Sections 1, 4 and 6 of the Privat page – section 4 mirrors
  * section 1 by flipping `imageSide`.
  *
- * With `sticky={false}` (what every section on the page uses) the text is
- * centred vertically beside the visual and a photo/video box stretches to the
- * text's height. `sticky` keeps the old "text pinned while a tall visual
+ * With `sticky={false}` (what every section on the page uses) the section is
+ * at least one screen tall on lg (100svh, or the text's height if that is
+ * more), the text is centred vertically, and the visual – photo, video or
+ * `media` – fills its column edge to edge. `sticky` keeps the old "text pinned while a tall visual
  * scrolls past" mode, but note it does not pin today: the section's
  * `overflow-hidden` makes the section its own scroll container.
  */
@@ -119,7 +121,11 @@ export function ClippedImageSection({
       id={id}
       className={`relative w-full overflow-hidden ${backgrounds[background]}`}
     >
-      <div className={`grid grid-cols-1 lg:grid-cols-2 ${sticky ? 'items-start' : 'items-start lg:items-stretch'}`}>
+      <div
+        className={`grid grid-cols-1 lg:grid-cols-2 ${
+          sticky ? 'items-start' : 'items-start lg:min-h-[100svh] lg:items-stretch'
+        }`}
+      >
         {/* Image column. Photo/video: on lg the box stretches to the text
             column's height (min 640px), so the section is exactly as tall as
             its message. `media` sets its own height. */}
@@ -142,10 +148,10 @@ export function ClippedImageSection({
                   }
                 : undefined
             }
-            // `media` gets neither the clip nor overflow-hidden: widgets on a
-            // white page would only have their corners and shadows cut off.
-            className={`relative w-full ${
-              media ? '' : `h-[60svh] min-h-[380px] overflow-hidden lg:h-full lg:min-h-[640px] ${clip}`
+            // Photo/video: fixed height below lg, the full section height on lg.
+            // `media` sets its own height below lg and fills the section on lg.
+            className={`relative w-full overflow-hidden ${clip} ${
+              media ? 'lg:h-full' : 'h-[60svh] min-h-[380px] lg:h-full lg:min-h-[640px]'
             }`}
           >
             {media ?? (

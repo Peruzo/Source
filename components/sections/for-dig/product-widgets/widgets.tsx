@@ -22,11 +22,12 @@ import {
 type MoneyFormat = { currency: string; locale: string };
 
 /**
- * 1 – Dense product grid with square photos, so it has a natural height and
- * never depends on the box around it. `className` sets the column count and
+ * 1 – Dense product grid. Photos are square by default, so the grid has a
+ * natural height; given more height (the grid as a flex item with room to
+ * grow) the rows share it equally and the PHOTOS grow – text never scales. `className` sets the column count and
  * may hide trailing items per container width, e.g.
- * `grid-cols-3 @xl:grid-cols-4 [&>li:nth-child(n+10)]:hidden
- * @xl:[&>li:nth-child(n+10)]:flex`. Hidden items are `display: none`, so they
+ * `grid-cols-3 @xl:grid-cols-5 @max-xl:[&>li:nth-child(n+10)]:hidden
+ * @xl:[&>li:nth-child(n+11)]:hidden`. Hidden items are `display: none`, so they
  * are out of the accessibility tree as well.
  */
 export function ProductGrid({
@@ -36,10 +37,10 @@ export function ProductGrid({
   locale,
 }: { content: ProductGridContent; className?: string } & MoneyFormat) {
   return (
-    <ul aria-label={content.label} className={`grid w-full gap-x-2.5 gap-y-3 ${className}`}>
+    <ul aria-label={content.label} className={`grid w-full auto-rows-fr gap-x-2.5 gap-y-3 ${className}`}>
       {content.products.map((product) => (
         <li key={product.id} className="flex min-w-0 flex-col">
-          <div className={`relative aspect-square overflow-hidden bg-gray-100 ${RADIUS.field}`}>
+          <div className={`relative aspect-square grow overflow-hidden bg-gray-100 ${RADIUS.field}`}>
             {/* Plain <img>: must render outside Next (Remotion), see PaymentCards. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -157,7 +158,7 @@ export function PressedAddButton() {
 }
 
 /**
- * 3 – A bookable service instead of a product. In a container of 36rem or
+ * 3 – A bookable service instead of a product. In a container of 28rem or
  * more it lays out wide – name and price left, times and button right – so it
  * carries the same weight as the product grid above it. The time slots are the one
  * thing here that carries state, so they are real radio buttons (native
@@ -177,7 +178,7 @@ export function ServiceBooking({
     <div
       role="group"
       aria-labelledby={titleId}
-      className={`w-full bg-white p-5 text-left text-black @xl:grid @xl:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] @xl:items-end @xl:gap-8 @xl:p-7 ${CARD_EDGE} ${RADIUS.card}`}
+      className={`w-full bg-white p-5 text-left text-black @md:grid @md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] @md:items-end @md:gap-6 @xl:gap-8 @xl:p-7 ${CARD_EDGE} ${RADIUS.card}`}
     >
       <div>
         <h3 id={titleId} className="text-ui-title">
@@ -188,7 +189,7 @@ export function ServiceBooking({
       </div>
 
       <div>
-        <div className="mt-5 @xl:mt-0">
+        <div className="mt-5 @md:mt-0">
           <p id={timesId} className="text-ui-label font-semibold text-gray-600">
             {content.timesHeading}
           </p>
@@ -220,7 +221,7 @@ export function ServiceBooking({
           </div>
         </div>
 
-        <div className="mt-5 @xl:mt-4">
+        <div className="mt-5 @md:mt-4">
           <FauxBlockButton tone="dark">{content.bookLabel}</FauxBlockButton>
         </div>
       </div>
