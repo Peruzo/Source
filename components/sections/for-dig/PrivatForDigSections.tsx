@@ -29,26 +29,27 @@ import { ProductWidgets } from './ProductWidgets';
 
 const IMG = '/images/for-dig/privat';
 
+// En mening per steg, ca 70 tecken – texten ligger över bild på desktop.
 const steps: GettingStartedStep[] = [
   {
     number: '01',
     title: 'Placeholder – steg ett',
-    body: 'Här står en beskrivning av det första steget. Skriv ungefär så här mycket text: två meningar som förklarar vad som händer och vad du behöver göra.',
+    body: 'Här står en mening om det första steget, ungefär så här lång.',
   },
   {
     number: '02',
     title: 'Placeholder – steg två',
-    body: 'Här står en beskrivning av det andra steget. Samma längd som ovan så att stegen ser jämna ut när man scrollar igenom dem.',
+    body: 'Här står en mening om vad som händer i steg två och vad du gör.',
   },
   {
     number: '03',
     title: 'Placeholder – steg tre',
-    body: 'Här står en beskrivning av det tredje steget. Två meningar räcker – längre text gör att den stora typografin tappar sin verkan.',
+    body: 'Här står en mening om steg tre – en rad räcker på desktop.',
   },
   {
     number: '04',
     title: 'Placeholder – steg fyra',
-    body: 'Här står en beskrivning av det fjärde steget. Ta bort det här steget om ni landar i tre steg i stället – layouten klarar båda.',
+    body: 'Här står en mening om steg fyra – ta bort steget om ni landar i tre.',
   },
 ];
 
@@ -212,16 +213,21 @@ export function PrivatForDigSections() {
         <SubscriptionWidgets />
       </FullBleedImageSection>
 
-      {/* 8 – Så kommer du igång. */}
+      {/* 8 – Så kommer du igång. Fullbreddsbild med mörk gradient från vänster. */}
       <GettingStartedSection
         id="sa-kommer-du-igang"
         eyebrow="KOM IGÅNG"
         title="Så kommer du igång"
         steps={steps}
-        background="beige"
+        image={{
+          src: `${IMG}/08-sa-kommer-du-igang.webp`,
+          alt: 'En kvinna i tjock stickad tröja sitter i en grön soffa och skriver på en laptop, i ett ljust vardagsrum med en vägg full av inramade konstverk och en monstera.',
+        }}
       >
         {/* TODO: pris */}
-        <Button href="/kontakt" variant="primary" size="lg">
+        {/* secondary, inte primary: vit text på teal är bara 2,26:1. Teal på
+            sektionens mörka ton (#001310) är 8,1:1. */}
+        <Button href="/kontakt" variant="secondary" size="lg">
           Placeholder – knapp under stegen
         </Button>
       </GettingStartedSection>
