@@ -22,7 +22,7 @@ type ClippedImageSectionProps = {
   /**
    * Live content in the clipped shape instead of `image` or `video` (e.g.
    * ProductWidgets). Takes precedence over both. Sets its own height and
-   * background – the shape wraps it instead of imposing the tall photo height.
+   * background; it is not clipped to the asymmetric shape.
    */
   media?: ReactNode;
   /** Which side the image sits on from `lg` and up. Mirror the layout with this. */
@@ -45,10 +45,11 @@ const backgrounds: Record<NonNullable<ClippedImageSectionProps['background']>, s
  * on the other. Sections 1, 4 and 6 of the Privat page – section 4 mirrors
  * section 1 by flipping `imageSide`.
  *
- * The "sticky text while the image scrolls past" effect is pure CSS: the image
- * column is taller than the viewport, the text column is `position: sticky`.
- * No JS scroll listeners, so it degrades to a normal two-column layout below
- * `lg` and costs nothing on mobile.
+ * With `sticky={false}` (what every section on the page uses) the text is
+ * centred vertically beside the visual and a photo/video box stretches to the
+ * text's height. `sticky` keeps the old "text pinned while a tall visual
+ * scrolls past" mode, but note it does not pin today: the section's
+ * `overflow-hidden` makes the section its own scroll container.
  */
 export function ClippedImageSection({
   id,
@@ -118,8 +119,10 @@ export function ClippedImageSection({
       id={id}
       className={`relative w-full overflow-hidden ${backgrounds[background]}`}
     >
-      <div className="grid grid-cols-1 items-start lg:grid-cols-2">
-        {/* Image column – taller than the viewport so the text can stick beside it. */}
+      <div className={`grid grid-cols-1 lg:grid-cols-2 ${sticky ? 'items-start' : 'items-start lg:items-stretch'}`}>
+        {/* Image column. Photo/video: on lg the box stretches to the text
+            column's height (min 640px), so the section is exactly as tall as
+            its message. `media` sets its own height. */}
         <div
           className={`relative px-6 pt-16 md:px-10 lg:px-0 lg:pt-0 ${
             imageFirst ? 'lg:order-1' : 'lg:order-2'
@@ -139,9 +142,11 @@ export function ClippedImageSection({
                   }
                 : undefined
             }
-            className={`relative w-full overflow-hidden ${
-              media ? '' : 'h-[60svh] min-h-[380px] lg:h-[150vh] lg:min-h-[900px]'
-            } ${clip}`}
+            // `media` gets neither the clip nor overflow-hidden: widgets on a
+            // white page would only have their corners and shadows cut off.
+            className={`relative w-full ${
+              media ? '' : `h-[60svh] min-h-[380px] overflow-hidden lg:h-full lg:min-h-[640px] ${clip}`
+            }`}
           >
             {media ?? (
               <>
@@ -205,9 +210,9 @@ export function ClippedImageSection({
 
         {/* Text column */}
         <div
-          className={`px-6 py-20 md:px-10 md:py-28 lg:px-20 lg:py-32 ${
+          className={`px-6 py-20 md:px-10 md:py-28 lg:px-20 ${
             imageFirst ? 'lg:order-2' : 'lg:order-1'
-          } ${sticky ? 'lg:sticky lg:top-24 lg:self-start' : ''}`}
+          } ${sticky ? 'lg:sticky lg:top-24 lg:self-start lg:py-32' : 'lg:self-center lg:py-16'}`}
         >
           <div className="max-w-[34rem]">
             {eyebrow ? (
