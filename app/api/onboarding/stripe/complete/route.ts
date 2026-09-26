@@ -5,6 +5,7 @@ import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboa
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import Stripe from 'stripe';
 import { sendTransactionalEmail } from '@/lib/mail/mailService';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 /**
  * POST /api/onboarding/stripe/complete
@@ -18,10 +19,7 @@ export async function POST(request: Request) {
     // Hard guard: kräv autentisering med user.sub
     if (!session?.user?.sub) {
       console.warn('[Onboarding Stripe Complete] POST called without authentication');
-      return NextResponse.json(
-        { error: 'NOT_AUTHENTICATED', success: false },
-        { status: 401 }
-      );
+      return onboardingNotFound();
     }
     
     const userSub = session.user.sub;
@@ -42,6 +40,10 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
+
+    // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
+    const denied = await requireOnboardingOwner(userSub, onboardingId);
+    if (denied) return denied;
 
     // Hämta state för att verifiera status
     const events = await listOnboardingEvents(onboardingId);

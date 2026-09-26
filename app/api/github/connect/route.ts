@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBaseUrl } from '@/lib/utils/base-url';
 import { getOrCreateAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { auth0 } from '@/lib/auth0';
+import { requireOnboardingOwner } from '@/lib/onboarding/ownership';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
@@ -12,7 +14,9 @@ import { reduceOnboarding } from '@/lib/onboarding/reducer';
  * Om private/inaccessible → redirect till GitHub OAuth.
  * Om public → returnera fel (public repos ska inte använda OAuth-flödet).
  *
- * ARKITEKTURREGEL: Ingen Auth0. Endast cookie-baserad anonym session (anon_<uuid>).
+ * ÄGARSKAP: Auth0-session krävs och onboardingId måste vara bundet till anroparens
+ * userSub, annars 404 (samma svar utan session). OAuth-state fortsätter att bära den
+ * anonyma cookie-sessionen (anon_<uuid>) eftersom callback och jobb-polling bygger på den.
  * Kräver onboardingId i query (frontend skickar från useOnboardingId).
  */
 export async function GET(request: NextRequest) {
@@ -33,8 +37,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const sessionId = await getOrCreateAnonymousSessionId();
   const onboardingId = providedOnboardingId;
+
+  // ÄGARSKAP: onboardingId måste vara bundet till anroparens Auth0-userSub (404 annars)
+  const session = await auth0.getSession();
+  const denied = await requireOnboardingOwner(session?.user?.sub, onboardingId);
+  if (denied) return denied;
+
+  const sessionId = await getOrCreateAnonymousSessionId();
 
   // FSM-status-guard: GitHub OAuth är endast tillåten i code_pending
   const events = await listOnboardingEvents(onboardingId);

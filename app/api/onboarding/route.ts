@@ -3,15 +3,16 @@ import { auth0 } from '@/lib/auth0';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { getActiveOnboardingId } from '@/lib/storage/onboarding-sessions';
-import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 /**
  * GET /api/onboarding?onboardingId=...
  * Hämtar onboarding-state (read-only).
- * 
- * KRITISK: Använder ENDAST anonyma sessioner (cookie-based).
- * Auth0-init får INTE ske för onboarding GET (förhindrar implicit Auth0-init).
- * 
+ *
+ * Kräver Auth0-session. Utan session → 404. Med onboardingId i query krävs att
+ * id:t är bundet till anroparens userSub, annars 404 (samma svar i båda fallen,
+ * så att ett giltigt id inte kan bekräftas utifrån).
+ *
  * KRITISK FIX: GET-endpoint skapar ALDRIG onboarding-sessioner.
  * Om onboardingId saknas → returnera { state: null }
  * Om 0 events → returnera tom state, skapa INGET
@@ -19,27 +20,22 @@ import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 export async function GET(request: NextRequest) {
   try {
     const session = await auth0.getSession();
-    let sessionId: string | null = null;
 
-    if (session?.user?.sub) {
-      sessionId = session.user.sub;
-    } else {
-      sessionId = await getAnonymousSessionId();
+    if (!session?.user?.sub) {
+      return onboardingNotFound();
     }
 
-    // Om ingen session finns → returnera null state
-    if (!sessionId) {
-      return NextResponse.json({
-        state: null,
-        onboardingId: null,
-        eventsCount: 0,
-      });
-    }
-    
-    
+    const sessionId = session.user.sub;
+
     const searchParams = request.nextUrl.searchParams;
     let onboardingId = searchParams.get('onboardingId');
-    
+
+    // ÄGARSKAP: explicit onboardingId måste vara bundet till anroparens userSub (404 annars)
+    if (onboardingId) {
+      const denied = await requireOnboardingOwner(sessionId, onboardingId);
+      if (denied) return denied;
+    }
+
     // Om onboardingId saknas, försök hämta aktiv onboardingId (read-only)
     if (!onboardingId) {
       onboardingId = await getActiveOnboardingId(sessionId);

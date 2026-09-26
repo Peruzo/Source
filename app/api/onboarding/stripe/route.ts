@@ -5,6 +5,7 @@ import { sendToAdminPortal } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 /**
  * KRITISK: Stripe SDK-init sker på runtime (request scope), inte module scope.
@@ -36,13 +37,7 @@ export async function POST(request: Request) {
     
     if (!session?.user?.sub) {
       console.warn('[Onboarding Stripe] POST called without Auth0 authentication');
-      return NextResponse.json(
-        {
-          error: 'AUTH_REQUIRED',
-          message: 'User must be authenticated to start Stripe onboarding',
-        },
-        { status: 401 }
-      );
+      return onboardingNotFound();
     }
     
     const userSub = session.user.sub;
@@ -59,6 +54,10 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
+
+    // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
+    const denied = await requireOnboardingOwner(userSub, onboardingId);
+    if (denied) return denied;
 
     // Använd canonical base URL (throwar error om den saknas, ingen fallback till localhost)
     const baseUrl = getBaseUrl();
