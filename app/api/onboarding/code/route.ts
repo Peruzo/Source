@@ -6,6 +6,7 @@ import { auth0 } from '@/lib/auth0';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
 import { streamUploadToWorker } from '@/lib/utils/worker-upload';
 import { createGitHubJob } from '@/lib/storage/github-jobs';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 /**
  * Sanitize filename: keep only alphanumerics, dots, dashes, underscores.
@@ -23,10 +24,7 @@ export async function POST(request: Request) {
 
     if (!session?.user?.sub) {
       console.warn('[Onboarding Code] POST called without Auth0 authentication');
-      return NextResponse.json(
-        { error: 'AUTH_REQUIRED', message: 'User must be authenticated to submit code' },
-        { status: 401 }
-      );
+      return onboardingNotFound();
     }
 
     const userSub = session.user.sub;
@@ -43,6 +41,10 @@ export async function POST(request: Request) {
     }
 
     const onboardingId = providedOnboardingId;
+
+    // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
+    const denied = await requireOnboardingOwner(userSub, onboardingId);
+    if (denied) return denied;
 
     const repoLink = String(formData.get('repoLink') || '').trim();
     const codeText = String(formData.get('codeText') || '').trim();
