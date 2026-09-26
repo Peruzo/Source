@@ -4,6 +4,7 @@ import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerifiedFromEv
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
 import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { auth0 } from '@/lib/auth0';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 const statusMap: Record<string, string> = {
   questions: 'påbörjad',
@@ -27,13 +28,7 @@ export async function POST(request: Request) {
     
     if (!session?.user?.sub) {
       console.warn('[Onboarding Step] POST called without Auth0 authentication');
-      return NextResponse.json(
-        {
-          error: 'AUTH_REQUIRED',
-          message: 'User must be authenticated to update onboarding steps',
-        },
-        { status: 401 }
-      );
+      return onboardingNotFound();
     }
     
     const userSub = session.user.sub;
@@ -53,6 +48,10 @@ export async function POST(request: Request) {
     }
     
     const onboardingId = providedOnboardingId;
+
+    // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
+    const denied = await requireOnboardingOwner(userSub, onboardingId);
+    if (denied) return denied;
 
     // BACKEND TOLERANS: Om step saknas → inferera från nuvarande FSM-state
     let currentStep = step;

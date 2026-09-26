@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 import { patchAdminOnboarding } from '@/lib/api/admin-portal';
 import { appendOnboardingEvent } from '@/lib/storage/onboarding-events';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 
@@ -22,11 +23,9 @@ export async function POST(request: Request) {
     // Auth
     const session = await auth0.getSession();
     if (!session?.user?.sub) {
-      return NextResponse.json(
-        { success: false, error: 'AUTH_REQUIRED' },
-        { status: 401 }
-      );
+      return onboardingNotFound();
     }
+    const userSub = session.user.sub;
 
     const body = await request.json().catch(() => null);
     if (!body) {
@@ -44,6 +43,10 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
+    const denied = await requireOnboardingOwner(userSub, onboardingId);
+    if (denied) return denied;
 
     // Validera gcsPath-format för säkerhet
     if (!gcsPath.match(/^gs:\/\/[^/]+\/upload\/[a-f0-9]{32}\.zip$/)) {
