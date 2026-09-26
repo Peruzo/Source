@@ -24,6 +24,11 @@ export default async function OnboardingLoginPage() {
   }
 
   // 2️⃣ Kolla onboarding-status i kundportalen
+  // OBS: redirect() får INTE anropas inuti try/catch. Next.js redirect() kastar ett
+  // internt NEXT_REDIRECT-fel som annars fångas av catch-blocket, loggas som
+  // "status check failed" och kunden skickas till frågeformuläret i stället för
+  // dashboard. Därför sätts bara en flagga här och redirect sker efter blocket.
+  let onboardingCompleted = false;
   try {
     const res = await fetch(
       `${process.env.CUSTOMER_PORTAL_URL}/api/public/onboarding-status?sub=${encodeURIComponent(session.user.sub)}`,
@@ -32,13 +37,14 @@ export default async function OnboardingLoginPage() {
 
     if (res.ok) {
       const data = await res.json();
-
-      if (data.onboardingStatus === 'completed') {
-        redirect(`${process.env.CUSTOMER_PORTAL_URL}/dashboard`);
-      }
+      onboardingCompleted = data.onboardingStatus === 'completed';
     }
   } catch (err) {
     console.error('Onboarding status check failed:', err);
+  }
+
+  if (onboardingCompleted) {
+    redirect(`${process.env.CUSTOMER_PORTAL_URL}/dashboard`);
   }
 
   // 3️⃣ Inte completed → fortsätt onboarding
