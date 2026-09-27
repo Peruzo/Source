@@ -105,6 +105,8 @@ export function SaleProductCard({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={product.image.src}
+          loading="lazy"
+          decoding="async"
           alt={product.image.alt ?? ''}
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -152,6 +154,8 @@ export function SaleGrid({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.image.src}
+              loading="lazy"
+              decoding="async"
               alt={product.image.alt ?? ''}
               className="absolute inset-0 h-full w-full object-cover"
             />
@@ -287,6 +291,8 @@ export function CreateCampaignDialog({
             <img
               key={product.id}
               src={product.image.src}
+              loading="lazy"
+              decoding="async"
               alt=""
               className={`h-5 w-5 bg-gray-100 object-cover ring-2 ring-white ${RADIUS.control}`}
             />

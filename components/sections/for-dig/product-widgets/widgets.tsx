@@ -40,13 +40,20 @@ export function ProductGrid({
     <ul aria-label={content.label} className={`grid w-full auto-rows-fr gap-x-2.5 gap-y-3 ${className}`}>
       {content.products.map((product) => (
         <li key={product.id} className="flex min-w-0 flex-col">
-          <div className={`relative aspect-square grow overflow-hidden bg-gray-100 ${RADIUS.field}`}>
+          {/* The tile grows taller than it is wide on desktop (down to ~0.55:1).
+              The photos are square with the product centred on #f1f1f1, so
+              `object-contain` on the same colour shows the whole product and
+              the square melts into the tile – `object-cover` cut off the sides
+              of wide products (shoe pairs, coat). */}
+          <div className={`relative aspect-square grow overflow-hidden bg-[#f1f1f1] ${RADIUS.field}`}>
             {/* Plain <img>: must render outside Next (Remotion), see PaymentCards. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.image.src}
               alt={product.image.alt ?? ''}
-              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-contain"
             />
           </div>
           <p className="text-ui-label mt-1.5 truncate text-black">{product.name}</p>

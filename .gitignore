@@ -42,3 +42,6 @@ next-env.d.ts
 
 # old submodule dir (app is now at repo root)
 /Source
+
+# image originals (PNG, ~30 MB) – kept locally, WebP output is what gets committed
+/assets/originals/
