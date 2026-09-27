@@ -6,6 +6,47 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { CubeIcon, BanknotesIcon, TruckIcon } from '@heroicons/react/24/solid';
 import { useEffect, useRef } from 'react';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import { ClippedImageSection } from '@/components/sections/for-dig/ClippedImageSection';
+import { FeatureCarousel } from '@/components/sections/tjanster/FeatureCarousel';
+import { ServiceFullBleed } from '@/components/sections/tjanster/ServiceFullBleed';
+import { ServicePageLayout } from '@/components/sections/tjanster/ServicePageLayout';
+import { ServicePicture } from '@/components/sections/tjanster/ServicePicture';
+import { StickySteps } from '@/components/sections/tjanster/StickySteps';
+import { RestockSuggestion, ScanCard, StockCounter } from '@/components/sections/tjanster/widgets/InventoryWidgets';
+import {
+  inventarierFeatures,
+  inventarierImages,
+  inventarierImport,
+  inventarierRestock,
+  inventarierReturns,
+  inventarierSteps,
+  inventarierVardag,
+  inventarierWidgets as w,
+} from '@/lib/data/tjanster/inventarier';
+
+const returnIcons = [CubeIcon, TruckIcon, BanknotesIcon];
+
+const steps = [
+  {
+    ...inventarierSteps.steps[0],
+    visual: ({ active }: { active: boolean }) => (
+      <ScanCard active={active} title={w.scan.title} found={w.scan.found} ean={w.ean} product={w.product} variant={w.variant} />
+    ),
+  },
+  {
+    ...inventarierSteps.steps[1],
+    visual: ({ active }: { active: boolean }) => (
+      <StockCounter active={active} {...w.stock} product={w.product} variant={w.variant} />
+    ),
+  },
+  {
+    ...inventarierSteps.steps[2],
+    visual: ({ active }: { active: boolean }) => (
+      <RestockSuggestion active={active} {...w.restock} product={w.product} variant={w.variant} />
+    ),
+  },
+];
 
 export default function InventarierPage() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -94,158 +135,206 @@ export default function InventarierPage() {
         </Container>
       </section>
 
-      <section className="flex min-h-[100svh] items-center bg-[#eceef2] py-20 md:py-24 lg:py-28">
-        <Container size="xl" className="max-w-[1520px]">
-          <div className="grid grid-cols-1 items-center gap-12 md:gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24 xl:gap-28">
-            <div className="max-w-[620px] space-y-8">
-              <p className="text-xs font-medium uppercase tracking-[0.36em] text-gray-500">
-                INVENTARIER
-              </p>
-              <h2 className="text-[2.1rem] font-semibold leading-[1.08] tracking-tight text-[#111111] sm:text-5xl lg:text-[3.15rem]">
-                Håll koll i realtid på ditt lager
-              </h2>
-              <p className="max-w-[58ch] text-base leading-relaxed text-gray-700 md:text-lg">
-                Se lagersaldo, produktvarianter och viktiga uppdateringar på alla dina enheter — i en
-                och samma vy.
-              </p>
-            </div>
-
-            <div className="w-full">
-              <div className="relative mx-auto w-full max-w-[980px] overflow-hidden rounded-[30px] border border-black/5 shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
-                <Image
-                  src="/inventirynewone.png"
-                  alt="Inventarier i realtid"
-                  width={2200}
-                  height={1500}
-                  className="h-auto w-full object-cover object-right"
-                  priority={false}
-                />
-                <div className="absolute inset-0 bg-black/10" />
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <section className="relative min-h-[100svh] w-full overflow-hidden text-white">
-        <video
-          src="/0331.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right"
+      <ServicePageLayout>
+        {/* 2 – Koll i vardagen: A1 som egen sektion efter originalheron */}
+        <ServiceFullBleed
+          eyebrow={inventarierVardag.eyebrow}
+          title={inventarierVardag.title}
+          body={inventarierVardag.body}
+          cta={inventarierVardag.cta}
+          image={inventarierImages.hero}
+          tone="dark"
+          textPosition="top-left"
         />
-        <div className="absolute inset-0 bg-black/15 md:bg-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
 
-        <Container className="relative z-10 flex min-h-[100svh] items-center">
-          <div className="max-w-[620px] space-y-7">
-            <p className="text-xs font-medium uppercase tracking-[0.34em] text-white/70">
-              KATEGORIER
-            </p>
-            <h2 className="text-[2.1rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.05rem]">
-              Skapa ordning i hela ditt sortiment
-            </h2>
-            <p className="max-w-[56ch] text-base leading-relaxed text-white/80 md:text-lg">
-              Samla produkter i tydliga kategorier och håll lager, varianter och struktur
-              organiserade på ett och samma ställe.
-            </p>
-            <div className="pt-2">
-              <AnimatedButton href="/kontakt" variant="primary" size="lg">
-                Utforska inventarier
-              </AnimatedButton>
-            </div>
-          </div>
-        </Container>
-      </section>
+        {/* 3 – Håll koll i realtid (unchanged) */}
+        <section className="flex min-h-[100svh] items-center bg-[#eceef2] py-20 md:py-24 lg:py-28">
+          <Container size="xl" className="max-w-[1520px]">
+            <div className="grid grid-cols-1 items-center gap-12 md:gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24 xl:gap-28">
+              <div className="max-w-[620px] space-y-8">
+                <p className="text-xs font-medium uppercase tracking-[0.36em] text-gray-500">
+                  INVENTARIER
+                </p>
+                <h2 className="text-[2.1rem] font-semibold leading-[1.08] tracking-tight text-[#111111] sm:text-5xl lg:text-[3.15rem]">
+                  Håll koll i realtid på ditt lager
+                </h2>
+                <p className="max-w-[58ch] text-base leading-relaxed text-gray-700 md:text-lg">
+                  Se lagersaldo, produktvarianter och viktiga uppdateringar på alla dina enheter — i en
+                  och samma vy.
+                </p>
+              </div>
 
-      <section className="bg-[#f8f9fb] py-24 md:py-28 lg:py-32">
-        <Container size="xl" className="max-w-[1560px]">
-          <div className="mx-auto max-w-[940px] text-center">
-            <p className="text-xs font-medium uppercase tracking-[0.34em] text-gray-500">
-              RETURER
-            </p>
-            <h2 className="mt-5 text-[2.15rem] font-semibold leading-[1.08] tracking-tight text-[#111111] sm:text-5xl lg:text-[3.1rem]">
-              Returer som uppdaterar lagret automatiskt
-            </h2>
-            <p className="mx-auto mt-6 max-w-[720px] text-base leading-relaxed text-gray-600 md:text-lg">
-              När en retur registreras kan lager, logistik och återbetalning arbeta tillsammans i ett
-              och samma flöde — utan manuellt dubbelarbete.
-            </p>
-            <div className="mt-8">
-              <AnimatedButton href="/kontakt" variant="primary" size="lg">
-                Se hur det fungerar
-              </AnimatedButton>
-            </div>
-          </div>
-        </Container>
-
-        <div className="mt-12 md:mt-14 lg:mt-16">
-          <motion.div
-            className="relative mx-auto w-full max-w-[960px] px-4 md:max-w-[1080px] lg:max-w-[1120px]"
-            animate={{ x: [0, 10, 0] }}
-            transition={{ duration: 12, ease: 'easeInOut', repeat: Infinity }}
-          >
-            <div className="relative aspect-[16/8.4] overflow-hidden rounded-[28px] border border-black/5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
-              <Image
-                src="/returinventory.png"
-                alt="Returflöde kopplat till inventarier"
-                fill
-                className="object-cover object-center"
-                priority={false}
-              />
-              <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-3 md:bottom-6 md:px-6 lg:bottom-7">
-                <div className="flex w-full max-w-full gap-4 overflow-x-auto pb-1 md:w-auto md:overflow-visible">
-                  <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[285px] md:px-6 md:py-[18px]">
-                    <div className="flex items-center gap-3.5">
-                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
-                        <TruckIcon className="h-6 w-6" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
-                          Retur mottagen
-                        </p>
-                        <p className="mt-1 text-sm text-gray-500">Logistik registrerad</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[320px] md:px-6 md:py-[18px]">
-                    <div className="flex items-center gap-3.5">
-                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
-                        <CubeIcon className="h-6 w-6" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
-                          Inventarier matchat mot retur
-                        </p>
-                        <p className="mt-1 text-sm text-gray-500">Lagersaldo uppdaterat</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="min-w-[260px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[330px] md:px-6 md:py-[18px]">
-                    <div className="flex items-center gap-3.5">
-                      <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
-                        <BanknotesIcon className="h-6 w-6" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
-                          Återbetalning genomfört för retur
-                        </p>
-                        <p className="mt-1 text-sm text-gray-500">Betalning synkroniserad</p>
-                      </div>
-                    </div>
-                  </div>
+              <div className="w-full">
+                <div className="relative mx-auto w-full max-w-[980px] overflow-hidden rounded-[30px] border border-black/5 shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+                  <Image
+                    src="/inventirynewone.png"
+                    alt="Inventarier i realtid"
+                    width={2200}
+                    height={1500}
+                    className="h-auto w-full object-cover object-right"
+                    priority={false}
+                  />
+                  <div className="absolute inset-0 bg-black/10" />
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </Container>
+        </section>
+
+        {/* 4 – Skanna → saldo → inköp */}
+        <StickySteps
+          eyebrow={inventarierSteps.eyebrow}
+          title={inventarierSteps.title}
+          image={inventarierImages.skanna}
+          steps={steps}
+        />
+
+        {/* 5 – Funktioner */}
+        <FeatureCarousel
+          eyebrow={inventarierFeatures.eyebrow}
+          title={inventarierFeatures.title}
+          items={inventarierFeatures.items}
+          background="beige"
+        />
+
+        {/* 6 – Kategorier (unchanged, video left as is) */}
+        <section className="relative min-h-[100svh] w-full overflow-hidden text-white">
+          <video
+            src="/0331.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right"
+          />
+          <div className="absolute inset-0 bg-black/15 md:bg-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
+
+          <Container className="relative z-10 flex min-h-[100svh] items-center">
+            <div className="max-w-[620px] space-y-7">
+              <p className="text-xs font-medium uppercase tracking-[0.34em] text-white/70">
+                KATEGORIER
+              </p>
+              <h2 className="text-[2.1rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.05rem]">
+                Skapa ordning i hela ditt sortiment
+              </h2>
+              <p className="max-w-[56ch] text-base leading-relaxed text-white/80 md:text-lg">
+                Samla produkter i tydliga kategorier och håll lager, varianter och struktur
+                organiserade på ett och samma ställe.
+              </p>
+              <div className="pt-2">
+                <AnimatedButton href="/kontakt" variant="primary" size="lg">
+                  Utforska inventarier
+                </AnimatedButton>
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        {/* 7 – Rekommenderade inköp */}
+        <ServiceFullBleed
+          eyebrow={inventarierRestock.eyebrow}
+          title={inventarierRestock.title}
+          body={inventarierRestock.body}
+          image={inventarierImages.inkop}
+          tone="light"
+          textPosition="top-left"
+        />
+
+        {/* 8 – Returer: same layout, copy without a stock-update claim */}
+        <ReturnsSection />
+
+        {/* 9 – Import/export, split with the D3 close-up */}
+        <ClippedImageSection
+          eyebrow={inventarierImport.eyebrow}
+          title={inventarierImport.title}
+          body={inventarierImport.body}
+          imageSide="left"
+          sticky={false}
+          background="white"
+          media={
+            <div className="relative h-[60svh] min-h-[380px] lg:h-full">
+              <ServicePicture image={inventarierImages.narbild} sizes="(min-width: 1024px) 50vw, 100vw" />
+            </div>
+          }
+        >
+          <AnimatedButton href={inventarierImport.cta.href} variant="primary" size="lg">
+            {inventarierImport.cta.label}
+          </AnimatedButton>
+        </ClippedImageSection>
+      </ServicePageLayout>
     </>
   );
 }
 
+/* Returer – its own component so the reduced-motion hook stays out of the original hero code above. */
+function ReturnsSection() {
+  const reduceMotion = usePrefersReducedMotion();
+
+  return (
+    <section className="bg-[#f8f9fb] py-24 md:py-28 lg:py-32">
+      <Container size="xl" className="max-w-[1560px]">
+        <div className="mx-auto max-w-[940px] text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.34em] text-gray-500">
+            {inventarierReturns.eyebrow}
+          </p>
+          <h2 className="mt-5 text-[2.15rem] font-semibold leading-[1.08] tracking-tight text-[#111111] sm:text-5xl lg:text-[3.1rem]">
+            {inventarierReturns.title}
+          </h2>
+          <p className="mx-auto mt-6 max-w-[720px] text-base leading-relaxed text-gray-600 md:text-lg">
+            {inventarierReturns.body}
+          </p>
+          <div className="mt-8">
+            <AnimatedButton href={inventarierReturns.cta.href} variant="primary" size="lg">
+              {inventarierReturns.cta.label}
+            </AnimatedButton>
+          </div>
+        </div>
+      </Container>
+
+      <div className="mt-12 md:mt-14 lg:mt-16">
+        <motion.div
+          className="relative mx-auto w-full max-w-[960px] px-4 md:max-w-[1080px] lg:max-w-[1120px]"
+          animate={reduceMotion ? { x: 0 } : { x: [0, 10, 0] }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 12, ease: 'easeInOut', repeat: Infinity }}
+        >
+          <div className="relative aspect-[16/8.4] overflow-hidden rounded-[28px] border border-black/5 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            <Image
+              src="/returinventory.png"
+              alt="En person vid en laptop håller i sin telefon."
+              fill
+              className="object-cover object-center"
+              priority={false}
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-3 md:bottom-6 md:px-6 lg:bottom-7">
+              <ol aria-label="Returärendets steg" className="flex w-full max-w-full gap-4 overflow-x-auto pb-1 md:w-auto md:overflow-visible">
+                {inventarierReturns.steps.map((step, i) => {
+                  const Icon = returnIcons[i];
+                  return (
+                    <li
+                      key={step.title}
+                      className="min-w-[240px] rounded-[24px] border border-black/10 bg-white px-5 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.12)] md:min-w-[270px] md:px-6 md:py-[18px]"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-teal-dark text-white">
+                          <Icon className="h-6 w-6" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[15px] font-semibold leading-tight text-gray-900 md:text-base">
+                            {step.title}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-500">{step.note}</p>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
