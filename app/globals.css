@@ -195,8 +195,10 @@
   --color-status-overdue: #B42318;
   --color-status-overdue-bg: #FDE8E6;
   
-  /* Typography - Inter font */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  /* Typography - Inter, self-hosted via next/font/local in app/layout.tsx.
+     --font-inter is set on <html> by the font's `variable` class and resolves to
+     the generated family + its metric-matched fallback. */
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
 }
 
 * {
