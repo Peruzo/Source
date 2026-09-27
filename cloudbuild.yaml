@@ -18,6 +18,7 @@ steps:
     args:
       - -c
       - |
+        set -euo pipefail
         if [ "$BRANCH_NAME" = "main" ]; then svc="source"; elif [ "$BRANCH_NAME" = "staging" ]; then svc="source-staging"; else svc="source-develop"; fi
         img="europe-north1-docker.pkg.dev/sigma-future-479409-h9/source-services/${svc}:${COMMIT_SHA}"
         docker build -t $img -f Dockerfile .
@@ -31,6 +32,7 @@ steps:
     args:
       - -c
       - |
+        set -euo pipefail
         img=$(cat /workspace/image.txt)
         svc=$(cat /workspace/svc.txt)
         if [ "$BRANCH_NAME" = "main" ]; then

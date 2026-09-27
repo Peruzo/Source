@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -7,11 +7,18 @@ import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { AIAssistantProvider } from "@/components/ui/AIAssistantProvider";
 import { HydrationErrorBoundary } from "@/components/HydrationErrorBoundary";
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+// Self-hosted Inter (rsms/inter 4.1, OFL – see app/fonts/Inter-OFL.txt), so the
+// build never fetches from Google Fonts: with next/font/google every build was a
+// lottery – Google occasionally answers with `/l/font?kit=…&…` URLs that break
+// Turbopack's font loader (vercel/next.js#99114). The file is the variable font
+// instanced to opsz 14 and wght 300–700 (what Google served us) and subset to
+// latin + latin-ext with all OpenType features kept (tabular-nums is used).
+const inter = localFont({
+  src: './fonts/InterVariable-latin.woff2',
+  weight: '300 700',
   display: 'swap',
   variable: '--font-inter',
+  adjustFontFallback: 'Arial',
 });
 
 export const metadata: Metadata = {
