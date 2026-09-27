@@ -44,11 +44,11 @@ export function PortfolioTeaser() {
           </motion.div>
         ))}
 
-        {/* Designkoncept */}
+        {/* Koncept */}
         {conceptProjects.length > 0 && (
           <div className="mb-12">
             <FadeIn className="mb-8 md:mb-10">
-              <h3 className="text-section-subtitle text-black mb-2">Designkoncept</h3>
+              <h3 className="text-section-subtitle text-black mb-2">Koncept</h3>
               <p className="text-body text-gray-600">
                 Demosajter vi byggt för att visa vad som är möjligt i olika branscher.
               </p>
