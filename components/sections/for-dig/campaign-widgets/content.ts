@@ -9,8 +9,7 @@
  */
 
 /**
- * Product photo. Every default points at the ONE existing shoe placeholder
- * (produkter/13-sneakers.svg) – swap `src` per product for real photos.
+ * Product photo – the same square WebPs as the product grid (produkter/).
  * `alt` defaults to empty: the product name is printed right next to it.
  */
 export type CampaignImage = { src: string; alt?: string };
@@ -77,15 +76,17 @@ export type CampaignWidgetsContent = {
   grid: SaleGridContent;
 };
 
-const SHOE = { src: '/images/for-dig/privat/produkter/13-sneakers.svg' };
+const IMG = '/images/for-dig/privat/produkter';
 
+// Sneakers opens the list and is also the large sale card (up to ~305 CSS px
+// wide), so it gets the 640 px file; the rest only appear as small tiles.
 const products: SaleProduct[] = [
-  { id: 'sneakers', name: 'Sneakers', price: 1099, image: SHOE },
-  { id: 'loparsko', name: 'Löparsko', price: 1299, image: SHOE },
-  { id: 'tygsko', name: 'Tygsko', price: 749, image: SHOE },
-  { id: 'loafers', name: 'Loafers', price: 1149, image: SHOE },
-  { id: 'sandal', name: 'Sandal', price: 549, image: SHOE },
-  { id: 'tofflor', name: 'Tofflor', price: 399, image: SHOE },
+  { id: 'sneakers', name: 'Sneakers', price: 1099, image: { src: `${IMG}/sneakers-640.webp` } },
+  { id: 'loparsko', name: 'Löparsko', price: 1299, image: { src: `${IMG}/loparsko.webp` } },
+  { id: 'tygsko', name: 'Tygsko', price: 749, image: { src: `${IMG}/tygsko.webp` } },
+  { id: 'loafers', name: 'Loafers', price: 1149, image: { src: `${IMG}/loafers.webp` } },
+  { id: 'sandal', name: 'Sandal', price: 549, image: { src: `${IMG}/sandal.webp` } },
+  { id: 'tofflor', name: 'Tofflor', price: 399, image: { src: `${IMG}/tofflor.webp` } },
 ];
 
 export const campaignWidgetsDefaults: CampaignWidgetsContent = {
