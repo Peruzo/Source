@@ -152,7 +152,9 @@ export function CodeUploadForm() {
       if (!jobId) return;
 
       try {
-        const res = await fetch(`/api/github/job?jobId=${encodeURIComponent(jobId)}`);
+        const res = await fetch(
+          `/api/github/job?jobId=${encodeURIComponent(jobId)}&onboardingId=${encodeURIComponent(onboardingId ?? '')}`
+        );
         if (res.status === 404 || res.status === 403) {
           // Jobbet finns inte (eller tillhör en annan session) – sluta polla i stället för att snurra för evigt
           if (!cancelled) {
