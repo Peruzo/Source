@@ -72,6 +72,18 @@ const SERVICES = {
     // text (x 77–87 %); this crop ends at x 1520, so the cup is not in the file.
     { slot: 'rapporter', file: 'F5.png', extract: { left: 420, top: 0, width: 1100, height: 1152 }, widths: [640, 1024, 1100] },
   ],
+  // /foretag-vaxande (Företag Växa). Portrait crops are 3:4 at full height (864 px wide).
+  'foretag-vaxa': [
+    // Open garage door with a cart of boxes (variant A). Crop x 640–1504 keeps the whole doorway:
+    // the woman with the tablet, the man with the cart and the van.
+    { slot: 'frakt', file: 'frakt-A.png', portrait: { left: 640 } },
+    // Driver seen through the side window (variant D). Crop x 600–1464 keeps the phone holder,
+    // the hand with the phone and his face.
+    { slot: 'bokforing', file: 'bokforing-D.png', portrait: { left: 600 } },
+    // Woman at a kitchen island with a tablet (variant A). Crop x 490–1354 keeps the tablet,
+    // her finger on it and her face.
+    { slot: 'insikter', file: 'insikter-A.png', portrait: { left: 490 } },
+  ],
 };
 
 /**
@@ -80,6 +92,7 @@ const SERVICES = {
  */
 const OPTIONS = {
   'foretag-start': { outDir: 'public/for-dig/foretag-start', portraitAspect: 3 / 4 },
+  'foretag-vaxa': { outDir: 'public/for-dig/foretag-vaxa', portraitAspect: 3 / 4 },
 };
 
 const [service, srcDir] = process.argv.slice(2);
