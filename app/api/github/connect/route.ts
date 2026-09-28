@@ -7,6 +7,12 @@ import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import {
+  createOAuthState,
+  OAUTH_STATE_COOKIE,
+  OAUTH_STATE_COOKIE_PATH,
+  STATE_TTL_MS,
+} from '@/lib/storage/github-oauth-states';
 
 /**
  * GET /api/github/connect?repo=owner/repo&onboardingId=...
@@ -19,9 +25,12 @@ import { reduceOnboarding } from '@/lib/onboarding/reducer';
  * som kodformuläret översätter till ett svenskt meddelande.
  *
  * ÄGARSKAP: Auth0-session krävs och onboardingId måste vara bundet till anroparens
- * userSub, annars 404 (samma svar utan session). OAuth-state fortsätter att bära den
- * anonyma cookie-sessionen (anon_<uuid>) eftersom callback och jobb-polling bygger på den.
+ * userSub, annars 404 (samma svar utan session).
  * Kräver onboardingId i query (frontend skickar från useOnboardingId).
+ *
+ * STATE: serverlagrad engångs-state (lib/storage/github-oauth-states.ts) bunden till
+ * onboardingId, Auth0-användaren, den anonyma sessionen och webbläsaren (kortlivad
+ * httpOnly-cookie som bara skickas till callbacken). Inget av detta går via GitHub i klartext.
  */
 function backToCodeStep(errorCode: string): NextResponse {
   return NextResponse.redirect(buildUrl(`/onboarding/code?github=${encodeURIComponent(errorCode)}`));
@@ -96,9 +105,18 @@ export async function GET(request: NextRequest) {
 
   const baseUrl = getBaseUrl();
   const redirectUri = `${baseUrl}/api/github/callback`;
-  const state = Buffer.from(
-    JSON.stringify({ repo, sessionId, onboardingId })
-  ).toString('base64url');
+  let state: string;
+  try {
+    state = await createOAuthState({
+      onboardingId,
+      repo,
+      userSub: session?.user?.sub ?? null,
+      sessionId,
+    });
+  } catch (err) {
+    console.error('[GitHub Connect] Failed to store OAuth state:', err);
+    return backToCodeStep('oauth_unavailable');
+  }
 
   const authUrl = new URL('https://github.com/login/oauth/authorize');
   authUrl.searchParams.set('client_id', clientId);
@@ -106,5 +124,14 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set('scope', 'repo');
   authUrl.searchParams.set('state', state);
 
-  return NextResponse.redirect(authUrl.toString());
+  const response = NextResponse.redirect(authUrl.toString());
+  response.cookies.set(OAUTH_STATE_COOKIE, state, {
+    httpOnly: true,
+    // Secure i alla driftsatta miljöer; undantag endast för lokal http-utveckling
+    secure: process.env.NODE_ENV !== 'development',
+    sameSite: 'lax',
+    path: OAUTH_STATE_COOKIE_PATH,
+    maxAge: Math.floor(STATE_TTL_MS / 1000),
+  });
+  return response;
 }

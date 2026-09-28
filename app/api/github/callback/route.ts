@@ -5,6 +5,14 @@ import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
 import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import { auth0 } from '@/lib/auth0';
+import { requireOnboardingOwner } from '@/lib/onboarding/ownership';
+import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import {
+  consumeOAuthState,
+  OAUTH_STATE_COOKIE,
+  OAUTH_STATE_COOKIE_PATH,
+} from '@/lib/storage/github-oauth-states';
 
 /**
  * GET /api/github/callback?code=...&state=...
@@ -13,48 +21,70 @@ import { reduceOnboarding } from '@/lib/onboarding/reducer';
  * 
  * Public website orkestrerar endast - extern worker hanterar all ZIP-hantering.
  * Token sparas temporärt i jobbet för worker-användning.
+ *
+ * STATE OCH ÄGARSKAP (före kodbytet):
+ * 1. state förbrukas direkt (engångs, lyckat eller ej) och kontrolleras: finns, ej utgången,
+ *    cookie matchar, anonym session och Auth0-användare matchar bindningen från connect.
+ * 2. requireOnboardingOwner för onboardingId ur den serverlagrade posten.
+ * Först därefter byts koden mot en token. onboardingId, repo och sessionId tas enbart ur
+ * den serverlagrade posten, aldrig ur querysträngen.
+ * Routen nås genom navigering från GitHub och svarar aldrig JSON; state-cookien rensas i
+ * varje svar.
  */
+function backToCodeStep(query: string): NextResponse {
+  const response = NextResponse.redirect(buildUrl(`/onboarding/code?${query}`));
+  response.cookies.set(OAUTH_STATE_COOKIE, '', { path: OAUTH_STATE_COOKIE_PATH, maxAge: 0 });
+  return response;
+}
+
 export async function GET(request: NextRequest) {
 
   const code = request.nextUrl.searchParams.get('code');
   const stateRaw = request.nextUrl.searchParams.get('state');
   const errorParam = request.nextUrl.searchParams.get('error');
 
+  // Förbruka state först, oavsett utfall (även när användaren avbröt hos GitHub)
+  const session = await auth0.getSession();
+  const stateResult = await consumeOAuthState({
+    state: stateRaw,
+    cookieState: request.cookies.get(OAUTH_STATE_COOKIE)?.value,
+    auth0UserSub: session?.user?.sub,
+    anonymousSessionId: await getAnonymousSessionId(),
+  });
+
   if (errorParam) {
     console.warn('[GitHub Callback] OAuth error:', errorParam);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=denied'));
+    return backToCodeStep('github=denied');
   }
 
-  if (!code || !stateRaw) {
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+  if (!stateResult.ok) {
+    console.warn('[GitHub Callback] Rejected OAuth state:', stateResult.error);
+    return backToCodeStep(`github=${stateResult.error}`);
   }
 
-  let oauthState: { repo: string; sessionId: string; onboardingId?: string };
-
-  try {
-    oauthState = JSON.parse(
-      Buffer.from(stateRaw, 'base64url').toString('utf8')
-    ) as { repo: string; sessionId: string; onboardingId?: string };
-  } catch {
-    // Navigering från GitHub: aldrig rå JSON, tillbaka till kodsteget med felkod
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=invalid_state'));
+  if (!code) {
+    return backToCodeStep('github=error');
   }
 
-  const { repo, sessionId, onboardingId } = oauthState;
+  const { repo, sessionId, onboardingId } = stateResult.record;
+
+  // ÄGARSKAP: onboardingId ur posten måste vara bundet till anroparens Auth0-userSub (samma hjälpare som övriga routes)
+  const denied = await requireOnboardingOwner(session?.user?.sub, onboardingId);
+  if (denied) {
+    return backToCodeStep('github=not_found');
+  }
+
   const match = repo.match(/^([^/]+)\/([^/]+)$/);
   if (!match) {
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   }
   const [, owner, repoName] = match;
-
-  // ARKITEKTURREGEL: Ingen Auth0. State innehåller sessionId (anon_<uuid>) och onboardingId från connect.
-  // Vi verifierar inte Auth0-session – användaren kommer tillbaka från GitHub OAuth i samma webbläsare.
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
     console.error('[GitHub Callback] Missing GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET');
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   }
 
   // Använd canonical base URL (throwar error om den saknas)
@@ -88,7 +118,7 @@ export async function GET(request: NextRequest) {
   // Ingen fallback till app/installation token är tillåten
   if (!tokenData.access_token) {
     console.warn('[GitHub Callback] No access_token from OAuth code-exchange:', tokenData.error, tokenData.error_description);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   }
 
   // Säkerställ att token kommer från OAuth-flödet (inte app/installation token)
@@ -166,7 +196,7 @@ export async function GET(request: NextRequest) {
     
     // Redirecta med strukturerad felinfo i query params (base64url-encoded JSON)
     const errorParam = Buffer.from(JSON.stringify(errorData)).toString('base64url');
-    return NextResponse.redirect(buildUrl(`/onboarding/code?github=access_denied&error=${encodeURIComponent(errorParam)}`));
+    return backToCodeStep(`github=access_denied&error=${encodeURIComponent(errorParam)}`);
   }
 
   // Ytterligare säkerhetskontroll: Verifiera att OAuth scopes finns i response header
@@ -174,7 +204,7 @@ export async function GET(request: NextRequest) {
   if (!oauthScopesHeader || oauthScopesHeader.trim() === '') {
     console.error(`[GitHub Callback] SECURITY WARNING: x-oauth-scopes header missing in GitHub API response. Token may not be OAuth user-token.`);
     console.error(`[GitHub Callback] Blocking event and job creation to prevent unauthorized access.`);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   }
 
   // Verifiera att OAuth scopes innehåller 'repo' (krävs för private repo access)
@@ -182,7 +212,7 @@ export async function GET(request: NextRequest) {
   if (!scopes.includes('repo')) {
     console.warn(`[GitHub Callback] OAuth token missing 'repo' scope. Scopes: ${scopes.join(', ')}`);
     console.warn(`[GitHub Callback] Blocking event and job creation - insufficient permissions.`);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   }
 
 
@@ -193,7 +223,7 @@ export async function GET(request: NextRequest) {
 
   // ARKITEKTURREGEL: onboardingId MÅSTE komma från state. Callback skapar aldrig onboarding.
   if (!onboardingId) {
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   }
   const activeOnboardingId = onboardingId;
 
@@ -294,12 +324,12 @@ export async function GET(request: NextRequest) {
 
     // Redirecta omedelbart - ingen repo-data laddas här
     // Worker kommer att processa jobbet async utanför request-livscykeln
-    return NextResponse.redirect(buildUrl(`/onboarding/code?github=processing&jobId=${jobId}`));
+    return backToCodeStep(`github=processing&jobId=${jobId}`);
   } catch (jobError) {
     // Om job-skapande misslyckas → logga och redirecta tillbaka
     // Event är redan sparat, men jobbet kan inte skapas
     console.error('[GitHub Callback] Failed to create job after verification:', jobError);
-    return NextResponse.redirect(buildUrl('/onboarding/code?github=error'));
+    return backToCodeStep('github=error');
   } finally {
     // Token is not stored; it goes out of scope here. No DB or session persistence.
   }
