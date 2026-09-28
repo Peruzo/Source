@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 import { ReactNode } from 'react';
 
 const SYSTEM_LINES = [
@@ -17,6 +18,11 @@ const CLOSING_DELAY = (SYSTEM_LINES.length - 1) * LINE_STAGGER + 0.35;
 /**
  * One line of the headline. Fades up in place when the section scrolls into view,
  * or renders straight away when the visitor prefers reduced motion.
+ *
+ * `initial` is the same on the server and at hydration, so the HTML always matches.
+ * Reduced motion is applied through `animate`, which – unlike `initial` – is reactive:
+ * usePrefersReducedMotion is false at hydration and flips to true right after, and
+ * the line then jumps to its final state with no animation.
  */
 function Line({
   children,
@@ -27,15 +33,16 @@ function Line({
   delay: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
 
   return (
     <motion.span
       className={`block ${className}`}
-      initial={reduce ? false : { opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={reduce ? { opacity: 1, y: 0 } : undefined}
       whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
-      transition={{ delay, duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
+      transition={reduce ? { duration: 0 } : { delay, duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
     >
       {children}
     </motion.span>

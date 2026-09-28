@@ -7,10 +7,10 @@ import {
   animate,
   useScroll,
   useTransform,
-  useReducedMotion,
   AnimatePresence,
   type AnimationPlaybackControls,
 } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 import { useEffect, useRef, useState } from 'react';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
@@ -30,7 +30,7 @@ const SNAP_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   const heroOff = nofx.hero; // TEMP: flicker bisect, remove after diagnosis
 
@@ -292,7 +292,7 @@ export function Hero() {
  * fixed, so a shorter word cannot open a gap before "online.".
  */
 function RotatingWord() {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
