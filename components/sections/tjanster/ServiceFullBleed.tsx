@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { useReveal } from '@/components/sections/for-dig/useReveal';
 import { ServicePicture } from './ServicePicture';
-import type { ServiceCta, ServiceImage } from './types';
+import type { ServiceCta, ServiceFullBleedCard, ServiceImage } from './types';
 
 type ServiceFullBleedProps = {
   id?: string;
@@ -31,6 +31,13 @@ type ServiceFullBleedProps = {
   textPosition?: 'top-left' | 'center-left';
   /** Hero on top of the page: eager image, room for the fixed header. */
   priority?: boolean;
+  /**
+   * Optional floating UI card over the photo (see ServiceFullBleedCard). It
+   * sits outside the parallax layer, so it follows the page while the photo
+   * drifts, and fades in once (0.3 s, no movement). Without it the section
+   * renders exactly as before.
+   */
+  card?: ServiceFullBleedCard;
 };
 
 /*
@@ -58,6 +65,7 @@ export function ServiceFullBleed({
   tone,
   textPosition = 'top-left',
   priority = false,
+  card,
 }: ServiceFullBleedProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { reveal, shouldReduceMotion } = useReveal();
@@ -122,6 +130,27 @@ export function ServiceFullBleed({
 
   const parallaxStyle = shouldReduceMotion ? undefined : ({ '--parallax': shift } as unknown as CSSProperties);
 
+  // Card position as CSS variables, so one element serves every breakpoint:
+  // the portrait anchor below md, the landscape anchor from md.
+  const cardStyle = card
+    ? ({
+        '--card-x': `${(card.anchorPortrait ?? card.anchor).x}%`,
+        '--card-y': `${(card.anchorPortrait ?? card.anchor).y}%`,
+        '--card-x-md': `${card.anchor.x}%`,
+        '--card-y-md': `${card.anchor.y}%`,
+      } as CSSProperties)
+    : undefined;
+  // Opacity only, 0.3 s (Revolut: no movement on reveal). The reduced branch
+  // uses `animate`, like useReveal, so it never stays hidden after hydration.
+  const cardReveal = shouldReduceMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 }, transition: { duration: 0 } }
+    : {
+        initial: { opacity: 0 },
+        whileInView: { opacity: 1 },
+        viewport: { once: true, margin: '-15%' },
+        transition: { duration: 0.3, ease: [0.15, 0.5, 0.5, 1] as const },
+      };
+
   return (
     <section
       id={id}
@@ -174,6 +203,18 @@ export function ServiceFullBleed({
             style={{ background: 'linear-gradient(90deg, rgba(14,11,8,0.55) 0%, rgba(14,11,8,0.22) 45%, rgba(14,11,8,0) 70%)' }}
           />
         )}
+
+        {card ? (
+          <motion.div
+            role="group"
+            aria-label={card.label}
+            style={cardStyle}
+            {...cardReveal}
+            className="absolute left-[var(--card-x)] top-[var(--card-y)] z-10 w-[min(80%,21rem)] -translate-x-1/2 -translate-y-1/2 md:left-[var(--card-x-md)] md:top-[var(--card-y-md)] md:w-[clamp(16rem,34%,24rem)] lg:w-[clamp(18rem,30vw,26rem)]"
+          >
+            {card.content}
+          </motion.div>
+        ) : null}
       </div>
 
       {/* One text block: above the photo on the section colour below lg, over the photo from lg. */}
