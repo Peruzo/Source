@@ -16,6 +16,8 @@
 // Widths are never larger than the source region – no upscaling.
 //
 // Originals are not committed. Add a service by adding an entry to SERVICES.
+// A set that lives outside /tjanster (e.g. the För dig pages) or needs another
+// portrait shape gets an entry in OPTIONS – everything else keeps the defaults.
 import sharp from 'sharp';
 import { mkdirSync, statSync } from 'node:fs';
 
@@ -25,7 +27,8 @@ const WEBP = { quality: 78, effort: 6, smartSubsample: true };
 
 /**
  * Coordinates are in pixels of the original (all originals are 2048x1152).
- * `portrait`: left edge of a 4:5 crop at full height (width = 0.8 x height).
+ * `portrait`: left edge of a portrait crop at full height – 4:5 (width = 0.8 x
+ * height) unless OPTIONS sets another `portraitAspect`.
  * `extract`: a fixed region; only this region is written, in `widths`.
  */
 const SERVICES = {
@@ -44,6 +47,21 @@ const SERVICES = {
     // One set for every breakpoint (5:4-ish), the component picks the focus.
     { slot: 'narbild', file: 'D3.png', extract: { left: 620, top: 0, width: 1428, height: 1152 }, widths: [640, 1024, 1428] },
   ],
+  // /foretag-nya (Företag Start). Portrait crops are 3:4 at full height (864 px wide).
+  'foretag-start': [
+    // Man in an armchair with his phone. Crop x 650–1514 keeps his face, the phone and his hands.
+    { slot: 'betalningslank', file: 'betalningslank.png', portrait: { left: 650 } },
+    // Woman at the kitchen table with her phone (variant A). Crop x 1000–1864 keeps her and the phone.
+    { slot: 'myndighetsdatum', file: 'myndighetsdatum-A.png', portrait: { left: 1000 } },
+  ],
+};
+
+/**
+ * Per-service overrides. `outDir`: where the files go (default public/tjanster/<tjänst>).
+ * `portraitAspect`: portrait width ÷ height (default 0.8, i.e. 4:5).
+ */
+const OPTIONS = {
+  'foretag-start': { outDir: 'public/for-dig/foretag-start', portraitAspect: 3 / 4 },
 };
 
 const [service, srcDir] = process.argv.slice(2);
@@ -53,7 +71,9 @@ if (!entries || !srcDir) {
   process.exit(1);
 }
 
-const outDir = `public/tjanster/${service}`;
+const options = OPTIONS[service] ?? {};
+const outDir = options.outDir ?? `public/tjanster/${service}`;
+const portraitAspect = options.portraitAspect ?? 0.8;
 mkdirSync(outDir, { recursive: true });
 const written = [];
 
@@ -78,7 +98,7 @@ for (const entry of entries) {
   const full = { left: 0, top: 0, width: W, height: H };
   for (const w of LANDSCAPE.filter((w) => w <= W)) await write(input, full, w, `${base}-${w}.webp`);
 
-  const pw = Math.round(H * 0.8);
+  const pw = Math.round(H * portraitAspect);
   const left = Math.min(Math.max(0, entry.portrait.left), W - pw);
   const portrait = { left, top: 0, width: pw, height: H };
   for (const w of PORTRAIT.filter((w) => w <= pw)) await write(input, portrait, w, `${base}-portrait-${w}.webp`);
