@@ -2,10 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 
 export function AIAgentShowcase() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Vid reducerad rörelse: stoppa videon om webbläsaren hann starta den innan

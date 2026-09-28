@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useInView, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 
 const slides = [
   {
@@ -29,7 +30,7 @@ const SLIDE_DURATION = 8000;
 export function DataGrowthSlideshow() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [current, setCurrent] = useState(0);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const isInView = useInView(sectionRef, {
     // Start lite innan sektionen är helt i bild
     margin: '-30% 0px -30% 0px',

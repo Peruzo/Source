@@ -7,9 +7,9 @@ import {
   useTransform,
   useMotionValue,
   useMotionValueEvent,
-  useReducedMotion,
   type MotionValue,
 } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 import RockHotspots from './RockHotspots';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
@@ -60,7 +60,7 @@ export default function PlatformRock() {
   const pendingTime = useRef(0);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
 
   const { scrollYProgress } = useScroll({

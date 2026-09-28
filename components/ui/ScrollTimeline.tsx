@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 
 interface TimelineNode {
   id: string;
@@ -33,7 +34,7 @@ export function ScrollTimeline({
   serviceSections = []
 }: ScrollTimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = usePrefersReducedMotion();
   
   const { scrollYProgress } = useScroll({
     target: sectionRef,
