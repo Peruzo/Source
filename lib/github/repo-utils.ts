@@ -1,11 +1,13 @@
 /**
  * Parse GitHub URL to owner/repo.
- * Supports: https://github.com/owner/repo, https://github.com/owner/repo/, https://github.com/owner/repo/tree/branch
+ * Supports: https://github.com/owner/repo, https://github.com/owner/repo/, https://github.com/owner/repo/tree/branch,
+ * https://github.com/owner/repo.git, www.github.com och länkar med ?query eller #hash.
+ * /tree/<gren> och /blob/... normaliseras till repots rot (standardgrenen hämtas).
  */
 export function parseGitHubRepoUrl(url: string): { owner: string; repo: string } | null {
   const trimmed = (url || '').trim();
   const match = trimmed.match(
-    /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\/|$)/i
+    /^https?:\/\/(?:www\.)?github\.com\/([^/?#]+)\/([^/?#]+?)(?:\.git)?(?:[/?#]|$)/i
   );
   if (!match) return null;
   const [, owner, repo] = match;

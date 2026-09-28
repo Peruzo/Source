@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
-import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerified } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoAcceptedFromEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
@@ -108,14 +108,20 @@ export async function GET(request: NextRequest) {
             // FSM-krav: Jobbet får endast köras när code är färdigt
             assertStatus(state, 'code_completed');
 
-            // SÄKERHET: GitHub-repo MÅSTE vara OAuth-verifierat (event-baserat).
-            // Skip för ZIP-upload-flöden — där finns inget repo att verifiera.
-            const isVerified = codeSource === 'github'
-              ? await isGithubRepoVerified(job.onboardingId)
-              : { verified: true, repoSlug: null, verifiedAt: null };
+            // SÄKERHET: GitHub-repo MÅSTE vara godkänt (event-baserat): OAuth-verifierat
+            // (github_repo_verified) eller bekräftat publikt av servern för just detta repo
+            // (github_public_repo_confirmed). Skip för ZIP-upload-flöden — där finns inget repo.
+            const repoAccess = codeSource === 'github'
+              ? isGithubRepoAcceptedFromEvents(events, job.repoUrl)
+              : { accepted: true, repoSlug: undefined, verifiedAt: undefined };
+            const isVerified = {
+              verified: repoAccess.accepted,
+              repoSlug: repoAccess.repoSlug ?? null,
+              verifiedAt: repoAccess.verifiedAt ?? null,
+            };
 
             if (codeSource === 'github' && !isVerified.verified) {
-              throw new Error('GitHub repo is not OAuth-verified');
+              throw new Error('GitHub repo is neither OAuth-verified nor confirmed public');
             }
 
             // Synka till admin-portalen så att onboarding visar "har kod" (admin läser från MongoDB, inte events)

@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
       Buffer.from(stateRaw, 'base64url').toString('utf8')
     ) as { repo: string; sessionId: string; onboardingId?: string };
   } catch {
-    return NextResponse.json({ error: 'INVALID_STATE' }, { status: 400 });
+    // Navigering från GitHub: aldrig rå JSON, tillbaka till kodsteget med felkod
+    return NextResponse.redirect(buildUrl('/onboarding/code?github=invalid_state'));
   }
 
   const { repo, sessionId, onboardingId } = oauthState;
