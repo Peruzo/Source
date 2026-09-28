@@ -23,7 +23,10 @@ export type ServiceImage = {
 
 export type ServiceCta = { label: string; href: string };
 
-/** A point in the photo, in percent of its box: x from the left, y from the top. */
+/**
+ * A point, in percent: x from the left, y from the top – of the photo box by
+ * default, or of the photo itself with ServiceFullBleedCard.anchorTo 'image'.
+ */
 export type CardAnchor = { x: number; y: number };
 
 /**
@@ -36,10 +39,17 @@ export type ServiceFullBleedCard = {
   content: ReactNode;
   /** Accessible name for the card, e.g. "Exempel: en betald betalningslänk". */
   label: string;
-  /** Centre of the card from `md` up, in percent of the photo box (the whole section from `lg`). */
+  /** Centre of the card from `md` up, in percent of the photo box (the whole section from `lg`), or of the photo with anchorTo 'image'. */
   anchor: CardAnchor;
   /** Centre of the card on the portrait crop below `md`. Defaults to `anchor`. */
   anchorPortrait?: CardAnchor;
+  /**
+   * What the anchor is measured against. 'section' (default): the photo box, with
+   * the card outside the parallax layer. 'image': the photo itself – the card is
+   * placed in a box cropped exactly like the photo's object-fit: cover, drifts
+   * with the parallax, and stays on the motif at every window proportion.
+   */
+  anchorTo?: 'section' | 'image';
 };
 
 export type FeatureItem = {

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnalysisArcOverlay } from '@/components/sections/AnalysisArcOverlay';
+import { AnalysIntro, AnalysSections } from '@/components/sections/tjanster/analys/AnalysSections';
 
 export default function AnalysisPage() {
   // First premium transfer arc (UK-ish -> right side).
@@ -67,15 +68,16 @@ export default function AnalysisPage() {
         </div>
       </section>
 
+      <AnalysIntro />
+
       <section className="relative overflow-hidden bg-black text-white">
         <div className="relative z-10 mx-auto flex min-h-[460px] w-full max-w-[1120px] flex-col items-center px-6 pt-28 pb-20 text-center md:min-h-[520px] md:pt-48 md:pb-24 lg:min-h-[600px] lg:pt-60 lg:pb-28">
           <p className="text-[12px] uppercase tracking-[0.35em] text-white/60">GLOBAL ANALYS</p>
           <h2 className="mt-7 max-w-[940px] text-4xl font-semibold leading-[1.06] tracking-tight md:text-6xl lg:text-7xl">
-            Spara och skala med datadrivna beslut i realtid
+            Spara och skala med datadrivna beslut
           </h2>
           <p className="mt-7 max-w-[560px] text-base leading-relaxed text-white/75 md:text-lg">
-            Fatta snabbare beslut med insikter från alla marknader - från konvertering och
-            kostnad till tillväxt per region.
+            Se besökare, visningar, köp och intäkter per land och stad.
           </p>
           <Link
             href="/kontakt"
@@ -171,6 +173,8 @@ export default function AnalysisPage() {
           </div>
         </div>
       </section>
+
+      <AnalysSections />
     </>
   );
 }

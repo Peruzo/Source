@@ -11,11 +11,28 @@ type FeatureCarouselProps = {
   eyebrow?: string;
   title: string;
   items: FeatureItem[];
-  /** Section background. */
-  background?: 'white' | 'beige' | 'stone';
+  /** Section background. `dark` also switches text, cards and arrows to their dark variants. */
+  background?: 'white' | 'beige' | 'stone' | 'dark';
 };
 
-const backgrounds = { white: 'bg-white', beige: 'bg-beige', stone: 'bg-surface-stone' } as const;
+const backgrounds = { white: 'bg-white', beige: 'bg-beige', stone: 'bg-surface-stone', dark: 'bg-black-secondary' } as const;
+
+const light = {
+  eyebrow: 'text-teal-dark',
+  heading: 'text-gray-900',
+  icon: 'bg-teal-light text-teal-dark',
+  title: 'text-gray-900',
+  body: 'text-gray-700',
+  ring: 'focus-visible:ring-teal-dark',
+};
+const dark = {
+  eyebrow: 'text-teal',
+  heading: 'text-white',
+  icon: 'bg-teal/15 text-teal',
+  title: 'text-white',
+  body: 'text-white/70',
+  ring: 'focus-visible:ring-teal',
+};
 
 /*
  * Horizontal row of feature cards (Revolut's card carousel, typ 6).
@@ -77,8 +94,16 @@ export function FeatureCarousel({ id, eyebrow, title, items, background = 'beige
     else if (e.key === 'End') { e.preventDefault(); el.scrollTo({ left: el.scrollWidth, behavior: shouldReduceMotion ? 'instant' : 'smooth' }); }
   };
 
+  const t = background === 'dark' ? dark : light;
+  // Light strings are kept verbatim from before the dark variant existed, so the light HTML is unchanged.
   const arrow =
-    'flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-900 transition-colors hover:border-gray-900 disabled:cursor-default disabled:opacity-35 disabled:hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-dark focus-visible:ring-offset-2';
+    background === 'dark'
+      ? 'flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-transparent text-white transition-colors hover:border-white disabled:cursor-default disabled:opacity-35 disabled:hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 focus-visible:ring-offset-black-secondary'
+      : 'flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-900 transition-colors hover:border-gray-900 disabled:cursor-default disabled:opacity-35 disabled:hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-dark focus-visible:ring-offset-2';
+  const cardClass =
+    background === 'dark'
+      ? 'flex w-[82%] max-w-[20rem] shrink-0 snap-start flex-col rounded-3xl bg-black-tertiary p-6 ring-1 ring-white/10 sm:w-[18rem] md:p-7 lg:w-[19.5rem] lg:max-w-none'
+      : 'flex w-[82%] max-w-[20rem] shrink-0 snap-start flex-col rounded-3xl bg-white p-6 ring-1 ring-gray-200 sm:w-[18rem] md:p-7 lg:w-[19.5rem] lg:max-w-none';
 
   // Same inline padding as Container (px-6 / md:px-10 / lg:px-20, max 1440 centred),
   // used both as padding and as scroll-padding so snapped cards line up with the text.
@@ -89,8 +114,8 @@ export function FeatureCarousel({ id, eyebrow, title, items, background = 'beige
     <section id={id} aria-labelledby={headingId} className={`py-20 md:py-28 lg:py-32 ${backgrounds[background]}`}>
       <div className="mx-auto flex max-w-[1440px] items-end justify-between gap-6 px-6 md:px-10 lg:px-20">
         <motion.div {...reveal(0)} className="max-w-[34rem]">
-          {eyebrow ? <p className="text-overline mb-5 text-teal-dark">{eyebrow}</p> : null}
-          <h2 id={headingId} className="text-[2.25rem] font-semibold leading-[1.05] tracking-tight text-gray-900 sm:text-5xl">
+          {eyebrow ? <p className={`text-overline mb-5 ${t.eyebrow}`}>{eyebrow}</p> : null}
+          <h2 id={headingId} className={`text-[2.25rem] font-semibold leading-[1.05] tracking-tight ${t.heading} sm:text-5xl`}>
             {title}
           </h2>
         </motion.div>
@@ -110,7 +135,7 @@ export function FeatureCarousel({ id, eyebrow, title, items, background = 'beige
         tabIndex={0}
         onKeyDown={onKeyDown}
         aria-labelledby={headingId}
-        className={`scrollbar-hide mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-2 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-dark md:mt-12 md:gap-5 ${inset}`}
+        className={`scrollbar-hide mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-2 outline-none focus-visible:ring-2 focus-visible:ring-inset ${t.ring} md:mt-12 md:gap-5 ${inset}`}
       >
         {items.map((item, i) => {
           const Icon = item.icon;
@@ -118,13 +143,13 @@ export function FeatureCarousel({ id, eyebrow, title, items, background = 'beige
             <motion.li
               key={item.title}
               {...reveal(Math.min(i, 4) * 0.06)}
-              className="flex w-[82%] max-w-[20rem] shrink-0 snap-start flex-col rounded-3xl bg-white p-6 ring-1 ring-gray-200 sm:w-[18rem] md:p-7 lg:w-[19.5rem] lg:max-w-none"
+              className={cardClass}
             >
-              <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-full bg-teal-light text-teal-dark">
+              <span aria-hidden="true" className={`flex h-11 w-11 items-center justify-center rounded-full ${t.icon}`}>
                 <Icon className="h-5 w-5" />
               </span>
-              <h3 className="mt-10 text-lg font-semibold leading-snug text-gray-900">{item.title}</h3>
-              <p className="mt-2 text-base leading-relaxed text-gray-700">{item.body}</p>
+              <h3 className={`mt-10 text-lg font-semibold leading-snug ${t.title}`}>{item.title}</h3>
+              <p className={`mt-2 text-base leading-relaxed ${t.body}`}>{item.body}</p>
             </motion.li>
           );
         })}
