@@ -48,6 +48,13 @@ const GITHUB_RETURN_MESSAGES: Record<string, string> = {
   invalid_onboarding_state:
     'GitHub kan bara kopplas medan kodsteget pågår. Ladda om sidan för att se var du är i onboardingen.',
   invalid_state: 'GitHub-kopplingen kunde inte slutföras. Försök igen.',
+  oauth_state_invalid:
+    'GitHub-kopplingen kunde inte slutföras, eller så har den redan använts. Klistra in repo-länken igen och klicka på "Fortsätt till Stripe" för att starta om.',
+  oauth_state_expired:
+    'GitHub-kopplingen tog för lång tid och har gått ut. Klistra in repo-länken igen och klicka på "Fortsätt till Stripe" för att starta om.',
+  oauth_state_mismatch:
+    'GitHub-kopplingen måste slutföras i samma webbläsare och med samma inloggning som den startades i. Klistra in repo-länken igen och klicka på "Fortsätt till Stripe" för att starta om.',
+  oauth_unavailable: 'GitHub-kopplingen är inte tillgänglig just nu. Försök igen om en stund.',
   not_configured: 'GitHub-kopplingen är inte tillgänglig just nu. Ladda upp en ZIP-fil eller kontakta support.',
   public_repo:
     'Repot är publikt och behöver ingen GitHub-inloggning. Klicka på "Fortsätt till Stripe" så hämtar vi det direkt.',
