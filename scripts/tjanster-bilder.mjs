@@ -84,6 +84,17 @@ const SERVICES = {
     // her finger on it and her face.
     { slot: 'insikter', file: 'insikter-A.png', portrait: { left: 490 } },
   ],
+  // /foretag-etablerad (Företag Etablerade). Portrait crops are 3:4 at full height (864 px wide).
+  'foretag-etablerade': [
+    // Black chrome arches rising left to right (x 14–88 %). Crop x 635–1499 keeps the middle
+    // of the form; the empty black upper left carries the text from lg.
+    { slot: 'statistik', file: 'statistik-A.png', portrait: { left: 635 } },
+    // Hands holding a tablet with a black screen, straight from above. The glass runs x 600–1430,
+    // so crop x 583–1447 keeps the whole tablet, the screen area and the thumbs.
+    { slot: 'studio', file: 'studio-A.png', portrait: { left: 583 } },
+    // A person with a phone in a concrete hall (x 56–71 %). Crop x 870–1734 keeps her whole.
+    { slot: 'support', file: 'support-A.png', portrait: { left: 870 } },
+  ],
 };
 
 /**
@@ -93,6 +104,7 @@ const SERVICES = {
 const OPTIONS = {
   'foretag-start': { outDir: 'public/for-dig/foretag-start', portraitAspect: 3 / 4 },
   'foretag-vaxa': { outDir: 'public/for-dig/foretag-vaxa', portraitAspect: 3 / 4 },
+  'foretag-etablerade': { outDir: 'public/for-dig/foretag-etablerade', portraitAspect: 3 / 4 },
 };
 
 const [service, srcDir] = process.argv.slice(2);
