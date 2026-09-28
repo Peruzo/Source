@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { Storage } from '@google-cloud/storage';
 import { auth0 } from '@/lib/auth0';
 import { createGitHubJob } from '@/lib/storage/github-jobs';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
@@ -35,10 +36,7 @@ export async function POST(request: Request) {
     // Auth (samma mönster som befintliga /api/onboarding/code)
     const session = await auth0.getSession();
     if (!session?.user?.sub) {
-      return NextResponse.json(
-        { success: false, error: 'AUTH_REQUIRED', message: 'User must be authenticated' },
-        { status: 401 }
-      );
+      return onboardingNotFound();
     }
     const userSub = session.user.sub;
 
@@ -65,6 +63,10 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
+    const denied = await requireOnboardingOwner(userSub, onboardingId);
+    if (denied) return denied;
 
     // Validera ZIP-typer
     const allowedTypes = ['application/zip', 'application/x-zip-compressed', 'application/octet-stream'];

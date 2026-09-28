@@ -102,7 +102,9 @@ export function StripeStart() {
         body: JSON.stringify({ sessionId, onboardingId }),
       });
 
-      if (response.status === 401) {
+      // 404 = saknad session eller onboardingId som inte tillhör anroparen (routen skiljer inte).
+      // 401 behålls för bakåtkompatibilitet. Båda → inloggning, som efteråt landar i eget state.
+      if (response.status === 401 || response.status === 404) {
         await loginWithRedirect({ appState: { returnTo: pathname } });
         return;
       }

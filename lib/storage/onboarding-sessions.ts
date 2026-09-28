@@ -40,6 +40,42 @@ export async function getActiveOnboardingIdForSession(sessionId: string): Promis
 }
 
 /**
+ * Kontrollerar om en användare äger en onboarding.
+ *
+ * Ägarskap = onboardingId är bundet till userSub, antingen i in-memory-bindningen
+ * eller via NÅGON av användarens sessionsfiler under onboarding-sessions/{userSub}/
+ * (filnamn slutar på _{onboardingId}.json). Till skillnad från getActiveOnboardingId
+ * räcker det inte att titta på den senaste sessionen.
+ *
+ * Returnerar false vid saknad userSub, ogiltigt id, saknad bucket eller GCS-fel
+ * (fail-closed). Ingen nedladdning av filinnehåll behövs — filnamnet räcker.
+ */
+export async function userOwnsOnboarding(userSub: string, onboardingId: string): Promise<boolean> {
+  if (!userSub || !onboardingId || !isValidOnboardingId(onboardingId)) {
+    return false;
+  }
+
+  if (getActiveOnboardingForSession(userSub) === onboardingId) {
+    return true;
+  }
+
+  if (!BUCKET) {
+    return false;
+  }
+
+  try {
+    const storage = new Storage(PROJECT_ID ? { projectId: PROJECT_ID } : undefined);
+    const bucket = storage.bucket(BUCKET);
+    const [files] = await bucket.getFiles({ prefix: `onboarding-sessions/${userSub}/` });
+    const suffix = `_${onboardingId.toLowerCase()}.json`;
+    return files.some((file) => file.name.toLowerCase().endsWith(suffix));
+  } catch (error) {
+    console.warn('[Onboarding Sessions] Error checking ownership:', error);
+    return false;
+  }
+}
+
+/**
  * Onboarding-session metadata (kopplat till user.sub).
  * Varje user.sub kan ha flera onboarding-sessioner (onboardingId).
  */
