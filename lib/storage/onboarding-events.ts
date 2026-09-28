@@ -1,4 +1,5 @@
 import { Storage } from '@google-cloud/storage';
+import { parseGitHubRepoUrl } from '@/lib/github/repo-utils';
 import type { TermsAcceptanceRecord } from '@/lib/legal/terms-acceptance';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
@@ -13,10 +14,24 @@ export type OnboardingEventInput =
   | { type: 'questions_submitted'; payload: Record<string, any> }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual' | 'upload'; storageObjectUrl?: string } }
   | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string; source: 'github_oauth_callback'; oauth: { codeExchangeCompleted: boolean; accessTokenPresent: boolean } } }
+  | { type: 'github_public_repo_confirmed'; payload: GithubPublicRepoConfirmedPayload }
   | { type: 'terms_accepted'; payload: TermsAcceptanceRecord }
   | { type: 'stripe_started'; payload: { accountId: string } }
   | { type: 'stripe_completed'; payload: { accountId: string } }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string } };
+
+/**
+ * Payload för github_public_repo_confirmed.
+ * Skrivs ENDAST av POST /api/onboarding/code efter att GitHubs API (utan autentisering)
+ * svarat 200 med private: false för repot. repoUrl och repoSlug byggs av servern ur
+ * den tolkade länken; inga andra klientfält går in i eventet.
+ */
+export type GithubPublicRepoConfirmedPayload = {
+  repoUrl: string;
+  repoSlug: string;
+  confirmedAt: string;
+  source: 'github_public_api_check';
+};
 
 /**
  * Fullständigt onboarding-event med timestamp (sparat i GCS).
@@ -26,6 +41,7 @@ export type OnboardingEvent =
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual' | 'upload'; storageObjectUrl?: string }; at: string }
   | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string; source: 'github_oauth_callback'; oauth: { codeExchangeCompleted: boolean; accessTokenPresent: boolean } }; at: string }
+  | { type: 'github_public_repo_confirmed'; payload: GithubPublicRepoConfirmedPayload; at: string }
   | { type: 'terms_accepted'; payload: TermsAcceptanceRecord; at: string }
   | { type: 'stripe_started'; payload: { accountId: string }; at: string }
   | { type: 'stripe_completed'; payload: { accountId: string }; at: string }
@@ -63,6 +79,8 @@ export async function appendOnboardingEvent<T extends OnboardingEventInput>(
         return { type: 'code_submitted', payload: event.payload, at: now };
       case 'github_repo_verified':
         return { type: 'github_repo_verified', payload: event.payload, at: now };
+      case 'github_public_repo_confirmed':
+        return { type: 'github_public_repo_confirmed', payload: event.payload, at: now };
       case 'terms_accepted':
         return { type: 'terms_accepted', payload: event.payload, at: now };
       case 'stripe_started':
@@ -175,4 +193,53 @@ export async function isGithubRepoVerified(onboardingId: string): Promise<{
 }> {
   const events = await listOnboardingEvents(onboardingId);
   return isGithubRepoVerifiedFromEvents(events);
+}
+
+/** owner/repo i gemener ur en GitHub-URL, för jämförelse (GitHub är skiftlägesokänsligt). */
+function repoKeyFromUrl(url: string | undefined): string | null {
+  const parsed = parseGitHubRepoUrl(url || '');
+  return parsed ? `${parsed.owner}/${parsed.repo}`.toLowerCase() : null;
+}
+
+/**
+ * Avgör om ett GitHub-repo får räknas som kopplat i onboardingen.
+ *
+ * Två vägar godtas:
+ * - 'oauth': github_repo_verified från OAuth-callbacken (privata repon), oförändrad regel.
+ * - 'public': github_public_repo_confirmed för SAMMA repo, skrivet av servern efter
+ *   GitHubs publik-kontroll. Eventet måste gälla repoUrl som skickas in; ett publikt
+ *   repo kan alltså inte användas för att släppa igenom ett annat repo.
+ */
+export function isGithubRepoAcceptedFromEvents(
+  events: OnboardingEvent[],
+  repoUrl: string | undefined
+): {
+  accepted: boolean;
+  via?: 'oauth' | 'public';
+  repoSlug?: string;
+  verifiedAt?: string;
+} {
+  const oauth = isGithubRepoVerifiedFromEvents(events);
+  if (oauth.verified) {
+    return { accepted: true, via: 'oauth', repoSlug: oauth.repoSlug, verifiedAt: oauth.verifiedAt };
+  }
+
+  const key = repoKeyFromUrl(repoUrl);
+  if (!key) return { accepted: false };
+
+  const confirmed = events.find(
+    (e) => e.type === 'github_public_repo_confirmed' &&
+    e.payload?.source === 'github_public_api_check' &&
+    repoKeyFromUrl(e.payload?.repoUrl) === key
+  );
+  if (!confirmed || confirmed.type !== 'github_public_repo_confirmed') {
+    return { accepted: false };
+  }
+
+  return {
+    accepted: true,
+    via: 'public',
+    repoSlug: confirmed.payload.repoSlug,
+    verifiedAt: confirmed.payload.confirmedAt,
+  };
 }

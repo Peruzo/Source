@@ -8,6 +8,13 @@ import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { getAnonymousSessionIdFromCookie } from '@/lib/onboarding/anonymous-session-client';
 import { normalizeError } from '@/lib/utils/normalize-error';
+import { parseGitHubRepoUrl } from '@/lib/github/repo-utils';
+import {
+  codeStepApiErrorMessage,
+  githubJobFailedMessage,
+  githubReturnMessage,
+  JOB_LOST_MESSAGE,
+} from '@/lib/onboarding/code-step-messages';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
 export function CodeUploadForm() {
@@ -45,7 +52,8 @@ export function CodeUploadForm() {
   // Visa fel om onboardingId saknas
   useEffect(() => {
     if (onboardingIdError) {
-      setError(`Kunde inte initiera onboarding: ${onboardingIdError}`);
+      console.error('[Code Upload] Onboarding init failed:', onboardingIdError);
+      setError('Kunde inte initiera onboarding. Ladda om sidan och försök igen.');
     }
   }, [onboardingIdError]);
 
@@ -114,21 +122,17 @@ export function CodeUploadForm() {
       params.delete('error');
       const q = params.toString();
       router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
-    } else if (gh === 'denied') {
-      setGithubCallbackError('GitHub-kopplingen avbröts.');
+    } else if (gh) {
+      // Övriga returkoder från /api/github/connect och /api/github/callback → svensk text.
+      // Okänd kod visas aldrig rått.
+      setGithubCallbackError(githubReturnMessage(gh) ?? 'Kunde inte koppla eller hämta repot. Försök igen.');
       setGithubJobStatus(null);
-    } else if (gh === 'upload_failed') {
-      setGithubCallbackError('Uppladdning till lagring misslyckades. Försök igen.');
-      setGithubJobStatus(null);
-    } else if (gh === 'payload_too_large') {
-      setGithubCallbackError('Payload för stor. Kontakta support om problemet kvarstår.');
-      setGithubJobStatus(null);
-    } else if (gh === 'payload_error') {
-      setGithubCallbackError('Fel i payload. Kontakta support om problemet kvarstår.');
-      setGithubJobStatus(null);
-    } else if (gh === 'error' || gh === 'download_failed') {
-      setGithubCallbackError('Kunde inte koppla eller hämta repot. Försök igen.');
-      setGithubJobStatus(null);
+      setShowGithubAuthButton(false);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('github');
+      params.delete('error');
+      const q = params.toString();
+      router.replace(q ? `/onboarding/code?${q}` : '/onboarding/code');
     }
   }, [searchParams, router]);
 
@@ -149,6 +153,14 @@ export function CodeUploadForm() {
 
       try {
         const res = await fetch(`/api/github/job?jobId=${encodeURIComponent(jobId)}`);
+        if (res.status === 404 || res.status === 403) {
+          // Jobbet finns inte (eller tillhör en annan session) – sluta polla i stället för att snurra för evigt
+          if (!cancelled) {
+            setGithubJobStatus('failed');
+            setGithubCallbackError(JOB_LOST_MESSAGE);
+          }
+          return;
+        }
         if (!res.ok) {
           throw new Error(`Failed to get job status: ${res.status}`);
         }
@@ -181,7 +193,8 @@ export function CodeUploadForm() {
           }
         } else if (job.status === 'failed') {
           setGithubJobStatus('failed');
-          setGithubCallbackError(job.error || 'GitHub import misslyckades.');
+          // job.error kommer från worker/callback och kan vara engelska – visa svensk text
+          setGithubCallbackError(githubJobFailedMessage());
         } else if (job.status === 'processing' || job.status === 'pending') {
           // Fortsätt polla
         }
@@ -249,11 +262,21 @@ export function CodeUploadForm() {
     );
   }
 
-  const handleGithubConnect = (repoSlug: string) => {
+  const handleGithubConnect = (repoUrlOrSlug: string) => {
     if (!onboardingId) {
       setError('Onboarding är inte initierat. Ladda om sidan.');
       return;
     }
+
+    // Normalisera länken (/tree/<gren>, .git, ?query) till owner/repo innan navigering
+    const parsedRepo = /^https?:\/\//i.test(repoUrlOrSlug)
+      ? parseGitHubRepoUrl(repoUrlOrSlug)
+      : parseGitHubRepoUrl(`https://github.com/${repoUrlOrSlug}`);
+    if (!parsedRepo) {
+      setError(codeStepApiErrorMessage('INVALID_REPO_URL'));
+      return;
+    }
+    const repoSlug = `${parsedRepo.owner}/${parsedRepo.repo}`;
 
     // Disable knappen för att förhindra dubbelklick
     setConnectingGithub(true);
@@ -295,20 +318,12 @@ export function CodeUploadForm() {
       return;
     }
 
-    // KRITISK GUARD: Om repoLink finns men GitHub inte är verifierat → blockera POST
-    // Privata repon kräver GitHub OAuth innan code-submission
-    if (repoLink && !codeText && !file) {
-      // Detta är en GitHub-repo (ingen kod eller fil)
-      // Kolla om GitHub redan är verifierat
-      if (!state || !state.github?.verified) {
-        setError(
-          'Detta är ett privat GitHub-repo.\n\n' +
-          'Klicka på "Auktorisera GitHub" för att fortsätta.'
-        );
-        setShowGithubAuthButton(true);
-        setSubmitting(false);
-        return;
-      }
+    // Publikt eller privat avgörs av servern (POST /api/onboarding/code): publika repon
+    // hämtas direkt, privata svarar GITHUB_OAUTH_REQUIRED och först då visas "Auktorisera GitHub".
+    // Här kontrolleras bara att länken går att tolka som ett GitHub-repo.
+    if (repoLink && !file && !parseGitHubRepoUrl(repoLink)) {
+      setError(codeStepApiErrorMessage('INVALID_REPO_URL'));
+      return;
     }
 
     setSubmitting(true);
@@ -329,9 +344,9 @@ export function CodeUploadForm() {
           }),
         });
 
-        const urlData = await urlResponse.json();
+        const urlData = await urlResponse.json().catch(() => ({}));
         if (!urlData.success) {
-          throw new Error(urlData.message || urlData.error || 'Kunde inte begära uppladdnings-URL');
+          throw new Error(codeStepApiErrorMessage(urlData.error));
         }
 
         const { jobId, uploadUrl, gcsPath } = urlData;
@@ -375,9 +390,9 @@ export function CodeUploadForm() {
           }),
         });
 
-        const finalizeData = await finalizeResponse.json();
+        const finalizeData = await finalizeResponse.json().catch(() => ({}));
         if (!finalizeData.success) {
-          throw new Error(finalizeData.message || finalizeData.error || 'Finalize misslyckades');
+          throw new Error(codeStepApiErrorMessage(finalizeData.error));
         }
 
         // Trigga polling så frontend visar 'Processing repository...' tills FSM är klar
@@ -406,20 +421,24 @@ export function CodeUploadForm() {
     formData.append('repoLink', repoLink);
     formData.append('codeText', codeText);
 
-    const response = await fetch('/api/onboarding/code', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const result = await response.json().catch(() => ({}));
+    let result: any = {};
+    try {
+      const response = await fetch('/api/onboarding/code', {
+        method: 'POST',
+        body: formData,
+      });
+      result = await response.json().catch(() => ({}));
+    } catch (networkErr) {
+      console.error('[Code Upload] POST /api/onboarding/code failed:', networkErr);
+      setError('Kunde inte nå servern. Kontrollera anslutningen och försök igen.');
+      setSubmitting(false);
+      return;
+    }
 
     // Explicit tolkning av payload - aldrig tolka HTTP-status som onboarding-semantik
     if (!result.success) {
       if (result?.error === 'GITHUB_OAUTH_REQUIRED') {
-        setError(
-          'Detta är ett privat GitHub-repo.\n\n' +
-          'Du måste först auktorisera GitHub för att vi ska kunna läsa repot.'
-        );
+        setError(codeStepApiErrorMessage('GITHUB_OAUTH_REQUIRED'));
         setShowGithubAuthButton(true);
         setSubmitting(false);
         return;
@@ -429,7 +448,8 @@ export function CodeUploadForm() {
         setSubmitting(false);
         return;
       }
-      setError(result.error ?? 'Unexpected error');
+      // Aldrig råa koder i UI: känd kod → svensk text, annars generellt meddelande
+      setError(codeStepApiErrorMessage(result?.error));
       setSubmitting(false);
       return;
     }
@@ -572,7 +592,7 @@ export function CodeUploadForm() {
             {showGithubAuthButton && onboardingId && repoLink && state?.status === 'code_pending' && (
               <button
                 type="button"
-                onClick={() => handleGithubConnect(repoLink.replace(/^https?:\/\/github\.com\//, '').replace(/\/$/, ''))}
+                onClick={() => handleGithubConnect(repoLink)}
                 disabled={connectingGithub}
                 className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -601,7 +621,7 @@ export function CodeUploadForm() {
 
         {githubJobStatus === 'processing' && (
           <div className="rounded-md bg-blue-50 p-3 text-blue-800" role="alert">
-            <p className="font-medium">⏳ Processing repository...</p>
+            <p className="font-medium">⏳ Hämtar repot...</p>
             <p className="mt-1 text-sm">Vi hämtar och laddar upp repot. Detta kan ta några sekunder.</p>
           </div>
         )}
@@ -647,7 +667,7 @@ export function CodeUploadForm() {
             boxShadow: submitDisabled ? 'none' : '0 4px 14px rgba(16,185,129,0.3)',
           }}
         >
-          {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Processing...' : state?.status === 'code_completed' ? 'Fortsätt till Stripe onboarding' : 'Fortsätt till Stripe'}
+          {submitting ? 'Sparar...' : githubJobStatus === 'processing' ? 'Hämtar...' : state?.status === 'code_completed' ? 'Fortsätt till Stripe onboarding' : 'Fortsätt till Stripe'}
         </button>
       </form>
     </OnboardingLayout>

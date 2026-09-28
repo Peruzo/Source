@@ -1,5 +1,5 @@
 import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
-import { isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
+import { isGithubRepoAcceptedFromEvents } from '@/lib/storage/onboarding-events';
 import type { TermsAcceptanceRecord } from '@/lib/legal/terms-acceptance';
 
 /**
@@ -42,6 +42,11 @@ const TRANSITIONS: TransitionRule[] = [
     eventType: 'github_repo_verified',
     allowedStatuses: ['code_pending'],
     newStatus: null, // GitHub-verifiering är INTE längre en FSM-status
+  },
+  {
+    eventType: 'github_public_repo_confirmed',
+    allowedStatuses: ['questions_completed', 'code_pending', 'code_completed'],
+    newStatus: null, // Publik-kontroll är ingen FSM-status, bara underlag för code_completed
   },
   {
     eventType: 'code_submitted',
@@ -206,14 +211,20 @@ export function reduceOnboarding(
       // "Nej" eller annat → behåll questions_completed (ingen override)
     }
 
-    // HÅRD LÅSNING: code_completed med repoLink kräver OAuth-verifiering
-    // Om repoLink finns men github_repo_verified (med korrekt metadata) saknas → blockera transition
+    // HÅRD LÅSNING: code_completed med repoLink kräver att repot är godkänt
+    // Godkänt = github_repo_verified (OAuth) eller github_public_repo_confirmed för samma repo.
+    // Den publika vägen gäller bara code_submitted med codeSource 'github', som enbart
+    // jobbrouten skriver efter att workerns ZIP finns; klientstyrda code_submitted
+    // (POST /api/onboarding/step) saknar codeSource och kräver fortsatt OAuth.
     if (event.type === 'code_submitted' && nextStatus === 'code_completed' && event.payload?.repoLink) {
       const eventsSoFar = sortedEvents.slice(0, i + 1);
-      const githubVerified = isGithubRepoVerifiedFromEvents(eventsSoFar);
-      if (!githubVerified.verified) {
+      const repoAccess = isGithubRepoAcceptedFromEvents(eventsSoFar, event.payload.repoLink);
+      const accepted =
+        repoAccess.via === 'oauth' ||
+        (repoAccess.via === 'public' && event.payload.codeSource === 'github');
+      if (!accepted) {
         nextStatus = null;
-        console.warn('[reduceOnboarding] BLOCKED code_completed: repoLink present but github_repo_verified (OAuth) missing', {
+        console.warn('[reduceOnboarding] BLOCKED code_completed: repoLink present but repo neither OAuth-verified nor confirmed public', {
           onboardingId,
           repoLink: event.payload.repoLink,
         });
@@ -265,6 +276,10 @@ export function reduceOnboarding(
       // Eventet skapas endast för spårning/logging, inte för FSM-transition
       case 'github_repo_verified':
         // Ignorera helt - detta är INTE ett FSM-event
+        break;
+
+      // github_public_repo_confirmed är inte heller ett FSM-event; läses bara i låsningen ovan
+      case 'github_public_repo_confirmed':
         break;
 
       // terms_accepted är inget FSM-event; senaste godkännandet vinner
