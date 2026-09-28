@@ -30,7 +30,8 @@ type ClippedImageSectionProps = {
   imageSide?: 'left' | 'right';
   /** Keeps the text column pinned while the taller image column scrolls past. */
   sticky?: boolean;
-  background?: 'white' | 'stone' | 'beige';
+  /** `dark` also switches the text to light colours (pages with a dark layout, e.g. /analys). */
+  background?: 'white' | 'stone' | 'beige' | 'dark';
   /** Extra content under the body – CTA, TODO-markers, list. */
   children?: ReactNode;
 };
@@ -39,6 +40,7 @@ const backgrounds: Record<NonNullable<ClippedImageSectionProps['background']>, s
   white: 'bg-white',
   stone: 'bg-surface-stone',
   beige: 'bg-beige-light',
+  dark: 'bg-black',
 };
 
 /**
@@ -222,12 +224,12 @@ export function ClippedImageSection({
         >
           <div className="max-w-[34rem]">
             {eyebrow ? (
-              <motion.p {...reveal(0)} className="text-overline mb-6 text-teal-dark">
+              <motion.p {...reveal(0)} className={`text-overline mb-6 ${background === 'dark' ? 'text-teal' : 'text-teal-dark'}`}>
                 {eyebrow}
               </motion.p>
             ) : null}
 
-            <motion.h2 {...reveal(0.1)} className="text-section-title text-black">
+            <motion.h2 {...reveal(0.1)} className={`text-section-title ${background === 'dark' ? 'text-white' : 'text-black'}`}>
               {title}
             </motion.h2>
 
@@ -236,7 +238,7 @@ export function ClippedImageSection({
                 <motion.p
                   key={i}
                   {...reveal(0.2 + i * 0.08)}
-                  className="text-body-large text-gray-600"
+                  className={`text-body-large ${background === 'dark' ? 'text-white/70' : 'text-gray-600'}`}
                 >
                   {paragraph}
                 </motion.p>

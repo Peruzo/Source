@@ -28,14 +28,22 @@ type ServiceFullBleedProps = {
    */
   tone: 'dark' | 'light';
   /** Where the text sits from `lg` up. Below `lg` it always sits above the photo. */
-  textPosition?: 'top-left' | 'center-left';
+  textPosition?: 'top-left' | 'center-left' | 'top-right';
+  /**
+   * `side` (default) – the scrim or veil on the text side only, from `lg`.
+   * `full` – tone light only: a warm dark layer over the whole photo at every width,
+   * plus a darker top edge. For pages whose header stays white and transparent
+   * while scrolling (/analys), so the header reads over a light photo too.
+   */
+  scrim?: 'side' | 'full';
   /** Hero on top of the page: eager image, room for the fixed header. */
   priority?: boolean;
   /**
-   * Optional floating UI card over the photo (see ServiceFullBleedCard). It
-   * sits outside the parallax layer, so it follows the page while the photo
-   * drifts, and fades in once (0.3 s, no movement). Without it the section
-   * renders exactly as before.
+   * Optional floating UI card over the photo (see ServiceFullBleedCard). By
+   * default (anchorTo 'section') it sits outside the parallax layer, so it
+   * follows the page while the photo drifts. With anchorTo 'image' it sits on
+   * the photo itself and drifts with it. Either way it fades in once (0.3 s,
+   * no movement). Without it the section renders exactly as before.
    */
   card?: ServiceFullBleedCard;
 };
@@ -64,6 +72,7 @@ export function ServiceFullBleed({
   image,
   tone,
   textPosition = 'top-left',
+  scrim = 'side',
   priority = false,
   card,
 }: ServiceFullBleedProps) {
@@ -196,15 +205,34 @@ export function ServiceFullBleed({
             />
           </>
         ) : (
-          /* Warm scrim on the text side, near-black instead of pure black so the photo keeps its warmth. */
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 hidden lg:block"
-            style={{ background: 'linear-gradient(90deg, rgba(14,11,8,0.55) 0%, rgba(14,11,8,0.22) 45%, rgba(14,11,8,0) 70%)' }}
-          />
+          <>
+            {scrim === 'full' ? (
+              /* Warm dark layer over the whole photo, darker at the top where a transparent header sits. */
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(14,11,8,0.5) 0%, rgba(14,11,8,0) 22%), linear-gradient(rgba(14,11,8,0.42), rgba(14,11,8,0.42))',
+                }}
+              />
+            ) : null}
+            {/* Warm scrim on the text side, near-black instead of pure black so the photo keeps its warmth. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 hidden lg:block"
+              style={{
+                background: `linear-gradient(${textPosition === 'top-right' ? '270deg' : '90deg'}, rgba(14,11,8,0.55) 0%, rgba(14,11,8,0.22) 45%, rgba(14,11,8,0) 70%)`,
+              }}
+            />
+          </>
         )}
 
-        {card ? (
+        {card && card.anchorTo === 'image' ? (
+          <ImageAnchoredCard card={card} image={image} parallax={parallaxStyle} reduce={shouldReduceMotion} reveal={cardReveal} />
+        ) : null}
+
+        {card && card.anchorTo !== 'image' ? (
           <motion.div
             role="group"
             aria-label={card.label}
@@ -221,10 +249,76 @@ export function ServiceFullBleed({
       <div
         className={`relative z-10 order-first px-6 pb-10 md:px-10 lg:mx-auto lg:flex lg:min-h-[100svh] lg:max-w-[1440px] lg:px-20 lg:pb-0 ${
           priority ? 'pt-28' : 'pt-20'
-        } ${textPosition === 'top-left' ? 'lg:items-start lg:pt-[clamp(8rem,20vh,12rem)]' : 'lg:items-center lg:pt-0'}`}
+        } ${textPosition === 'center-left' ? 'lg:items-center lg:pt-0' : 'lg:items-start lg:pt-[clamp(8rem,20vh,12rem)]'}${
+          textPosition === 'top-right' ? ' lg:justify-end' : ''
+        }`}
       >
         {content}
       </div>
     </section>
+  );
+}
+
+const fraction = (value: string | undefined, axis: 0 | 1) => {
+  const part = (value ?? '50% 50%').trim().split(/\s+/)[axis] ?? '50%';
+  return parseFloat(part) / 100;
+};
+
+/*
+ * card with anchorTo 'image'. A box with the photo's own aspect ratio, sized and
+ * positioned exactly like object-fit: cover with the photo's object-position,
+ * so the anchor (percent of the photo) lands on the same spot of the photo at
+ * every width. It lives in a layer that mirrors the photo's parallax layer and
+ * uses its container query units. Portrait below md (4:5 crop, portraitFocus),
+ * landscape from md (16:9, focus). Fixed card width: the card sits on a motif
+ * (a phone, a notebook) and must not outgrow it.
+ */
+function ImageAnchoredCard({
+  card,
+  image,
+  parallax,
+  reduce,
+  reveal,
+}: {
+  card: ServiceFullBleedCard;
+  image: ServiceImage;
+  parallax: CSSProperties | undefined;
+  reduce: boolean;
+  reveal: Record<string, unknown>;
+}) {
+  const hasPortrait = Boolean(image.portraitWidths?.length);
+  const portraitAnchor = card.anchorPortrait ?? card.anchor;
+  const portraitFocus = hasPortrait ? image.portraitFocus ?? image.focus : image.focus;
+  const vars = {
+    '--ar-p': String(hasPortrait ? 0.8 : 16 / 9),
+    '--fx-p': String(fraction(portraitFocus, 0)),
+    '--fy-p': String(fraction(portraitFocus, 1)),
+    '--px-p': `${portraitAnchor.x}%`,
+    '--py-p': `${portraitAnchor.y}%`,
+    '--ar-l': String(16 / 9),
+    '--fx-l': String(fraction(image.focus, 0)),
+    '--fy-l': String(fraction(image.focus, 1)),
+    '--px-l': `${card.anchor.x}%`,
+    '--py-l': `${card.anchor.y}%`,
+  } as CSSProperties;
+
+  return (
+    <motion.div
+      style={{ ...(parallax ?? {}), ...vars }}
+      className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-full [container-type:size] [--ar:var(--ar-p)] [--fx:var(--fx-p)] [--fy:var(--fy-p)] [--px:var(--px-p)] [--py:var(--py-p)] md:[--ar:var(--ar-l)] md:[--fx:var(--fx-l)] md:[--fy:var(--fy-l)] md:[--px:var(--px-l)] md:[--py:var(--py-l)] ${
+        reduce ? '' : 'lg:h-[117%] lg:[transform:translateY(var(--parallax,0%))]'
+      }`}
+    >
+      <div className="absolute [aspect-ratio:var(--ar)] [width:max(100cqw,calc(100cqh*var(--ar)))] [left:calc((100cqw-max(100cqw,calc(100cqh*var(--ar))))*var(--fx))] [top:calc((100cqh-max(100cqh,calc(100cqw/var(--ar))))*var(--fy))]">
+        <motion.div
+          role="group"
+          aria-label={card.label}
+          {...reveal}
+          className="pointer-events-auto absolute left-[var(--px)] top-[var(--py)] w-[min(20rem,calc(100cqw-3rem))] -translate-x-1/2 -translate-y-1/2"
+        >
+          {card.content}
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnalysisArcOverlay } from '@/components/sections/AnalysisArcOverlay';
+import { AnalysIntro, AnalysSections } from '@/components/sections/tjanster/analys/AnalysSections';
 
 export default function AnalysisPage() {
   // First premium transfer arc (UK-ish -> right side).
@@ -66,6 +67,8 @@ export default function AnalysisPage() {
           </div>
         </div>
       </section>
+
+      <AnalysIntro />
 
       <section className="relative overflow-hidden bg-black text-white">
         <div className="relative z-10 mx-auto flex min-h-[460px] w-full max-w-[1120px] flex-col items-center px-6 pt-28 pb-20 text-center md:min-h-[520px] md:pt-48 md:pb-24 lg:min-h-[600px] lg:pt-60 lg:pb-28">
@@ -171,6 +174,8 @@ export default function AnalysisPage() {
           </div>
         </div>
       </section>
+
+      <AnalysSections />
     </>
   );
 }
