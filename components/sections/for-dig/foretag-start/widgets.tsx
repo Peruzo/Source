@@ -14,23 +14,27 @@ import type { OfferListContent, PhotoCardContent } from '@/lib/data/for-dig/fore
  * "Det du säljer": a short list of what the business sells, one row per item
  * with its kind (Vara, Tjänst, Abonnemang) and price. No photos, so the example
  * never reads as one particular trade.
+ *
+ * Names are never cut off. Below a 28rem container the kind pill moves under
+ * the name, so the name gets the full width next to the price; from 28rem the
+ * name, pill and price share one line. Reads only its own width (@container).
  */
 export function OfferList({ content, currency, locale }: { content: OfferListContent; currency: string; locale: string }) {
   const titleId = useId();
 
   return (
-    <div role="group" aria-labelledby={titleId} className={`w-full bg-white p-4 text-left text-black @xl:p-5 ${CARD_EDGE} ${RADIUS.card}`}>
+    <div role="group" aria-labelledby={titleId} className={`@container w-full bg-white p-4 text-left text-black @xl:p-5 ${CARD_EDGE} ${RADIUS.card}`}>
       <h3 id={titleId} className="text-ui-title">
         {content.title}
       </h3>
       <ul className="mt-3 divide-y divide-gray-200">
         {content.rows.map((row) => (
           <li key={row.id} className="flex items-center gap-3 py-2.5">
-            <span className="min-w-0 flex-1">
-              <span className="text-ui-body block truncate">{row.name}</span>
-            </span>
-            <span className={`text-ui-label whitespace-nowrap border border-gray-300 px-2 py-0.5 text-gray-700 ${RADIUS.control}`}>
-              {row.kind}
+            <span className="flex min-w-0 flex-1 flex-col items-start gap-1 @md:flex-row @md:items-center @md:justify-between @md:gap-3">
+              <span className="text-ui-body block min-w-0 break-words">{row.name}</span>
+              <span className={`text-ui-label shrink-0 whitespace-nowrap border border-gray-300 px-2 py-0.5 text-gray-700 ${RADIUS.control}`}>
+                {row.kind}
+              </span>
             </span>
             <span className="text-ui-body w-[5.5rem] whitespace-nowrap text-right tabular-nums">
               {formatMoney(row.price, currency, locale)}
