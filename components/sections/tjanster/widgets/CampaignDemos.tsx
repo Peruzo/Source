@@ -20,21 +20,21 @@ import { CARD_EDGE, RADIUS, formatMoney } from '@/components/sections/for-dig/pa
  * Products are an unbranded carton, never a photo of a real product.
  */
 
-const smooth = cubicBezier(0.4, 0, 0.2, 1);
+export const smooth = cubicBezier(0.4, 0, 0.2, 1);
 const CURRENCY = 'SEK';
 const LOCALE = 'sv-SE';
 
 /** 0 → 1 between `from` and `to` of the scene, clamped and eased. */
-function useStep(progress: MotionValue<number>, from: number, to: number) {
+export function useStep(progress: MotionValue<number>, from: number, to: number) {
   return useTransform(progress, [from, to], [0, 1], { ease: smooth });
 }
 
-const money = (amount: number) => formatMoney(amount, CURRENCY, LOCALE);
+export const money = (amount: number) => formatMoney(amount, CURRENCY, LOCALE);
 const count = (value: number) => new Intl.NumberFormat(LOCALE).format(value);
 
 /* ── Shared pieces ──────────────────────────────────────────────────────── */
 
-function Card({ titleId, title, badge, children }: { titleId: string; title: string; badge?: ReactNode; children: ReactNode }) {
+export function Card({ titleId, title, badge, children }: { titleId: string; title: string; badge?: ReactNode; children: ReactNode }) {
   return (
     <div
       role="group"
@@ -52,7 +52,7 @@ function Card({ titleId, title, badge, children }: { titleId: string; title: str
   );
 }
 
-function Box({ label, children, className = '' }: { label: string; children: ReactNode; className?: string }) {
+export function Box({ label, children, className = '' }: { label: string; children: ReactNode; className?: string }) {
   return (
     <div className={`border border-gray-200 bg-white px-3.5 py-2.5 ${RADIUS.field} ${className}`}>
       <p className="text-ui-label text-gray-600">{label}</p>
@@ -81,7 +81,7 @@ function Thumb() {
   );
 }
 
-function CheckMark({ className = 'h-3 w-3' }: { className?: string }) {
+export function CheckMark({ className = 'h-3 w-3' }: { className?: string }) {
   return (
     <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="m2.5 6.2 2.3 2.3 4.7-5" />
@@ -104,7 +104,7 @@ function Swap({ show, from, to, className = '' }: { show: MotionValue<number>; f
   );
 }
 
-function StatusPill({ show, idle, done }: { show: MotionValue<number>; idle: string; done: string }) {
+export function StatusPill({ show, idle, done }: { show: MotionValue<number>; idle: string; done: string }) {
   const hide = useTransform(show, (v) => 1 - v);
   return (
     <span className="text-ui-label relative inline-grid whitespace-nowrap">
@@ -120,7 +120,7 @@ function StatusPill({ show, idle, done }: { show: MotionValue<number>; idle: str
 }
 
 /** A solid button look-alike that dips once when the scene "clicks" it. Illustration, not a control. */
-function PressButton({ progress, at, children, full = false }: { progress: MotionValue<number>; at: number; children: ReactNode; full?: boolean }) {
+export function PressButton({ progress, at, children, full = false }: { progress: MotionValue<number>; at: number; children: ReactNode; full?: boolean }) {
   const scale = useTransform(progress, [at - 0.03, at, at + 0.03], [1, 0.96, 1], { ease: smooth });
   return (
     <motion.span

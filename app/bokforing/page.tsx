@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
+import { BokforingSections } from '@/components/sections/tjanster/bokforing/BokforingSections';
 
 export default function BokforingPage() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -305,6 +306,7 @@ export default function BokforingPage() {
           </div>
         </div>
       </section>
+      <BokforingSections />
     </>
   );
 }
