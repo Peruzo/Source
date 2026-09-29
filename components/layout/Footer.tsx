@@ -157,7 +157,7 @@ export function Footer({ serverYear }: FooterProps) {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">
-              © {currentYear} Source. Alla rättigheter förbehållna.
+              © {currentYear} Source Solutions AB. Alla rättigheter förbehållna.
             </p>
             <div className="flex gap-6 text-sm">
               <Link href="/legal/privacy" className="text-gray-500 hover:text-teal transition-colors">
