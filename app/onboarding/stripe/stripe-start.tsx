@@ -203,30 +203,36 @@ export function StripeStart() {
               }}
             >
               <h3 style={{ color: '#10b981', marginTop: 0 }}>Allmänna Villkor (Terms of Service)</h3>
-              <p style={{ color: '#6b7280', fontSize: '13px' }}>Source Solutions AB — Senast uppdaterad: 2026-04-10</p>
+              <p style={{ color: '#6b7280', fontSize: '13px' }}>Source Solutions AB — Senast uppdaterad: 2026-09-30</p>
 
               {[
                 { num: '§1', title: 'Definitioner', text: '"Bolaget": Source Solutions AB. "Tjänsten": SaaS-plattform inklusive kundportal, analys, kommunikation, hosting, domän och betalningar. "Kund": användare av Tjänsten.' },
                 { num: '§2', title: 'Avtalets omfattning', text: 'Bolaget tillhandahåller teknisk infrastruktur. Kunden ansvarar för användning och laglighet.' },
                 { num: '§3', title: 'Konto', text: 'Kunden ansvarar för konto, åtkomst och säkerhet.' },
                 { num: '§4', title: 'Användning', text: 'Förbjudet: olaglig användning, behandling utan laglig grund, intrång. Kunden ansvarar för att följa tillämplig lagstiftning.' },
-                { num: '§5', title: 'Multi-tenant', text: 'Kunden = personuppgiftsansvarig. Bolaget = personuppgiftsbiträde. Säkerhet enligt ISO/IEC 27001 och SOC 2 Type II.' },
+                { num: '§5', title: 'Multi-tenant', text: 'Kunden = personuppgiftsansvarig. Bolaget = personuppgiftsbiträde. Bolaget vidtar lämpliga tekniska och organisatoriska säkerhetsåtgärder enligt artikel 32 i dataskyddsförordningen.' },
                 { num: '§6', title: 'Dataskydd', text: 'DPA enligt GDPR art. 28 måste vara ingånget innan behandling av personuppgifter påbörjas. Bolaget bistår Kunden enligt GDPR.' },
                 { num: '§7', title: 'Spårning och profilering', text: 'Profilering används för analys. Rättslig grund: samtycke eller berättigat intresse. Kunden ansvarar för CMP och Google Consent Mode v2.' },
                 { num: '§8', title: 'AI', text: 'AI används som stöd. Vid GDPR art. 22 ska människa kunna påverka beslut. Kunden garanterar efterlevnad.' },
                 { num: '§9', title: 'Betalningar', text: 'Stripe används. Bolaget lagrar inte kortdata. Stripe är PCI-DSS Level 1-certifierad. Kunden ansvarar för chargebacks och betalningsrelaterade tvister.' },
-                { num: '§10', title: 'Avgifter', text: 'Abonnemang eller usage. Ej återbetalning om ej annat anges. Vid gratis testperiod informeras Kunden innan debitering.' },
+                { num: '§10', title: 'Avgifter', text: 'Abonnemang eller usage. Ej återbetalning om ej annat anges. Vid gratis testperiod informeras Kunden innan debitering. Konsument har 14 dagars ångerrätt enligt distansavtalslagen.' },
                 { num: '§11', title: 'Tredjepart', text: 'Bolaget ansvarar för implementation, konfiguration, API och datamappning.' },
-                { num: '§12', title: 'Underbiträden', text: 'Stripe, Auth0, Fortnox, Google, Meta, TikTok, LinkedIn, SendGrid används. Ändringar meddelas minst 14 dagar i förväg.' },
+                { num: '§12', title: 'Underbiträden', text: (
+                  <>
+                    Aktuell förteckning över underbiträden finns i{' '}
+                    <a href={LEGAL_DOCUMENT_PATHS.dpa} target="_blank" rel="noopener noreferrer" style={{ color: '#10b981', fontWeight: 600 }}>personuppgiftsbiträdesavtalet (DPA)</a>{' '}
+                    §8. Ändringar meddelas minst 14 dagar i förväg.
+                  </>
+                ) },
                 { num: '§13', title: 'Dataöverföring', text: 'Sker via SCC eller EU-US DPF. Information om skyddsåtgärder tillhandahålls på begäran.' },
                 { num: '§14', title: 'Hosting och DNS', text: 'Ingen garanti för tillgänglighet. Bolaget ansvarar inte för innehåll publicerat av Kunden.' },
-                { num: '§15', title: 'DSA och innehåll', text: 'Kontakt: legal@sourcesolutions.se. Anmälan hanteras inom 24–72h.' },
-                { num: '§16', title: 'Säkerhet', text: 'Skydd enligt ISO/IEC 27001 och SOC 2 Type II eller motsvarande.' },
+                { num: '§15', title: 'DSA och innehåll', text: 'Kontakt: help@sourcesolutions.se. Anmälan hanteras inom 24–72h.' },
+                { num: '§16', title: 'Säkerhet', text: 'Lämpliga tekniska och organisatoriska åtgärder, bland annat krypterad överföring, åtkomstkontroll med autentisering och loggning. Bolaget innehar i dag ingen certifiering enligt ISO/IEC 27001 eller SOC 2.' },
                 { num: '§17', title: 'Incidenter', text: 'Meddelas inom 48 timmar från det att Bolaget fått kännedom.' },
                 { num: '§18', title: 'Ansvarsbegränsning', text: 'Bolaget ansvarar inte för indirekta skador. Ansvar begränsas till avgifter senaste 6 månader eller 10 000 SEK.' },
-                { num: '§19', title: 'Skadeslöshet', text: 'Kunden ersätter Bolaget för krav inklusive regulatoriska sanktioner.' },
+                { num: '§19', title: 'Skadeslöshet', text: 'Kunden ersätter Bolaget för krav från tredje man, inklusive sanktionsavgifter, i den mån kravet beror på att Kunden brutit mot avtalet, tillämplig lag eller lämnat instruktioner som strider mot lag.' },
                 { num: '§20', title: 'Uppsägning', text: 'Kunden kan avsluta när som helst. Bolaget kan avsluta vid säkerhetsrisk eller lagkrav.' },
-                { num: '§21', title: 'Data', text: 'Raderas inom 30–90 dagar. Bekräftelse kan begäras.' },
+                { num: '§21', title: 'Data', text: 'Raderas senast 90 dagar efter avtalets upphörande, utom uppgifter som ska bevaras enligt lag. Kunden exporterar själv det som behövs, till exempel räkenskapsinformation. Bekräftelse kan begäras.' },
                 { num: '§22', title: 'Ändringar', text: 'Meddelas minst 30 dagar i förväg. Kunden har rätt att säga upp avtalet.' },
                 { num: '§23', title: 'Lag', text: 'Svensk lag gäller. Tvister avgörs av svensk domstol.' },
               ].map((section) => (
@@ -313,6 +319,9 @@ export function StripeStart() {
             >
               Läs en sammanfattning av villkoren
             </button>
+            <p style={{ margin: '0 0 12px', color: '#374151', fontSize: '13px', lineHeight: 1.5 }}>
+              Om du godkänner för ett företag intygar du att du har behörighet att ingå avtal för företaget.
+            </p>
             {([
               { doc: 'terms', before: 'Jag har läst och godkänner ', link: 'användarvillkoren', after: '.' },
               { doc: 'privacy', before: 'Jag har tagit del av ', link: 'integritetspolicyn', after: '.' },

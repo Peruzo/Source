@@ -39,7 +39,8 @@ export function PricingTeaser() {
                     <p className="text-6xl md:text-7xl lg:text-8xl font-bold text-black mb-2">
                       799<span className="text-4xl md:text-5xl text-gray-500"> kr</span>
                     </p>
-                    <p className="text-lg text-gray-600">per månad</p>
+                    <p className="text-lg text-gray-600">per månad inkl. moms</p>
+                    <p className="text-sm text-gray-500 mt-1">639 kr exkl. moms</p>
                   </motion.div>
                 </div>
 
@@ -78,7 +79,7 @@ export function PricingTeaser() {
           </motion.div>
 
           <FadeIn delay={0.5} className="text-center mt-12">
-            <p className="text-gray-600 text-sm md:text-base">* Alla priser exklusive moms. Uppgradera eller nedgradera när som helst.</p>
+            <p className="text-gray-600 text-sm md:text-base">* Alla priser anges inklusive moms. Uppgradera eller nedgradera när som helst.</p>
           </FadeIn>
         </div>
       </div>
