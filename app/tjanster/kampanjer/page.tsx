@@ -3,6 +3,7 @@
 import { Container } from '@/components/ui/Container';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { CampaignVisualShowcase } from '@/components/sections/CampaignVisualShowcase';
+import { KampanjerSections } from '@/components/sections/tjanster/kampanjer/KampanjerSections';
 import { useEffect, useRef } from 'react';
 
 export default function CampaignsPage() {
@@ -84,6 +85,7 @@ export default function CampaignsPage() {
         </Container>
       </section>
       <CampaignVisualShowcase />
+      <KampanjerSections />
     </>
   );
 }
