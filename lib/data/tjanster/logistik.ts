@@ -23,6 +23,7 @@ import {
   TruckIcon,
   ArrowUturnLeftIcon,
 } from '@heroicons/react/24/outline';
+import type { ServiceVideoSource, ServiceVideoStill } from '@/components/sections/tjanster/ServiceVideo';
 import type { FeatureItem, ServiceCta, ServiceImage } from '@/components/sections/tjanster/types';
 import type { LogisticsFlowContent } from '@/components/sections/tjanster/widgets/LogisticsFlow';
 
@@ -187,6 +188,41 @@ export const logistikSparning = {
   body: [
     'När leveransen är bokad får kunden ett mejl med spårningsnummer och en länk för att följa paketet hos PostNord.',
   ],
+};
+
+/*
+ * S5 – brevlådevideon, hela källan (bildruta 0–120, 0–5,04 s; stängt lock och tom bild de sista
+ * 1,08 s). Skruvhuvudets mönster på fronten är godkänt som osynligt i uppspelningsstorleken
+ * (CC-RAPPORT-logistik-brevlada.md punkt 2). Belägg för texten: leveranssätten i kassan
+ * (storefrontCheckoutService.js 390–396), valet sparas på ordern (storefrontCheckoutService.js
+ * 1437–1445) och bokningen hos PostNord görs med valets servicekod (services/shipping/adapters/
+ * postnord.js 232–238; services/shipping/bookingReadiness.js 10–13, 32–38). Inga leveranstider
+ * och inga statusar så länge FLAGGOR.statushamtning är av.
+ */
+const VID = '/tjanster/logistik/logistik-brevlada';
+export const logistikLeverans = {
+  eyebrow: 'LEVERANS',
+  title: 'Paketet kommer som kunden valde',
+  body: [
+    'Kunden väljer i kassan om paketet ska till brevlådan, ett utlämningsställe, en paketbox eller hem. Valet sparas på ordern, och leveransen bokas hos PostNord för just det leveranssättet.',
+  ],
+  label: 'En hand lägger ett paket i en brevlåda och stänger locket.',
+  sources: [
+    { src: `${VID}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
+    { src: `${VID}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
+    { src: `${VID}-1920.webm`, type: 'video/webm' },
+    { src: `${VID}-1920.mp4`, type: 'video/mp4' },
+  ],
+  poster: { src: `${VID}-poster-1920.webp`, smallSrc: `${VID}-poster-960.webp`, srcSet: `${VID}-poster-960.webp 960w, ${VID}-poster-1920.webp 1920w` },
+  end: { src: `${VID}-slut-1920.webp`, smallSrc: `${VID}-slut-960.webp`, srcSet: `${VID}-slut-960.webp 960w, ${VID}-slut-1920.webp 1920w` },
+} satisfies {
+  eyebrow: string;
+  title: string;
+  body: string[];
+  label: string;
+  sources: ServiceVideoSource[];
+  poster: ServiceVideoStill;
+  end: ServiceVideoStill;
 };
 
 /*
