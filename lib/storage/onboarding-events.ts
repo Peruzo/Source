@@ -1,4 +1,5 @@
 import { Storage } from '@google-cloud/storage';
+import type { TermsAcceptanceRecord } from '@/lib/legal/terms-acceptance';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
@@ -12,6 +13,7 @@ export type OnboardingEventInput =
   | { type: 'questions_submitted'; payload: Record<string, any> }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual' | 'upload'; storageObjectUrl?: string } }
   | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string; source: 'github_oauth_callback'; oauth: { codeExchangeCompleted: boolean; accessTokenPresent: boolean } } }
+  | { type: 'terms_accepted'; payload: TermsAcceptanceRecord }
   | { type: 'stripe_started'; payload: { accountId: string } }
   | { type: 'stripe_completed'; payload: { accountId: string } }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string } };
@@ -24,6 +26,7 @@ export type OnboardingEvent =
   | { type: 'questions_submitted'; payload: Record<string, any>; at: string }
   | { type: 'code_submitted'; payload: { repoLink?: string; codeText?: string; fileName?: string; codeSource?: 'github' | 'manual' | 'upload'; storageObjectUrl?: string }; at: string }
   | { type: 'github_repo_verified'; payload: { repoUrl: string; repoSlug: string; verifiedAt: string; source: 'github_oauth_callback'; oauth: { codeExchangeCompleted: boolean; accessTokenPresent: boolean } }; at: string }
+  | { type: 'terms_accepted'; payload: TermsAcceptanceRecord; at: string }
   | { type: 'stripe_started'; payload: { accountId: string }; at: string }
   | { type: 'stripe_completed'; payload: { accountId: string }; at: string }
   | { type: 'plan_selected'; payload: { planId: string; name: string; price: string }; at: string };
@@ -60,6 +63,8 @@ export async function appendOnboardingEvent<T extends OnboardingEventInput>(
         return { type: 'code_submitted', payload: event.payload, at: now };
       case 'github_repo_verified':
         return { type: 'github_repo_verified', payload: event.payload, at: now };
+      case 'terms_accepted':
+        return { type: 'terms_accepted', payload: event.payload, at: now };
       case 'stripe_started':
         return { type: 'stripe_started', payload: event.payload, at: now };
       case 'stripe_completed':

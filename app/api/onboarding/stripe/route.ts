@@ -6,6 +6,11 @@ import { appendOnboardingEvent, listOnboardingEvents } from '@/lib/storage/onboa
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { getBaseUrl } from '@/lib/utils/base-url';
 import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
+import {
+  buildTermsAcceptanceRecord,
+  parseTermsAcceptance,
+  TERMS_NOT_ACCEPTED_MESSAGE,
+} from '@/lib/legal/terms-acceptance';
 
 /**
  * KRITISK: Stripe SDK-init sker på runtime (request scope), inte module scope.
@@ -55,6 +60,16 @@ export async function POST(request: Request) {
     
     const onboardingId = providedOnboardingId;
 
+    // VILLKOR: användarvillkor, integritetspolicy och DPA i aktuell version måste vara
+    // aktivt ikryssade. Inget Stripe-konto skapas och inget event skrivs utan dem.
+    const termsAcceptance = parseTermsAcceptance(body.termsAcceptance);
+    if (!termsAcceptance.ok) {
+      return NextResponse.json(
+        { success: false, error: 'TERMS_NOT_ACCEPTED', message: TERMS_NOT_ACCEPTED_MESSAGE },
+        { status: 400 }
+      );
+    }
+
     // ÄGARSKAP: onboardingId måste vara bundet till anroparens userSub (404 annars)
     const denied = await requireOnboardingOwner(userSub, onboardingId);
     if (denied) return denied;
@@ -83,6 +98,19 @@ export async function POST(request: Request) {
         },
         { status: 403 }
       );
+    }
+
+    // Godkännandet sparas FÖRE Stripe-kontot: utan sparat bevis går flödet inte vidare.
+    // acceptedAt sätts här på servern; ingen IP-adress sparas.
+    const acceptanceRecord = buildTermsAcceptanceRecord(termsAcceptance.value, userSub, onboardingId);
+    try {
+      await appendOnboardingEvent(onboardingId, {
+        type: 'terms_accepted',
+        payload: acceptanceRecord,
+      });
+    } catch (termsError) {
+      console.error('[Onboarding Stripe] Could not store terms acceptance:', termsError);
+      return NextResponse.json({ success: false }, { status: 500 });
     }
 
     const account = await stripe.accounts.create({
@@ -133,6 +161,7 @@ export async function POST(request: Request) {
       user: email ? { email, sub: userSub } : { sub: userSub },
       data: {
         accountId: account.id,
+        termsAcceptance: acceptanceRecord,
       },
       submittedAt: new Date().toISOString(),
       source: 'public_onboarding',
