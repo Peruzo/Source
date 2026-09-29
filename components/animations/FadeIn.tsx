@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 interface FadeInProps {
   children: ReactNode;
@@ -18,6 +19,11 @@ export function FadeIn({
   direction = 'up',
   className = '',
 }: FadeInProps) {
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
+  if (nofx.fade) {
+    return <div className={className}>{children}</div>;
+  }
+
   const directionOffset = {
     up: { y: 40 },
     down: { y: -40 },

@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
-import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerified } from '@/lib/storage/onboarding-events';
+import { getGitHubJob, updateJobStatus, isValidJobId, jobBelongsToOnboarding } from '@/lib/storage/github-jobs';
+import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoAcceptedFromEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding, assertStatus } from '@/lib/onboarding/reducer';
 import { patchAdminOnboarding, sendToAdminPortal } from '@/lib/api/admin-portal';
-import { getAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
+import { auth0 } from '@/lib/auth0';
+import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 import { Storage } from '@google-cloud/storage';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
 const PROJECT_ID = process.env.GCP_PROJECT_ID;
 
 /**
- * GET /api/github/job?jobId=...
+ * GET /api/github/job?jobId=...&onboardingId=...
  * Hämtar status för ett GitHub import-jobb.
  *
- * ARKITEKTURREGEL: Ingen Auth0. Åtkomst via jobId (hemlig UUID) + valfri match mot anonym cookie.
- * Om cookie finns och job.userSub inte matchar sessionId → 403.
+ * ÄGARSKAP: Auth0-session krävs och onboardingId måste vara bundet till anroparens userSub
+ * (requireOnboardingOwner, samma hjälpare som övriga onboarding-routes). Jobbet måste
+ * dessutom tillhöra just den onboardingen. Alla nekanden ger samma 404 så att giltiga
+ * jobb- eller onboarding-id inte kan bekräftas.
  *
  * Om jobbet är 'running' eller 'queued', kontrolleras om ZIP-filen finns i GCS.
  * GCS används som sanningskälla - ingen callback från worker.
@@ -22,18 +25,19 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID;
 export async function GET(request: NextRequest) {
   try {
     const jobId = request.nextUrl.searchParams.get('jobId');
-    if (!jobId) {
-      return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });
+    const onboardingId = request.nextUrl.searchParams.get('onboardingId');
+    if (!isValidJobId(jobId) || !onboardingId) {
+      return onboardingNotFound();
     }
+
+    // ÄGARSKAP före läsning av jobbet
+    const session = await auth0.getSession();
+    const denied = await requireOnboardingOwner(session?.user?.sub, onboardingId);
+    if (denied) return denied;
 
     let job = await getGitHubJob(jobId);
-    if (!job) {
-      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
-    }
-
-    const sessionId = await getAnonymousSessionId();
-    if (sessionId && job.userSub !== sessionId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!job || !jobBelongsToOnboarding(job, onboardingId)) {
+      return onboardingNotFound();
     }
 
     // STEG 2: Kontrollera om ZIP-filen finns när status är 'running' eller 'queued'
@@ -108,14 +112,20 @@ export async function GET(request: NextRequest) {
             // FSM-krav: Jobbet får endast köras när code är färdigt
             assertStatus(state, 'code_completed');
 
-            // SÄKERHET: GitHub-repo MÅSTE vara OAuth-verifierat (event-baserat).
-            // Skip för ZIP-upload-flöden — där finns inget repo att verifiera.
-            const isVerified = codeSource === 'github'
-              ? await isGithubRepoVerified(job.onboardingId)
-              : { verified: true, repoSlug: null, verifiedAt: null };
+            // SÄKERHET: GitHub-repo MÅSTE vara godkänt (event-baserat): OAuth-verifierat
+            // (github_repo_verified) eller bekräftat publikt av servern för just detta repo
+            // (github_public_repo_confirmed). Skip för ZIP-upload-flöden — där finns inget repo.
+            const repoAccess = codeSource === 'github'
+              ? isGithubRepoAcceptedFromEvents(events, job.repoUrl)
+              : { accepted: true, repoSlug: undefined, verifiedAt: undefined };
+            const isVerified = {
+              verified: repoAccess.accepted,
+              repoSlug: repoAccess.repoSlug ?? null,
+              verifiedAt: repoAccess.verifiedAt ?? null,
+            };
 
             if (codeSource === 'github' && !isVerified.verified) {
-              throw new Error('GitHub repo is not OAuth-verified');
+              throw new Error('GitHub repo is neither OAuth-verified nor confirmed public');
             }
 
             // Synka till admin-portalen så att onboarding visar "har kod" (admin läser från MongoDB, inte events)

@@ -56,13 +56,13 @@ export default function ContactPage() {
           <div className="flex flex-wrap gap-4">
             <button
               onClick={scrollToForm}
-              className="inline-flex items-center px-8 py-4 bg-white text-[#0d3b2c] font-semibold rounded-full hover:bg-white/95 transition-colors"
+              className="inline-flex items-center justify-center rounded-full bg-white px-[22px] py-3 text-[15px] font-medium leading-tight text-[#0d3b2c] transition-colors hover:bg-white/90"
             >
               Prata med oss
             </button>
             <Link
               href="/hjalp"
-              className="inline-flex items-center px-8 py-4 border-2 border-white/50 text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
+              className="inline-flex items-center justify-center rounded-full border border-white/50 px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-white/10"
             >
               Till hjälpcentret
             </Link>

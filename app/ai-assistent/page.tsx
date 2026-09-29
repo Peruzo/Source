@@ -67,7 +67,7 @@ export default function AIAssistentPage() {
 
                 {/* AI message 1 */}
                 <div className="flex justify-end">
-                  <div className="max-w-[90%] rounded-2xl rounded-br-sm bg-teal px-3 py-2 text-white shadow-lg text-left">
+                  <div className="max-w-[90%] rounded-2xl rounded-br-sm bg-teal-dark px-3 py-2 text-white shadow-lg text-left">
                     Jag ser att dina bokningar ökat – men intäkterna följer inte riktigt med. Vill du att
                     jag visar var du tjänar mest just nu?
                   </div>

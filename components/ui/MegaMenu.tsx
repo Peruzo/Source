@@ -41,19 +41,6 @@ const menuContent: Record<string, MenuContent> = {
     ],
     href: '/tjanster',
   },
-  portfolio: {
-    title: 'Portfolio',
-    description: 'Verkliga resultat från verkliga kunder',
-    features: [
-      'Fashion store som ökade trafiken med 200%',
-      'SaaS-plattform levererad på 4 veckor',
-      'Restaurant som ökade bokningar med 150%',
-      'E-handel med 30% konverteringsökning',
-      'Se komplett portfolio med case studies',
-      'Läs om vår process och metodik',
-    ],
-    href: '/portfolio',
-  },
   'for-dig': {
     title: 'För dig',
     description: 'Välj ett upplägg som passar där du är just nu',
@@ -118,6 +105,33 @@ const menuContent: Record<string, MenuContent> = {
     href: '/kontakt',
   },
 };
+
+export type MenuLinkGroup = {
+  title?: string;
+  items: { label: string; href: string }[];
+};
+
+/**
+ * Normalised link groups for a menu key, shared by the desktop mega menu data
+ * and the mobile accordion so the link lists are defined in one place.
+ */
+export function getMenuLinks(menuKey: string): MenuLinkGroup[] {
+  const content = menuContent[menuKey];
+  if (!content) return [];
+
+  if (content.groupedFeatures?.length) {
+    return content.groupedFeatures.map((group) => ({
+      title: group.title,
+      items: group.items,
+    }));
+  }
+
+  if (content.featureLinks?.length) {
+    return [{ items: content.featureLinks }];
+  }
+
+  return [];
+}
 
 export function MegaMenu({
   menuKey,

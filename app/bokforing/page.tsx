@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
+import { BokforingSections } from '@/components/sections/tjanster/bokforing/BokforingSections';
 
 export default function BokforingPage() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -155,7 +156,7 @@ export default function BokforingPage() {
                 {[
                   'Automatiskt bokföringsunderlag vid varje Stripe-utbetalning',
                   'Stöd för 25%, 12%, 6% och 0% moms',
-                  'Hantering av Stripe-avgifter och valutadifferenser',
+                  'Hantering av Stripe-avgifter',
                   'Skicka direkt vidare till Fortnox',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm text-gray-700 md:text-base">
@@ -175,7 +176,7 @@ export default function BokforingPage() {
               <div className="relative mx-auto w-full max-w-[900px] overflow-hidden rounded-[28px] border border-black/5 shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
                 <Image
                   src="/bokfaring123.png"
-                  alt="Bokföring och Fortnox integration"
+                  alt="En man i vit skjorta arbetar vid en bärbar dator vid ett skrivbord."
                   width={1800}
                   height={1200}
                   className="h-auto w-full object-cover"
@@ -272,23 +273,23 @@ export default function BokforingPage() {
         <div className="relative z-10 flex min-h-[100svh] flex-col items-center justify-start px-6 pt-20 text-center md:px-10 md:pt-24 lg:px-20 lg:pt-28">
           <div className="mx-auto w-full max-w-[980px]">
             <p className="text-xs font-medium uppercase tracking-[0.36em] text-gray-500">
-              TIDSBESPARING
+              GRANSKNING
             </p>
             <h2 className="mt-5 text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-[#111111] sm:text-5xl lg:text-[3.35rem]">
-              Varför det här sparar tid
+              Underlaget byggs, du granskar
             </h2>
             <p className="mx-auto mt-6 max-w-[68ch] text-base leading-relaxed text-gray-700 md:text-lg">
-              När Stripe-utbetalningar automatiskt omvandlas till färdiga bokföringsunderlag
-              slipper du manuellt dubbelarbete. Mindre administration, snabbare granskning och
-              mindre tid förlorad varje månad.
+              När Stripe-utbetalningar automatiskt omvandlas till bokföringsunderlag slipper du
+              föra över samma uppgifter för hand. Du granskar, markerar verifikaten som klara och
+              skickar dem vidare.
             </p>
             <div className="mt-8 flex justify-center">
               <ul className="grid w-full max-w-[760px] grid-cols-1 gap-x-12 gap-y-3 text-left md:grid-cols-2 md:gap-x-16">
                 {[
                   'Automatiskt underlag vid varje Stripe-utbetalning',
-                  'Mindre manuell hantering mellan system',
-                  'Snabbare granskning innan bokföring',
-                  'Fortnox-flöde utan onödiga mellansteg',
+                  'Verifikat som skickas till Fortnox',
+                  'Du granskar innan något skickas',
+                  'Förkontroll av kopplingen till Fortnox',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm text-gray-700 md:text-base">
                     <span className="mt-2 inline-block h-[6px] w-[6px] rounded-full bg-teal" />
@@ -305,6 +306,7 @@ export default function BokforingPage() {
           </div>
         </div>
       </section>
+      <BokforingSections />
     </>
   );
 }

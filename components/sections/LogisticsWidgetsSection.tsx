@@ -231,7 +231,7 @@ export function LogisticsWidgetsSection() {
             </FadeIn>
 
             <FadeIn delay={0.2}>
-              <Link href="/logistik" className="inline-block mt-6 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-gray-800">
+              <Link href="/logistik" className="mt-6 inline-flex items-center justify-center rounded-full bg-gray-900 px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-gray-800">
                 Kom igång med logistik
               </Link>
             </FadeIn>

@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Storage } from '@google-cloud/storage';
 
 const BUCKET = process.env.GCS_BUCKET_CODE_PACKAGES || process.env.GCS_BUCKET_ONBOARDING;
@@ -37,6 +38,21 @@ export type GitHubJob = {
   adminNotifiedAt?: string;
 };
 
+/** Samma format som workerns JOB_ID_RE; allt annat avvisas innan lagringen läses. */
+export const JOB_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
+
+export function isValidJobId(jobId: string | null | undefined): jobId is string {
+  return typeof jobId === 'string' && JOB_ID_RE.test(jobId);
+}
+
+/** Jobbet tillhör onboardingen (UUID jämförs skiftlägesokänsligt). */
+export function jobBelongsToOnboarding(job: Pick<GitHubJob, 'onboardingId'>, onboardingId: string): boolean {
+  return (
+    typeof job.onboardingId === 'string' &&
+    job.onboardingId.toLowerCase() === onboardingId.toLowerCase()
+  );
+}
+
 /**
  * Skapar ett nytt GitHub import-jobb.
  * Jobbet kommer att processas async för att förhindra OOM.
@@ -58,7 +74,8 @@ export async function createGitHubJob(params: {
     throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set');
   }
 
-  const jobId = params.jobId ?? `${params.onboardingId}-${Date.now()}`;
+  // Slumpmässigt, ej förutsägbart id (tidigare onboardingId-tidsstämpel). Matchar workerns JOB_ID_RE.
+  const jobId = params.jobId ?? randomUUID();
   const now = new Date().toISOString();
 
   const job: GitHubJob = {

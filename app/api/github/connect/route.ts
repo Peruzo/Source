@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBaseUrl } from '@/lib/utils/base-url';
+import { getBaseUrl, buildUrl } from '@/lib/utils/base-url';
 import { getOrCreateAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { auth0 } from '@/lib/auth0';
 import { requireOnboardingOwner } from '@/lib/onboarding/ownership';
@@ -7,34 +7,45 @@ import { checkRepoAccess } from '@/lib/github/repo-utils';
 import { checkAdminOnboardingExists, sendToAdminPortal } from '@/lib/api/admin-portal';
 import { listOnboardingEvents } from '@/lib/storage/onboarding-events';
 import { reduceOnboarding } from '@/lib/onboarding/reducer';
+import {
+  createOAuthState,
+  OAUTH_STATE_COOKIE,
+  OAUTH_STATE_COOKIE_PATH,
+  STATE_TTL_MS,
+} from '@/lib/storage/github-oauth-states';
 
 /**
  * GET /api/github/connect?repo=owner/repo&onboardingId=...
  * Preflight-check: Verifierar om repo är private/inaccessible.
  * Om private/inaccessible → redirect till GitHub OAuth.
- * Om public → returnera fel (public repos ska inte använda OAuth-flödet).
+ * Om public → tillbaka till kodsteget (publika repon hämtas direkt via POST /api/onboarding/code).
+ *
+ * Routen nås enbart genom navigering (window.location), aldrig fetch. Den svarar därför
+ * ALDRIG med JSON: varje fel blir en redirect till /onboarding/code?github=<felkod>,
+ * som kodformuläret översätter till ett svenskt meddelande.
  *
  * ÄGARSKAP: Auth0-session krävs och onboardingId måste vara bundet till anroparens
- * userSub, annars 404 (samma svar utan session). OAuth-state fortsätter att bära den
- * anonyma cookie-sessionen (anon_<uuid>) eftersom callback och jobb-polling bygger på den.
+ * userSub, annars 404 (samma svar utan session).
  * Kräver onboardingId i query (frontend skickar från useOnboardingId).
+ *
+ * STATE: serverlagrad engångs-state (lib/storage/github-oauth-states.ts) bunden till
+ * onboardingId, Auth0-användaren, den anonyma sessionen och webbläsaren (kortlivad
+ * httpOnly-cookie som bara skickas till callbacken). Inget av detta går via GitHub i klartext.
  */
+function backToCodeStep(errorCode: string): NextResponse {
+  return NextResponse.redirect(buildUrl(`/onboarding/code?github=${encodeURIComponent(errorCode)}`));
+}
+
 export async function GET(request: NextRequest) {
   const repo = request.nextUrl.searchParams.get('repo');
   const providedOnboardingId = request.nextUrl.searchParams.get('onboardingId');
 
   if (!repo || !/^[^/]+\/[^/]+$/.test(repo)) {
-    return NextResponse.json(
-      { error: 'Ogiltig repo. Använd formatet owner/repo.' },
-      { status: 400 }
-    );
+    return backToCodeStep('invalid_repo');
   }
 
   if (!providedOnboardingId) {
-    return NextResponse.json(
-      { error: 'onboardingId krävs. Starta onboarding först.' },
-      { status: 400 }
-    );
+    return backToCodeStep('not_initialized');
   }
 
   const onboardingId = providedOnboardingId;
@@ -42,7 +53,7 @@ export async function GET(request: NextRequest) {
   // ÄGARSKAP: onboardingId måste vara bundet till anroparens Auth0-userSub (404 annars)
   const session = await auth0.getSession();
   const denied = await requireOnboardingOwner(session?.user?.sub, onboardingId);
-  if (denied) return denied;
+  if (denied) return backToCodeStep('not_found');
 
   const sessionId = await getOrCreateAnonymousSessionId();
 
@@ -57,14 +68,7 @@ export async function GET(request: NextRequest) {
       status: onboardingState.status,
     });
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'INVALID_ONBOARDING_STATE',
-        message: 'GitHub connection is only allowed while code is pending.',
-      },
-      { status: 409 }
-    );
+    return backToCodeStep('invalid_onboarding_state');
   }
 
   // SÄKERSTÄLL att admin-onboarding finns innan OAuth
@@ -90,29 +94,29 @@ export async function GET(request: NextRequest) {
 
   if (access.ok && !access.private) {
     console.warn(`[GitHub Connect] Public repo ${repo} should not use OAuth flow`);
-    return NextResponse.json(
-      {
-        error: 'Public repos do not require OAuth. Use direct repo link instead.',
-        repoSlug: access.repoSlug,
-      },
-      { status: 400 }
-    );
+    return backToCodeStep('public_repo');
   }
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) {
     console.error('[GitHub Connect] GITHUB_CLIENT_ID missing');
-    return NextResponse.json(
-      { error: 'GitHub OAuth är inte konfigurerad' },
-      { status: 500 }
-    );
+    return backToCodeStep('not_configured');
   }
 
   const baseUrl = getBaseUrl();
   const redirectUri = `${baseUrl}/api/github/callback`;
-  const state = Buffer.from(
-    JSON.stringify({ repo, sessionId, onboardingId })
-  ).toString('base64url');
+  let state: string;
+  try {
+    state = await createOAuthState({
+      onboardingId,
+      repo,
+      userSub: session?.user?.sub ?? null,
+      sessionId,
+    });
+  } catch (err) {
+    console.error('[GitHub Connect] Failed to store OAuth state:', err);
+    return backToCodeStep('oauth_unavailable');
+  }
 
   const authUrl = new URL('https://github.com/login/oauth/authorize');
   authUrl.searchParams.set('client_id', clientId);
@@ -120,5 +124,14 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set('scope', 'repo');
   authUrl.searchParams.set('state', state);
 
-  return NextResponse.redirect(authUrl.toString());
+  const response = NextResponse.redirect(authUrl.toString());
+  response.cookies.set(OAUTH_STATE_COOKIE, state, {
+    httpOnly: true,
+    // Secure i alla driftsatta miljöer; undantag endast för lokal http-utveckling
+    secure: process.env.NODE_ENV !== 'development',
+    sameSite: 'lax',
+    path: OAUTH_STATE_COOKIE_PATH,
+    maxAge: Math.floor(STATE_TTL_MS / 1000),
+  });
+  return response;
 }

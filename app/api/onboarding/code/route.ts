@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { checkRepoAccess, parseGitHubRepoUrl } from '@/lib/github/repo-utils';
-import { listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
+import { appendOnboardingEvent, listOnboardingEvents, isGithubRepoVerifiedFromEvents } from '@/lib/storage/onboarding-events';
 import { auth0 } from '@/lib/auth0';
 import { triggerExternalGitHubWorker } from '@/lib/utils/github-worker';
 import { streamUploadToWorker } from '@/lib/utils/worker-upload';
-import { createGitHubJob } from '@/lib/storage/github-jobs';
+import { createGitHubJob, updateJobStatus } from '@/lib/storage/github-jobs';
+import { getOrCreateAnonymousSessionId } from '@/lib/onboarding/anonymous-session';
 import { onboardingNotFound, requireOnboardingOwner } from '@/lib/onboarding/ownership';
 
 /**
@@ -69,6 +70,8 @@ export async function POST(request: Request) {
 
     // ── Gate: repoLink requires github_repo_verified (single check) ───────────
     // This is the ONLY place this check runs. The duplicate further down has been removed.
+    // Publikt repo = GitHubs API svarade 200 med private: false utan autentisering (sätts nedan).
+    let confirmedPublic = false;
     if (repoLink) {
       const events = await listOnboardingEvents(onboardingId);
       const githubVerification = isGithubRepoVerifiedFromEvents(events);
@@ -77,6 +80,7 @@ export async function POST(request: Request) {
         // Check if the repo is actually private before blocking
         const access = await checkRepoAccess(repoLink);
         const repoIsPrivate = !access.ok || access.private;
+        confirmedPublic = !repoIsPrivate;
 
         if (repoIsPrivate) {
           console.warn('[Onboarding Code] HARD BLOCK: private repoLink without github_repo_verified', {
@@ -177,9 +181,50 @@ export async function POST(request: Request) {
         });
       }
 
+      // Grinden ovan släpper bara igenom overifierade repon som GitHub bekräftat publika
+      if (!confirmedPublic) {
+        return NextResponse.json(
+          { success: false, error: 'GITHUB_OAUTH_REQUIRED', nextStep: 'github_auth' },
+          { status: 403 }
+        );
+      }
+
       // Public repo: trigger worker directly (no OAuth token needed)
       const jobId = crypto.randomBytes(16).toString('hex');
+      const repoUrl = `https://github.com/${repoSlug}`;
 
+      // Publik-bekräftelsen skrivs av servern, aldrig ur klientfält: repoUrl/repoSlug
+      // byggs ur den tolkade länken som GitHub just bekräftat publik. Reducern och
+      // jobbrouten godtar den som alternativ till github_repo_verified för just detta repo.
+      // Jobbposten skapas som i OAuth-callbacken; userSub är den anonyma sessionen
+      // eftersom /api/github/job jämför mot den cookien.
+      try {
+        await appendOnboardingEvent(onboardingId, {
+          type: 'github_public_repo_confirmed',
+          payload: {
+            repoUrl,
+            repoSlug,
+            confirmedAt: new Date().toISOString(),
+            source: 'github_public_api_check',
+          },
+        });
+        await createGitHubJob({
+          jobId,
+          onboardingId,
+          userSub: await getOrCreateAnonymousSessionId(),
+          repo: repoSlug,
+          owner: parsed.owner,
+          repoName: parsed.repo,
+          repoUrl,
+          status: 'running',
+        });
+      } catch (err) {
+        console.error('[Onboarding Code] Failed to record public repo job:', err);
+        return NextResponse.json(
+          { success: false, error: 'JOB_STORE_UNAVAILABLE', message: 'Could not create job record.' },
+          { status: 502 }
+        );
+      }
 
       let result;
       try {
@@ -190,6 +235,7 @@ export async function POST(request: Request) {
         const workerStatus = message.match(/worker failed: (\d+)/)?.[1];
         const status = workerStatus ? parseInt(workerStatus, 10) : 502;
         console.error('[Onboarding Code] Worker trigger error:', message);
+        await updateJobStatus(jobId, 'failed', { error: 'WORKER_ERROR' }).catch(() => {});
         return NextResponse.json(
           { success: false, error: 'WORKER_ERROR', workerStatus: status, message },
           { status: status >= 400 && status < 600 ? status : 502 }

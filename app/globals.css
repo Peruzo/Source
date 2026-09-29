@@ -108,8 +108,29 @@
   --color-teal: #00BFA6;
   --color-teal-hover: #00997D;
   --color-teal-light: #E6F7F4;
+
+  /* Interaktiv teal-skala. teal (#00BFA6) ger bara 2.33:1 mot vitt och duger
+     därför varken som knappyta med vit text eller som text på ljus bakgrund –
+     den är en accentfärg för mörka ytor, där den ligger på 7–9:1. Knappar och
+     text på ljus botten använder teal-dark och nedåt i ljushet:
+       teal-dark    #00806D  4.87:1 mot vitt   (bas)
+       teal-darker  #006B5A  6.46:1 mot vitt   (hover)
+       teal-darkest #005A4D  8.17:1 mot vitt   (active) */
   --color-teal-dark: #00806D;
-  
+  --color-teal-darker: #006B5A;
+  --color-teal-darkest: #005A4D;
+
+  /* Accent green. -600 for accent on dark ground and as a fill colour;
+     -700 when the accent is set as text on a light ground, where -600
+     does not reach WCAG AA (2.27:1 on the stone surface). */
+  --color-accent-600: #1AB65C;
+  --color-accent-700: #0F7A3C;
+
+  /* Stone surface – the light centre and mid stop of the PlatformRock gradient,
+     so section 2 can carry the same tone and fade into it. */
+  --color-surface-stone: #ecedeb;
+  --color-surface-stone-deep: #d2d3cf;
+
   --color-beige-light: #FDF8F3;
   --color-beige: #F4F7F6;
   
@@ -144,6 +165,12 @@
   --color-teal-hover: #00997D;
   --color-teal-light: #E6F7F4;
   --color-teal-dark: #00806D;
+  --color-teal-darker: #006B5A;
+  --color-teal-darkest: #005A4D;
+  --color-accent-600: #1AB65C;
+  --color-accent-700: #0F7A3C;
+  --color-surface-stone: #ecedeb;
+  --color-surface-stone-deep: #d2d3cf;
   --color-gray-50: #FAFAFA;
   --color-gray-100: #F4F4F4;
   --color-gray-200: #E5E5E5;
@@ -156,14 +183,26 @@
   --color-gray-900: #171717;
   --color-beige-light: #FDF8F3;
   --color-beige: #F4F7F6;
+
+  /* Status – invoice badges. Text on its own bg ≥ 4.5:1 even under a 20 %
+     black dim (paid 5.8 → 4.9 dimmed, unpaid 6.6 → 5.4, overdue 5.6 → 4.7).
+     Never the only carrier of status: badges always pair the colour with an
+     icon and a word. */
+  --color-status-paid: #0B6B35;
+  --color-status-paid-bg: #E6F4EC;
+  --color-status-unpaid: #7A4A00;
+  --color-status-unpaid-bg: #FCF0D9;
+  --color-status-overdue: #B42318;
+  --color-status-overdue-bg: #FDE8E6;
   
-  /* Typography - Inter font */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  /* Typography - Inter, self-hosted via next/font/local in app/layout.tsx.
+     --font-inter is set on <html> by the font's `variable` class and resolves to
+     the generated family + its metric-matched fallback. */
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
 }
 
 * {
   scroll-behavior: smooth;
-  backface-visibility: hidden;
 }
 
 body {
@@ -246,4 +285,15 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/*
+ * Carousel tracks drive their own scroll animation from JS (scrollTo with an
+ * explicit behavior), so the global `scroll-behavior: smooth` must not apply —
+ * it would animate pointer-drag updates to scrollLeft.
+ */
+.carousel-track {
+  scroll-behavior: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }

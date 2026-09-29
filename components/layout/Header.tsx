@@ -6,13 +6,18 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MegaMenu } from '@/components/ui/MegaMenu';
+import { MegaMenu, getMenuLinks } from '@/components/ui/MegaMenu';
+import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 export function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
+  // TEMP: flicker bisect, remove after diagnosis. Overrides translateZ(0)/contain from .header-root/.header-content in globals.css
+  const headerNoLayer = nofx.header ? { transform: 'none', contain: 'none' } : undefined;
   const isBookingsystemPage = pathname === '/bokningssystem';
   const isKampanjerPage = pathname === '/tjanster/kampanjer';
   const isAnalysPage = pathname === '/analys';
@@ -44,7 +49,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/', label: 'Hem', hasMenu: false },
-    { href: '/tjanster', label: 'Tjänster', hasMenu: true, menuKey: 'tjanster' },
+    { href: '/tjanster', label: 'Tjänster', hasMenu: true, menuKey: 'tjanster', menuOnly: true },
     { href: '/portfolio', label: 'Portfolio', hasMenu: false },
     { href: '/foretag-nya', label: 'För dig', hasMenu: true, menuKey: 'for-dig' },
     { href: '/om-oss', label: 'Om oss', hasMenu: false },
@@ -62,16 +67,27 @@ export function Header() {
     setActiveMenu(null);
   }, []);
 
+  const handleMenuClick = useCallback((menuKey: string | null) => {
+    setActiveMenu((prev) => (prev === menuKey ? null : menuKey));
+  }, []);
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       setActiveMenu(null);
       setIsMenuOpen(false);
+      setOpenSubmenu(null);
     }
   }, []);
 
   const handleMenuToggle = useCallback(() => {
     setIsMenuOpen(!isMenuOpen);
+    setOpenSubmenu(null);
   }, [isMenuOpen]);
+
+  const closeMobileMenu = useCallback(() => {
+    setIsMenuOpen(false);
+    setOpenSubmenu(null);
+  }, []);
 
   if (pathname != null && pathname.startsWith('/onboarding')) {
     return null;
@@ -81,14 +97,19 @@ export function Header() {
     (!isAnalysPage && isScrolled) || isBookingsystemPage || isKampanjerPage;
 
   return (
-    <header className="header-root">
-      {showSolidBg && (
+    <header className="header-root" style={headerNoLayer}>
+      {!nofx.blur && ( // TEMP: flicker bisect, remove after diagnosis
         <div
           aria-hidden
-          className="header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300"
+          className={`header-blur-layer pointer-events-none bg-white/95 shadow-sm backdrop-blur-md transition-opacity duration-300 ${
+            showSolidBg ? 'opacity-100' : 'opacity-0'
+          }`}
         />
       )}
-      <div className="header-content">
+      <div
+        className={`header-content ${nofx.blur && showSolidBg ? 'bg-white/95' : ''}`} // TEMP: flicker bisect, remove after diagnosis
+        style={headerNoLayer}
+      >
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20">
         <div className="flex justify-between items-center h-12 md:h-14 lg:h-16">
           {/* Logo */}
@@ -118,64 +139,92 @@ export function Header() {
               className="relative"
             >
               <ul className="flex gap-6 lg:gap-8">
-                {navLinks.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.5 }}
-                    className="relative group"
-                    onMouseEnter={() => {
-                      if (link.hasMenu) {
-                        handleMenuEnter(link.menuKey || null);
-                      } else {
-                        handleMenuLeave();
-                      }
-                    }}
-                  >
-                    {/* Expanded clickable area wrapper */}
-                    <div className="relative flex items-center px-4 -mx-4 h-14">
-                      <Link
-                        href={link.href}
-                        className={`relative text-sm lg:text-base font-medium transition-colors duration-200 ${
-                          showSolidBg
-                            ? 'text-gray-900 hover:text-emerald-600'
-                            : 'text-white hover:text-emerald-300'
-                        }`}
-                        aria-expanded={link.hasMenu ? activeMenu === link.menuKey : undefined}
-                      >
-                        {link.label}
-                        {/* Visual indicator for dropdown items */}
-                        {link.hasMenu && (
-                          <span className="inline-block ml-1" style={{ color: '#00BFA6' }}>
-                            <svg 
-                              className="w-3 h-3 transition-transform group-hover:translate-y-0.5" 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </span>
+                {navLinks.map((link, index) => {
+                  const itemClassName = `relative text-sm lg:text-base font-medium transition-colors duration-200 ${
+                    showSolidBg
+                      ? 'text-gray-900 hover:text-emerald-600'
+                      : 'text-white hover:text-emerald-300'
+                  }`;
+                  const itemContent = (
+                    <>
+                      {link.label}
+                      {/* Visual indicator for dropdown items */}
+                      {link.hasMenu && (
+                        <span className="inline-block ml-1" style={{ color: '#00BFA6' }}>
+                          <svg 
+                            className="w-3 h-3 transition-transform group-hover:translate-y-0.5" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </span>
+                      )}
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full" style={{ backgroundColor: '#00BFA6' }}></span>
+                    </>
+                  );
+
+                  return (
+                    <motion.li
+                      key={link.href}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.5 }}
+                      className="relative group"
+                      onPointerEnter={(e) => {
+                        // Touch and pen taps fire enter events too, and opening there
+                        // would only race the click toggle. pointerType identifies the
+                        // device per event, so a hybrid machine still hover-opens from
+                        // its mouse while a tap goes through the click toggle instead.
+                        if (e.pointerType !== 'mouse') return;
+                        if (link.hasMenu) {
+                          handleMenuEnter(link.menuKey || null);
+                        } else {
+                          handleMenuLeave();
+                        }
+                      }}
+                    >
+                      {/* Expanded clickable area wrapper */}
+                      <div className="relative flex items-center px-4 -mx-4 h-14">
+                        {link.menuOnly && link.menuKey ? (
+                          /* Menu-only item: toggles its mega menu, never navigates.
+                             cursor-pointer restores the pointer a <button> loses under
+                             Tailwind v4 preflight, so it still looks like the links. */
+                          <button
+                            type="button"
+                            onClick={() => handleMenuClick(link.menuKey ?? null)}
+                            className={`${itemClassName} cursor-pointer`}
+                            aria-expanded={activeMenu === link.menuKey}
+                          >
+                            {itemContent}
+                          </button>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            className={itemClassName}
+                            aria-expanded={link.hasMenu ? activeMenu === link.menuKey : undefined}
+                          >
+                            {itemContent}
+                          </Link>
                         )}
-                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full" style={{ backgroundColor: '#00BFA6' }}></span>
-                      </Link>
-                    </div>
-                    
-                    {/* Dropdown with hover bridge */}
-                    {link.hasMenu && link.menuKey && (
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2">
-                        {/* Invisible hover bridge */}
-                        <div className="absolute top-0 left-0 right-0 h-2 bg-transparent" />
-                        <MegaMenu
-                          menuKey={link.menuKey}
-                          isOpen={activeMenu === link.menuKey}
-                          onClose={handleMenuLeave}
-                        />
                       </div>
-                    )}
-                  </motion.li>
-                ))}
+                      
+                      {/* Dropdown with hover bridge */}
+                      {link.hasMenu && link.menuKey && (
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2">
+                          {/* Invisible hover bridge */}
+                          <div className="absolute top-0 left-0 right-0 h-2 bg-transparent" />
+                          <MegaMenu
+                            menuKey={link.menuKey}
+                            isOpen={activeMenu === link.menuKey}
+                            onClose={handleMenuLeave}
+                          />
+                        </div>
+                      )}
+                    </motion.li>
+                  );
+                })}
               </ul>
             </div>
           </nav>
@@ -220,26 +269,97 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden fixed inset-0 top-12 z-[100] bg-white/95 backdrop-blur-lg"
+            className="md:hidden absolute left-0 right-0 top-full h-[calc(100dvh-3rem)] z-[100] bg-white/95 backdrop-blur-lg"
           >
             <nav className="px-6 py-8 h-full overflow-y-auto" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-6">
-                {navLinks.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.3 }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3"
+                {navLinks.map((link, index) => {
+                  const submenuId = link.menuKey ? `mobile-submenu-${link.menuKey}` : undefined;
+                  const isSubmenuOpen = !!link.menuKey && openSubmenu === link.menuKey;
+                  const submenuGroups = link.hasMenu && link.menuKey ? getMenuLinks(link.menuKey) : [];
+
+                  return (
+                    <motion.li
+                      key={link.href}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
                     >
-                      {link.label}
-                    </Link>
-                  </motion.li>
-                ))}
+                      <div className="flex items-center justify-between">
+                        {link.menuOnly && link.menuKey ? (
+                          /* Menu-only item: toggles the same accordion as the chevron. */
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenSubmenu(isSubmenuOpen ? null : link.menuKey ?? null)
+                            }
+                            aria-expanded={isSubmenuOpen}
+                            aria-controls={submenuId}
+                            className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3 cursor-pointer"
+                          >
+                            {link.label}
+                          </button>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            onClick={closeMobileMenu}
+                            className="text-gray-900 hover:text-emerald-600 transition-colors text-xl font-medium block py-3"
+                          >
+                            {link.label}
+                          </Link>
+                        )}
+                        {link.hasMenu && link.menuKey && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenSubmenu(isSubmenuOpen ? null : link.menuKey ?? null)
+                            }
+                            aria-expanded={isSubmenuOpen}
+                            aria-controls={submenuId}
+                            aria-label={`${isSubmenuOpen ? 'Dölj' : 'Visa'} undermeny för ${link.label}`}
+                            className="w-11 h-11 flex items-center justify-center text-gray-900"
+                          >
+                            <svg
+                              className={`w-5 h-5 transition-transform ${isSubmenuOpen ? 'rotate-180' : ''}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              style={{ color: '#00BFA6' }}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      {isSubmenuOpen && submenuGroups.length > 0 && (
+                        <ul id={submenuId} className="pl-4 pb-2 space-y-1">
+                          {submenuGroups.map((group, groupIndex) => (
+                            <li key={group.title ?? groupIndex}>
+                              {group.title && (
+                                <p className="pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                  {group.title}
+                                </p>
+                              )}
+                              <ul className="space-y-1">
+                                {group.items.map((item) => (
+                                  <li key={item.href}>
+                                    <Link
+                                      href={item.href}
+                                      onClick={closeMobileMenu}
+                                      className="text-gray-700 hover:text-emerald-600 transition-colors text-base block py-2"
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </motion.li>
+                  );
+                })}
                 <motion.li
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}

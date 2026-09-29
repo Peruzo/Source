@@ -1,8 +1,9 @@
 import { Hero } from '@/components/sections/Hero';
 import { ValueProposition } from '@/components/sections/ValueProposition';
+import PlatformRock from '@/components/sections/PlatformRock';
 import { WhatWeDo } from '@/components/sections/WhatWeDo';
 import { PortfolioTeaser } from '@/components/sections/PortfolioTeaser';
-import { AIAgentTestimonials } from '@/components/sections/AIAgentTestimonials';
+import { AIAgentShowcase } from '@/components/sections/AIAgentShowcase';
 import { FAQ } from '@/components/sections/FAQ';
 import { PricingTeaser } from '@/components/sections/PricingTeaser';
 import { FinalCTA } from '@/components/sections/FinalCTA';
@@ -15,11 +16,12 @@ export default function Home() {
     <>
       <Hero />
       <ValueProposition />
+      <PlatformRock />
       <WhatWeDo />
       <DataGrowthSlideshow />
       <AIAssistant />
       <PortfolioTeaser />
-      <AIAgentTestimonials />
+      <AIAgentShowcase />
       <FAQ />
       <PricingTeaser />
       <FinalCTA />
