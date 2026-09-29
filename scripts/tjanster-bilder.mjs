@@ -15,151 +15,43 @@
 //                                        original used at every breakpoint
 // Widths are never larger than the source region – no upscaling.
 //
-// Originals are not committed. Add a service by adding an entry to SERVICES.
-// A set that lives outside /tjanster (e.g. the För dig pages) or needs another
-// portrait shape gets an entry in OPTIONS – everything else keeps the defaults.
+// Originals are not committed.
+//
+// Add a page by adding one file, scripts/tjanster-bilder/<sida>.mjs – nothing in
+// this script needs editing. The file name is the page's name on the command line.
+// It exports `entries` (the images, see below) and, only when the page needs it,
+// `options` ({ outDir, portraitAspect }): a set that lives outside /tjanster
+// (e.g. the För dig pages) or needs another portrait shape. Every page has its own
+// file so that parallel branches never edit the same lines.
 import sharp from 'sharp';
-import { mkdirSync, statSync } from 'node:fs';
+import { mkdirSync, readdirSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const LANDSCAPE = [640, 1024, 1536, 2048];
 const PORTRAIT = [480, 720, 920];
 const WEBP = { quality: 78, effort: 6, smartSubsample: true };
 
 /**
- * Coordinates are in pixels of the original (all originals are 2048x1152).
+ * Each page file exports `entries`. Coordinates are in pixels of the original
+ * (most originals are 2048x1152; a page's file says when it differs).
  * `portrait`: left edge of a portrait crop at full height – 4:5 (width = 0.8 x
- * height) unless OPTIONS sets another `portraitAspect`.
+ * height) unless the page's `options` set another `portraitAspect`.
  * `extract`: a fixed region; only this region is written, in `widths`.
+ *
+ * `options` (optional): `outDir`, where the files go (default public/tjanster/<sida>),
+ * and `portraitAspect`, portrait width ÷ height (default 0.8, i.e. 4:5).
+ *
+ * The pages are read in alphabetical order, so the list is the same everywhere.
  */
-const SERVICES = {
-  inventarier: [
-    // A1 – hero. Portrait centred on the person (x 1100–1734).
-    { slot: 'hero', file: 'A1.png', portrait: { left: 956 } },
-    // B2 – sticky steps. Portrait around the box and the phone (x 650–1180).
-    { slot: 'skanna', file: 'B2.png', portrait: { left: 540 } },
-    // C2 – recommended purchases. Portrait keeps the woman with the tablet and
-    // the man on the stool; the dark top stays free for the text.
-    { slot: 'inkop', file: 'C2.png', portrait: { left: 660 } },
-    // D3 – split close-up (D1 was rejected: its shelf label with nonsense text could not
-    // be cropped out without losing the composition). The only white label in D3 with
-    // marks on it sits at x 440–612; cropping from x 620 takes it out of the file, so no
-    // object-position can bring it back. The remaining white patches are blank paper.
-    // One set for every breakpoint (5:4-ish), the component picks the focus.
-    { slot: 'narbild', file: 'D3.png', extract: { left: 620, top: 0, width: 1428, height: 1152 }, widths: [640, 1024, 1428] },
-  ],
-  // /foretag-nya (Företag Start). Portrait crops are 3:4 at full height (864 px wide).
-  'foretag-start': [
-    // Man in an armchair with his phone. Crop x 650–1514 keeps his face, the phone and his hands.
-    { slot: 'betalningslank', file: 'betalningslank.png', portrait: { left: 650 } },
-    // Woman at the kitchen table with her phone (variant A). Crop x 1000–1864 keeps her and the phone.
-    { slot: 'myndighetsdatum', file: 'myndighetsdatum-A.png', portrait: { left: 1000 } },
-  ],
-  analys: [
-    // F1 – hands with a phone (screen off) on marble. Phone x 33–56 %, y 10–60 %; the
-    // comparison card floats over it, the text sits on the quiet right half.
-    { slot: 'period', file: 'F1.png', portrait: { left: 461 } },
-    // R8 – tablet on a lap in window light (reflection of sky, no content). Replaces F2,
-    // whose phone screen showed UI glyphs. Portrait centred on the tablet.
-    { slot: 'nyckeltal', file: 'R8.png', portrait: { left: 560 } },
-    // F3 – laptop on black, screen off (x 20–82 %, y 5–78 %). Shown whole (contain) with
-    // the top-pages card over the screen, so one landscape set is enough. The keyboard
-    // legends are too small and soft to read.
-    { slot: 'sidor', file: 'F3.png', extract: { left: 0, top: 0, width: 2048, height: 1152 }, widths: [640, 1024, 1536, 2048] },
-    // R4 – desk with a blank notebook, pen, glasses and a glass of water. Replaces F4,
-    // whose phone screen was on. The insight card sits on the notebook (x 40 %, y 58 %).
-    { slot: 'insikter', file: 'R4.png', portrait: { left: 358 } },
-    // F5 – person in a coat holding a tablet. The paper cup in the right hand has printed
-    // text (x 77–87 %); this crop ends at x 1520, so the cup is not in the file.
-    { slot: 'rapporter', file: 'F5.png', extract: { left: 420, top: 0, width: 1100, height: 1152 }, widths: [640, 1024, 1100] },
-  ],
-  // /foretag-vaxande (Företag Växa). Portrait crops are 3:4 at full height (864 px wide).
-  'foretag-vaxa': [
-    // Open garage door with a cart of boxes (variant A). Crop x 640–1504 keeps the whole doorway:
-    // the woman with the tablet, the man with the cart and the van.
-    { slot: 'frakt', file: 'frakt-A.png', portrait: { left: 640 } },
-    // Driver seen through the side window (variant D). Crop x 600–1464 keeps the phone holder,
-    // the hand with the phone and his face.
-    { slot: 'bokforing', file: 'bokforing-D.png', portrait: { left: 600 } },
-    // Woman at a kitchen island with a tablet (variant A). Crop x 490–1354 keeps the tablet,
-    // her finger on it and her face.
-    { slot: 'insikter', file: 'insikter-A.png', portrait: { left: 490 } },
-  ],
-  // /foretag-etablerad (Företag Etablerade). Portrait crops are 3:4 at full height (864 px wide).
-  'foretag-etablerade': [
-    // Black chrome arches rising left to right (x 14–88 %). Crop x 635–1499 keeps the middle
-    // of the form; the empty black upper left carries the text from lg.
-    { slot: 'statistik', file: 'statistik-A.png', portrait: { left: 635 } },
-    // Hands holding a tablet with a black screen, straight from above. The glass runs x 600–1430,
-    // so crop x 583–1447 keeps the whole tablet, the screen area and the thumbs.
-    { slot: 'studio', file: 'studio-A.png', portrait: { left: 583 } },
-    // A person with a phone in a concrete hall (x 56–71 %). Crop x 870–1734 keeps her whole.
-    { slot: 'support', file: 'support-A.png', portrait: { left: 870 } },
-  ],
-  // /privat-vaxande (Privat Växande). Portrait crops are 3:4 at full height (864 px wide).
-  'privat-vaxande': [
-    // A woman at a parcel locker on the street with a package (variant A). Crop x 584–1448 keeps her
-    // face, the package and her hand on the locker door; the back of her hat is cut.
-    { slot: 'frakt', file: 'frakt-a.png', portrait: { left: 584 } },
-    // A man unpacking a box on a stair landing by a window (variant A). Crop x 717–1581 keeps him,
-    // his hands and the box.
-    { slot: 'kunder', file: 'kunder-a.png', portrait: { left: 717 } },
-    // The owner at the desk of a small studio, seen through a doorway (variant A). Crop x 880–1744
-    // keeps her face, her hands and the phone.
-    { slot: 'boka', file: 'boka-a.png', portrait: { left: 880 } },
-  ],
-  // /tjanster/kampanjer – abstract studio sculptures, used only as pauses between the demos.
-  kampanjer: [
-    // S1 – paper arch on teal (x 1106–1710). Portrait centred on the arch; the left half is free for text.
-    { slot: 'intro', file: 'S1.png', portrait: { left: 947 } },
-    // S2 – spheres and a disc on sand (y 500–850); the whole upper half is free for text.
-    // Portrait centred on the disc (x 870–1210).
-    { slot: 'koder', file: 'S2.png', portrait: { left: 580 } },
-    // S3 – steps from sand to teal on a cream wall (x 471–1987). Portrait keeps the upper, teal steps.
-    { slot: 'uppfoljning', file: 'S3.png', portrait: { left: 1060 } },
-    // S4 – sheets of paper in the air on deep teal (x 568–1582). Too central for text beside it,
-    // so it fills the closing split instead. Portrait centred on the sheets.
-    { slot: 'avslut', file: 'S4.png', portrait: { left: 614 } },
-  ],
-  // /privat-etablerad (Privat Etablerade). Portrait crops are 3:4 at full height (864 px wide).
-  'privat-etablerade': [
-    // Two women at a kitchen table with a tablet, empty table top in the foreground. Crop x 696–1560
-    // keeps both faces, the tablet, their hands and the table in front.
-    { slot: 'studio', file: 'studio.png', portrait: { left: 696 } },
-    // A woman on a sofa with a laptop, bookshelf and plants behind. Crop x 819–1683 keeps her face,
-    // hands and the laptop, and leaves out the bookshelf and the red print on the cushion.
-    { slot: 'inkorg', file: 'inkorg.png', portrait: { left: 819 } },
-    // A man at the kitchen counter in the evening with his phone. Crop x 737–1601 keeps his face,
-    // both hands and the phone, and leaves out the bottle and most of the writing on the fridge.
-    { slot: 'hjalp', file: 'hjalp.png', portrait: { left: 737 } },
-  ],
-  // /bokforing. Originals are 2816x1584 (16:9), portrait crops 4:5 at full height (1267 px wide).
-  bokforing: [
-    // E1 – a man rubbing his eyes at a desk (x 800–1730). Portrait centred on him.
-    { slot: 'kvall', file: 'E1.png', portrait: { left: 637 } },
-    // E2 – a man on the sofa with his phone, a dog asleep beside him (man x 1045–2010).
-    // Portrait centred on the man.
-    { slot: 'lattnad', file: 'E2.png', portrait: { left: 767 } },
-    // E3 – two people laughing at a table with a cinnamon bun. Crop x 420–2080 leaves out a
-    // radiator valve fitting (x 230–410) and a jacket's neck label (x 2080–2300), both with
-    // marks too small to read. Nearly square, for the closing split at every breakpoint.
-    { slot: 'avslut', file: 'E3.png', extract: { left: 420, top: 0, width: 1660, height: 1584 }, widths: [640, 1024, 1536] },
-    // J2r – a family around a block tower, seen from above (edited: no print on clothes or blocks).
-    // Portrait keeps the man's face and hand on the tower (tower x 925–1428) and the boy in blue behind it.
-    { slot: 'familj', file: 'J2r.png', portrait: { left: 400 } },
-  ],
-};
-
-/**
- * Per-service overrides. `outDir`: where the files go (default public/tjanster/<tjänst>).
- * `portraitAspect`: portrait width ÷ height (default 0.8, i.e. 4:5).
- */
-const OPTIONS = {
-  'foretag-start': { outDir: 'public/for-dig/foretag-start', portraitAspect: 3 / 4 },
-  'foretag-vaxa': { outDir: 'public/for-dig/foretag-vaxa', portraitAspect: 3 / 4 },
-  'foretag-etablerade': { outDir: 'public/for-dig/foretag-etablerade', portraitAspect: 3 / 4 },
-  'privat-vaxande': { outDir: 'public/for-dig/privat-vaxande', portraitAspect: 3 / 4 },
-  'privat-etablerade': { outDir: 'public/for-dig/privat-etablerade', portraitAspect: 3 / 4 },
-};
+const CONFIG_DIR = new URL('./tjanster-bilder/', import.meta.url);
+const SERVICES = {};
+const OPTIONS = {};
+for (const file of readdirSync(fileURLToPath(CONFIG_DIR)).filter((f) => f.endsWith('.mjs')).sort()) {
+  const name = file.slice(0, -'.mjs'.length);
+  const page = await import(new URL(file, CONFIG_DIR));
+  SERVICES[name] = page.entries;
+  if (page.options) OPTIONS[name] = page.options;
+}
 
 const [service, srcDir] = process.argv.slice(2);
 const entries = SERVICES[service];
