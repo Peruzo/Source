@@ -120,6 +120,18 @@ const SERVICES = {
     // so it fills the closing split instead. Portrait centred on the sheets.
     { slot: 'avslut', file: 'S4.png', portrait: { left: 614 } },
   ],
+  // /privat-etablerad (Privat Etablerade). Portrait crops are 3:4 at full height (864 px wide).
+  'privat-etablerade': [
+    // Two women at a kitchen table with a tablet, empty table top in the foreground. Crop x 696–1560
+    // keeps both faces, the tablet, their hands and the table in front.
+    { slot: 'studio', file: 'studio.png', portrait: { left: 696 } },
+    // A woman on a sofa with a laptop, bookshelf and plants behind. Crop x 819–1683 keeps her face,
+    // hands and the laptop, and leaves out the bookshelf and the red print on the cushion.
+    { slot: 'inkorg', file: 'inkorg.png', portrait: { left: 819 } },
+    // A man at the kitchen counter in the evening with his phone. Crop x 737–1601 keeps his face,
+    // both hands and the phone, and leaves out the bottle and most of the writing on the fridge.
+    { slot: 'hjalp', file: 'hjalp.png', portrait: { left: 737 } },
+  ],
 };
 
 /**
@@ -131,6 +143,7 @@ const OPTIONS = {
   'foretag-vaxa': { outDir: 'public/for-dig/foretag-vaxa', portraitAspect: 3 / 4 },
   'foretag-etablerade': { outDir: 'public/for-dig/foretag-etablerade', portraitAspect: 3 / 4 },
   'privat-vaxande': { outDir: 'public/for-dig/privat-vaxande', portraitAspect: 3 / 4 },
+  'privat-etablerade': { outDir: 'public/for-dig/privat-etablerade', portraitAspect: 3 / 4 },
 };
 
 const [service, srcDir] = process.argv.slice(2);
