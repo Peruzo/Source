@@ -76,8 +76,8 @@ export const bokforingImages = {
 } satisfies Record<string, ServiceImage>;
 
 /*
- * S3 – vågskålsvideon, klippt till bildruta 0–67 (0–2,79 s) av källan: ett gem läggs i den
- * högra skålen, vågen gungar och vilar i sista bildrutan (se CC-RAPPORT-bokforing-bygge-2.md punkt 1).
+ * S3 – vågskålsvideon, klippt till bildruta 0–132 (0–5,54 s) av källan: ett gem läggs i den
+ * högra skålen, vågen gungar och står vågrät från 4,96 s (se CC-RAPPORT-bokforing-videobyte.md punkt 2–3).
  * Belägg för texten: balansspärr när dokument skapas (services/accountingEngine.js 44–57) och
  * före sändning (services/accounting/voucherDispatch.js 49, 134).
  */
