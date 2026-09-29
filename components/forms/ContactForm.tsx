@@ -219,8 +219,8 @@ export function ContactForm() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700">
             Ett fel uppstod. Försök igen eller kontakta oss på{' '}
-            <a href="mailto:help@source.com" className="font-semibold underline">
-              help@source.com
+            <a href="mailto:help@sourcesolutions.se" className="font-semibold underline">
+              help@sourcesolutions.se
             </a>
           </p>
         </div>

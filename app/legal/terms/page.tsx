@@ -161,8 +161,12 @@ export default function TermsPage() {
               Allmänna Villkor{' '}
               <span className="text-green-500">(Terms of Service)</span>
             </h1>
+            <p className="text-slate-400 text-sm mb-1">
+              Source Solutions AB, org.nr 559556-3551,{' '}
+              <a href="mailto:help@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">help@sourcesolutions.se</a>
+            </p>
             <p className="text-slate-400 text-sm">
-              Source Solutions AB &mdash; Senast uppdaterad: 2026-04-10
+              Senast uppdaterad: 2026-09-30
             </p>
           </div>
 
@@ -230,8 +234,7 @@ export default function TermsPage() {
                 <li>Kunden = personuppgiftsansvarig</li>
                 <li>Bolaget = personuppgiftsbiträde</li>
               </ul>
-              <p className="text-slate-300 mb-2">Säkerhet enligt ISO/IEC 27001 och SOC 2 Type II eller motsvarande.</p>
-              <p className="text-slate-300">Kunden accepterar att delad infrastruktur innebär inneboende risker och att Bolaget inte ansvarar för obehörig åtkomst som uppstår trots implementerade skyddsåtgärder.</p>
+              <p className="text-slate-300">Bolaget vidtar lämpliga tekniska och organisatoriska säkerhetsåtgärder enligt artikel 32 i dataskyddsförordningen. Åtgärderna beskrivs i personuppgiftsbiträdesavtalet (DPA).</p>
             </section>
             <div className="border-t border-slate-800" />
 
@@ -324,6 +327,9 @@ export default function TermsPage() {
                 <li>Kunden informeras innan debitering.</li>
                 <li>B2C-kunder måste ge uttryckligt godkännande innan en testperiod övergår till betald tjänst.</li>
               </ul>
+              <p className="text-slate-300 mt-3">För konsumenter anges priser inklusive moms. Är Kunden konsument har Kunden ångerrätt i 14 dagar från avtalets ingående enligt lagen (2005:59) om distansavtal och avtal utanför affärslokaler. Om Kunden uttryckligen har begärt att Tjänsten ska börja tillhandahållas under ångerfristen och därefter utövar ångerrätten, ska Kunden betala för det som tillhandahållits fram till dess. Ångerrätten utövas genom ett tydligt meddelande till{' '}
+                <a href="mailto:help@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">help@sourcesolutions.se</a>.
+              </p>
             </section>
             <div className="border-t border-slate-800" />
 
@@ -347,19 +353,10 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
                 <span className="text-green-500 font-bold">§12</span> Underbiträden
               </h2>
-              <p className="text-slate-300 mb-2">Följande underbiträden används:</p>
-              <ul className="list-disc list-inside space-y-1 text-slate-300 mb-3">
-                <li>Stripe – betalningar</li>
-                <li>Auth0 – autentisering</li>
-                <li>Fortnox – bokföring</li>
-                <li>Google – analys och annonsering</li>
-                <li>Meta – annonsering</li>
-                <li>TikTok – annonsering</li>
-                <li>LinkedIn – annonsering</li>
-                <li>SendGrid – e-post</li>
-              </ul>
+              <p className="text-slate-300 mb-2">Bolaget anlitar underbiträden för att tillhandahålla Tjänsten. Aktuell förteckning finns i{' '}
+                <Link href="/legal/dpa" className="text-green-400 hover:text-green-300 underline">personuppgiftsbiträdesavtalet (DPA)</Link> §8.
+              </p>
               <p className="text-slate-300 mb-2">Bolaget säkerställer motsvarande dataskyddsnivå.</p>
-              <p className="text-slate-300 mb-2">TikTok kan innebära regulatorisk risk och kan avslutas utan förvarning om rättsläget kräver det.</p>
               <p className="text-slate-300">Ändringar meddelas minst 14 dagar i förväg. Kunden har rätt att invända och säga upp avtalet.</p>
             </section>
             <div className="border-t border-slate-800" />
@@ -401,14 +398,14 @@ export default function TermsPage() {
               </h2>
               <p className="text-slate-300 mb-2">
                 Kontakt:{' '}
-                <a href="mailto:legal@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
-                  legal@sourcesolutions.se
+                <a href="mailto:help@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
+                  help@sourcesolutions.se
                 </a>
               </p>
               <p className="text-slate-300 mb-2">
                 Kontaktpunkt för EU-myndigheter:{' '}
-                <a href="mailto:legal@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
-                  legal@sourcesolutions.se
+                <a href="mailto:help@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
+                  help@sourcesolutions.se
                 </a>
               </p>
               <p className="text-slate-300 mb-2">Anmälan ska innehålla: identifiering, beskrivning, kontakt.</p>
@@ -424,7 +421,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
                 <span className="text-green-500 font-bold">§16</span> Säkerhet
               </h2>
-              <p className="text-slate-300">Skydd enligt ISO/IEC 27001 och SOC 2 Type II eller motsvarande.</p>
+              <p className="text-slate-300">Bolaget skyddar Tjänsten och personuppgifter med lämpliga tekniska och organisatoriska åtgärder, bland annat krypterad överföring, åtkomstkontroll med autentisering och loggning. Bolaget innehar i dag ingen certifiering enligt ISO/IEC 27001 eller SOC 2.</p>
             </section>
             <div className="border-t border-slate-800" />
 
@@ -455,7 +452,6 @@ export default function TermsPage() {
                 <li>avgifter senaste 6 månader</li>
                 <li>10 000 SEK</li>
               </ul>
-              <p className="text-slate-300 mb-2">Separat ansvarsbegränsning gäller för personuppgiftsrelaterade krav.</p>
               <p className="text-slate-300 mb-2">Gäller inte: lagstadgat ansvar, personskada, grov vårdslöshet.</p>
               <p className="text-slate-300">Gäller inte regulatoriska böter.</p>
             </section>
@@ -466,7 +462,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
                 <span className="text-green-500 font-bold">§19</span> Skadeslöshet
               </h2>
-              <p className="text-slate-300 mb-2">Kunden ersätter Bolaget för krav inklusive regulatoriska sanktioner.</p>
+              <p className="text-slate-300 mb-2">Kunden ersätter Bolaget för krav från tredje man, inklusive sanktionsavgifter, i den mån kravet beror på att Kunden brutit mot detta avtal, tillämplig lag eller lämnat instruktioner som strider mot lag.</p>
               <p className="text-slate-300 mb-2">Bolaget informerar inom 10 arbetsdagar från det att Bolaget fått kännedom om kravet. Kunden kontrollerar försvar.</p>
               <p className="text-slate-300 mb-2">Bolaget har rätt att delta i försvar och använda egen rådgivare på egen bekostnad. Bolaget ska samarbeta genom att tillhandahålla dokumentation och möjliggöra tillgång till relevant personal.</p>
               <p className="text-slate-300 mb-2">Bolaget är inte skyldigt att delta i rättsprocesser utanför EU utan särskild överenskommelse.</p>
@@ -493,8 +489,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
                 <span className="text-green-500 font-bold">§21</span> Data
               </h2>
-              <p className="text-slate-300 mb-2">Raderas inom 30–90 dagar.</p>
-              <p className="text-slate-300">Bekräftelse kan begäras.</p>
+              <p className="text-slate-300">Vid avtalets upphörande raderas Kundens data senast 90 dagar därefter, med undantag för uppgifter som Bolaget är skyldigt att bevara enligt lag. Kunden ansvarar för att före avtalets upphörande exportera de uppgifter Kunden behöver, inklusive räkenskapsinformation som ska bevaras enligt bokföringslagen (1999:1078). Bolaget bistår på begäran med export. Bekräftelse på radering kan begäras. Tjänstens bokföringsfunktioner är ett verktyg; Bolaget är inte redovisningskonsult och ansvarar inte för Kundens bokföring, bokslut eller deklarationer.</p>
             </section>
             <div className="border-t border-slate-800" />
 
@@ -542,7 +537,7 @@ export default function TermsPage() {
                 <li>en maximal varaktighet om två (2) arbetsdagar</li>
               </ul>
               <p className="text-slate-300 mb-2">Revision ska: omfattas av sekretess, inte inkludera information som rör andra kunder, genomföras på ett sätt som inte oskäligt stör Bolagets verksamhet.</p>
-              <p className="text-slate-300 mb-2">Bolaget kan tillhandahålla tredjepartsgranskningar, såsom ISO/IEC 27001 eller SOC 2 Type II, i stället för direkt revision.</p>
+              <p className="text-slate-300 mb-2">Bolaget kan i stället för revision på plats tillhandahålla skriftlig dokumentation om sina säkerhetsåtgärder.</p>
               <p className="text-slate-300 mb-2">Bolagets grundläggande skyldighet att tillhandahålla information och samarbeta enligt GDPR artikel 28(3)(h) är kostnadsfri.</p>
               <p className="text-slate-300 mb-2">Ytterligare revision utöver normal omfattning får ske om det krävs enligt lag eller myndighetsbeslut, eller om Kunden har legitima regulatoriska eller compliance-relaterade behov.</p>
               <p className="text-slate-300">I sådana fall har Bolaget rätt att debitera skäliga interna kostnader i den utsträckning revisionen överstiger normal omfattning. Sådana kostnader ska specificeras och kommuniceras i förväg och godkännas av Kunden innan revision påbörjas.</p>
@@ -555,7 +550,7 @@ export default function TermsPage() {
                 <span className="text-green-500 font-bold">§26</span> Force majeure
               </h2>
               <p className="text-slate-300 mb-2">Bolaget ansvarar inte för händelser utanför kontroll såsom: naturkatastrof, krig, myndighetsåtgärder, tredjepartsavbrott.</p>
-              <p className="text-slate-300 mb-2">Gäller endast om påverkan inte rimligen kunnat förebyggas enligt ISO/IEC 27001 eller SOC 2 Type II.</p>
+              <p className="text-slate-300 mb-2">Gäller endast om påverkan inte rimligen kunnat förutses, förebyggas eller undvikas.</p>
               <p className="text-slate-300 mb-2">Part ska utan dröjsmål meddela den andra parten om sådan händelse och dess förväntade varaktighet.</p>
               <p className="text-slate-300">Om händelsen varar längre än 60 dagar har vardera parten rätt att säga upp avtalet utan ansvar.</p>
             </section>

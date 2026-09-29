@@ -20,6 +20,7 @@ const pricingPlans = [
     planId: 'core',
     name: 'Core',
     price: '799',
+    priceExVat: '639',
     description: 'Perfekt för att komma igång med din online-närvaro',
     features: featuresAddedIn('core').map((f) => f.name),
     limitations: undefined,
@@ -30,7 +31,8 @@ const pricingPlans = [
   {
     planId: 'growth',
     name: 'Growth',
-    price: '1499',
+    price: '1 499',
+    priceExVat: '1 199',
     badge: 'Mest valda',
     description: 'Komplett lösning för att växa din verksamhet online',
     features: ['Allt i Core, plus:', ...featuresAddedIn('growth').map((f) => f.name)],
@@ -41,7 +43,8 @@ const pricingPlans = [
   {
     planId: 'enterprise',
     name: 'Enterprise',
-    price: '3499',
+    price: '3 499',
+    priceExVat: '2 799',
     description: 'För företag som behöver avancerade lösningar',
     features: ['Allt i Growth, plus:', ...featuresAddedIn('enterprise').map((f) => f.name)],
     cta: 'Kontakta oss',
@@ -152,7 +155,8 @@ export default function PricingPage() {
               >
                 Från 799 kr
               </motion.p>
-              <p className="text-xl text-gray-400 mt-4">per månad</p>
+              <p className="text-xl text-gray-400 mt-4">per månad inkl. moms</p>
+              <p className="text-base text-gray-500 mt-1">639 kr exkl. moms</p>
             </FadeIn>
           </div>
         </Container>
@@ -205,7 +209,10 @@ export default function PricingPage() {
                     )}
                   </p>
                   {!plan.price.includes('Pris på förfrågan') && (
-                    <p className="text-gray-600 text-sm mt-1">/månad</p>
+                    <>
+                      <p className="text-gray-600 text-sm mt-1">/månad inkl. moms</p>
+                      <p className="text-gray-500 text-xs mt-0.5">{plan.priceExVat} kr exkl. moms</p>
+                    </>
                   )}
                 </div>
                 <p className="text-gray-700 mb-8 min-h-[3rem]">{plan.description}</p>

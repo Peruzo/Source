@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     question: 'Vad kostar det?',
-    answer: 'Från 2,995 kr/mån beroende på paket. Se vår prissida för detaljer.',
+    answer: 'Från 799 kr/mån inkl. moms (639 kr exkl. moms) beroende på paket. Se vår prissida för detaljer.',
   },
   {
     question: 'Kan jag se exempel?',
@@ -152,7 +152,7 @@ export default function ContactPage() {
             </h2>
             <p className="text-gray-600 mb-8">
               Eller{' '}
-              <a href="mailto:help@source.com" className="text-teal hover:text-teal-hover font-medium">
+              <a href="mailto:help@sourcesolutions.se" className="text-teal hover:text-teal-hover font-medium">
                 maila oss direkt
               </a>
             </p>
@@ -175,8 +175,8 @@ export default function ContactPage() {
                 <h3 className="text-lg font-semibold text-black mb-2">Presskontakt</h3>
                 <p className="text-gray-700 mb-2">
                   Mejla{' '}
-                  <a href="mailto:press@source.com" className="text-teal font-medium hover:text-teal-hover">
-                    press@source.com
+                  <a href="mailto:help@sourcesolutions.se" className="text-teal font-medium hover:text-teal-hover">
+                    help@sourcesolutions.se
                   </a>
                 </p>
                 <Link href="/om-oss" className="text-teal font-semibold hover:text-teal-hover inline-flex items-center group">
@@ -188,8 +188,8 @@ export default function ContactPage() {
                 <h3 className="text-lg font-semibold text-black mb-2">Partnerskap</h3>
                 <p className="text-gray-700 mb-2">
                   Mejla{' '}
-                  <a href="mailto:partners@source.com" className="text-teal font-medium hover:text-teal-hover">
-                    partners@source.com
+                  <a href="mailto:help@sourcesolutions.se" className="text-teal font-medium hover:text-teal-hover">
+                    help@sourcesolutions.se
                   </a>
                 </p>
                 <Link href="/tjanster" className="text-teal font-semibold hover:text-teal-hover inline-flex items-center group">

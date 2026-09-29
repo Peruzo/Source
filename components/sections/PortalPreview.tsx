@@ -164,7 +164,7 @@ export function PortalPreview() {
         {/* CTA */}
         <FadeIn delay={0.6} className="text-center">
           <Link
-            href="https://portal.source.com"
+            href="https://sourceportal.se"
             className="inline-flex items-center gap-2 text-teal hover:text-white font-semibold text-lg group transition-colors duration-200"
             target="_blank"
             rel="noopener noreferrer"

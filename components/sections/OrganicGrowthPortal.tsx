@@ -206,7 +206,7 @@ export function OrganicGrowthPortal() {
       {/* CTA Section */}
       <FadeIn delay={3} className="text-center pb-20 relative z-20">
         <Link
-          href="https://portal.source.com"
+          href="https://sourceportal.se"
           className="inline-flex items-center gap-2 text-teal hover:text-white font-semibold text-lg group transition-colors duration-200"
           target="_blank"
           rel="noopener noreferrer"

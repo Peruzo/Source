@@ -99,7 +99,7 @@ export function Footer({ serverYear }: FooterProps) {
                 <li>
                   <motion.a
                     whileHover={{ x: 5 }}
-                    href="https://portal.source.com"
+                    href="https://sourceportal.se"
                     className="text-teal hover:text-white transition-colors text-sm inline-flex items-center gap-2 group"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -128,10 +128,10 @@ export function Footer({ serverYear }: FooterProps) {
               <ul className="space-y-3">
                 <li>
                   <a
-                    href="mailto:help@source.com"
+                    href="mailto:help@sourcesolutions.se"
                     className="text-gray-400 hover:text-teal transition-colors text-sm block"
                   >
-                    help@source.com
+                    help@sourcesolutions.se
                   </a>
                 </li>
                 <li>
