@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { LogistikOverviewSection } from '@/components/sections/LogistikOverviewSection';
 import { LogisticsWidgetsSection } from '@/components/sections/LogisticsWidgetsSection';
+import { LogistikSections } from '@/components/sections/tjanster/logistik/LogistikSections';
 
 export default function LogistikPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -213,6 +214,7 @@ export default function LogistikPage() {
           </div>
         </div>
       </section>
+      <LogistikSections />
     </>
   );
 }
