@@ -7,6 +7,7 @@ import { FeatureCarousel } from '@/components/sections/tjanster/FeatureCarousel'
 import { ServiceFullBleed } from '@/components/sections/tjanster/ServiceFullBleed';
 import { ServicePageLayout } from '@/components/sections/tjanster/ServicePageLayout';
 import { ServicePicture } from '@/components/sections/tjanster/ServicePicture';
+import { ServiceVideo } from '@/components/sections/tjanster/ServiceVideo';
 import { LogisticsFlowSection, TrackingMailCard } from '@/components/sections/tjanster/widgets/LogisticsFlow';
 import {
   logistikAvslut,
@@ -15,6 +16,7 @@ import {
   logistikFraktsedel,
   logistikImages,
   logistikIntro,
+  logistikLeverans,
   logistikSkala,
   logistikSparning,
 } from '@/lib/data/tjanster/logistik';
@@ -25,8 +27,7 @@ import {
  * to one section; photos with people sit beside the text, never under it.
  *
  * S4 has no photo: both candidates had text on lockers or on the carton. It shows the
- * tracking email instead. S5 (the mailbox video) is PAUSED: the mailbox front carries
- * made-up lettering in every frame – see CC-RAPPORT-logistik-bygge.md punkt 2.
+ * tracking email instead. S5 is the mailbox video, played once like the scale on /bokforing.
  */
 
 function PhotoMedia({ image }: { image: (typeof logistikImages)[keyof typeof logistikImages] }) {
@@ -81,7 +82,17 @@ export function LogistikSections() {
         }
       />
 
-      {/* S5 – brevlådevideon: PAUSAD, se kommentaren överst. */}
+      {/* S5 – brevlådevideon: paketet kommer som kunden valde */}
+      <ServiceVideo
+        eyebrow={logistikLeverans.eyebrow}
+        title={logistikLeverans.title}
+        body={logistikLeverans.body}
+        label={logistikLeverans.label}
+        sources={logistikLeverans.sources}
+        poster={logistikLeverans.poster}
+        end={logistikLeverans.end}
+        background="white"
+      />
 
       {/* S6 – skala, större lager */}
       <ClippedImageSection
