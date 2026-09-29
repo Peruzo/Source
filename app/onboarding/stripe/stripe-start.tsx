@@ -44,10 +44,11 @@ export function StripeStart() {
 
   // Fallback när Stripe-anropet saknar giltig session: vanlig inloggning (kontot finns redan,
   // därför inget signup-förval) och tillbaka till Stripe-steget med samma query (plan) för
-  // samma onboarding. autostart tas bort med flit: om sessionen finns men onboardingen inte
-  // tillhör användaren (också 404) skulle autostart ge en tyst inloggningsslinga.
+  // samma onboarding. Stripe startar endast på kundens eget klick efter villkorsgodkännandet,
+  // så returnTo bär ingen autostart. Querysträngen läses ur window.location (anropas bara från
+  // klickhanterare i webbläsaren) i stället för useSearchParams, som villkorsrättningen tog bort.
   const stripeStepReturnTo = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     params.delete('autostart');
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
