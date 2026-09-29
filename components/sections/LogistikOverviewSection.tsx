@@ -27,7 +27,7 @@ export function LogistikOverviewSection() {
           >
             Få en överblick över din logistik.
             <span className="block mt-4 text-2xl md:text-3xl text-gray-600">
-              Synka leveranser, lager och returer i realtid.
+              Leveranser, fraktsedlar och spårningslänkar på ett ställe.
             </span>
           </motion.h2>
 
@@ -49,8 +49,8 @@ export function LogistikOverviewSection() {
               </div>
 
               <div className="mt-8 flex flex-col items-center text-gray-600">
-                <p className="text-xs uppercase tracking-[0.3em]">NÄSTA LEVERANS</p>
-                <p className="mt-3 text-lg font-semibold text-gray-900">ETA 23 minuter · Göteborg</p>
+                <p className="text-xs uppercase tracking-[0.3em]">NÄSTA STEG</p>
+                <p className="mt-3 text-lg font-semibold text-gray-900">Boka leverans hos PostNord</p>
               </div>
             </div>
 
