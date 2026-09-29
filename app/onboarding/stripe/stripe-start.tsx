@@ -32,9 +32,20 @@ export function StripeStart() {
     }
   }, [userSub]);
 
+  // Fallback när Stripe-anropet saknar giltig session: vanlig inloggning (kontot finns redan,
+  // därför inget signup-förval) och tillbaka till Stripe-steget med samma query (plan) för
+  // samma onboarding. autostart tas bort med flit: om sessionen finns men onboardingen inte
+  // tillhör användaren (också 404) skulle autostart ge en tyst inloggningsslinga.
+  const stripeStepReturnTo = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('autostart');
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  };
+
   const loginWithRedirect = (options: { appState?: { returnTo: string } }) => {
-    const returnTo = options.appState?.returnTo || pathname;
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&screen_hint=signup`;
+    const returnTo = options.appState?.returnTo || stripeStepReturnTo();
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -105,7 +116,7 @@ export function StripeStart() {
       // 404 = saknad session eller onboardingId som inte tillhör anroparen (routen skiljer inte).
       // 401 behålls för bakåtkompatibilitet. Båda → inloggning, som efteråt landar i eget state.
       if (response.status === 401 || response.status === 404) {
-        await loginWithRedirect({ appState: { returnTo: pathname } });
+        await loginWithRedirect({ appState: { returnTo: stripeStepReturnTo() } });
         return;
       }
 
