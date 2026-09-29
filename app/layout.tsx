@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     default: 'Source - Allt du behöver på ett ställe',
     template: '%s | Source',
   },
-  description: 'AI-driven design, e-handel och analys för företagstillväxt. Komplett lösning med konkreta rekommendationer, inte bara data. Från 2,995 kr/mån.',
+  description: 'Source Solutions samlar allt du behöver för att sälja, på ett ställe. Butik, betalningar, frakt, kunder och bokföring i en plattform.',
   keywords: ['ai driven webbdesign', 'e-handel helhetslösning', 'webbdesign prenumeration', 'ai webbanalys', 'e-handelsplattform sverige'],
   authors: [{ name: 'Source' }],
   openGraph: {

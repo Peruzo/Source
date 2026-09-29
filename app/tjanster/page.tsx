@@ -75,7 +75,7 @@ const services = [
       'Feature requests',
     ],
     result:
-      'Alla tre grundare kommer från kundservice-branschen. Vi förstår att hjälpa kunder.',
+      'Båda grundarna kommer från kundservice-branschen. Vi förstår att hjälpa kunder.',
   },
 ];
 

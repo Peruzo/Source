@@ -7,6 +7,13 @@ import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  featuresAddedIn,
+  websiteServices,
+  websiteServicesTitle,
+  type PlanId,
+} from '@/lib/data/pricing-features';
+import { PricingFeatureOverview } from '@/components/sections/PricingFeatureOverview';
 
 const pricingPlans = [
   {
@@ -14,13 +21,7 @@ const pricingPlans = [
     name: 'Core',
     price: '799',
     description: 'Perfekt för att komma igång med din online-närvaro',
-    features: [
-      'Responsiv design',
-      'Upp till 5 sidor',
-      'Betalningar, faktuering, prenumerationer',
-      'Support',
-      'Rapporter för försäljning',
-    ],
+    features: featuresAddedIn('core').map((f) => f.name),
     limitations: undefined,
     cta: 'Kom igång',
     href: '/onboarding/login',
@@ -32,21 +33,7 @@ const pricingPlans = [
     price: '1499',
     badge: 'Mest valda',
     description: 'Komplett lösning för att växa din verksamhet online',
-    features: [
-      'Allt i Core, plus:',
-      'Obegränsat antal sidor och design.',
-      'Rapporter',
-      'Kontaktformulär på hemsida till kundportal',
-      'AI agent för din hemsida',
-      'Marknadsföring',
-      'Betalningslänk',
-      'Kampanjer',
-      'Logistik',
-      'Integrationer',
-      'Bokningssytem för alla bransher',
-      'Produkthantering',
-      'Max 5 användare',
-    ],
+    features: ['Allt i Core, plus:', ...featuresAddedIn('growth').map((f) => f.name)],
     cta: 'Boka demo',
     href: '/onboarding/login',
     featured: true,
@@ -56,15 +43,7 @@ const pricingPlans = [
     name: 'Enterprise',
     price: '3499',
     description: 'För företag som behöver avancerade lösningar',
-    features: [
-      'Allt i Growth, plus:',
-      'AI insikter',
-      'Inventarier hantering',
-      '24/7 support',
-      'Avancerad Statisk och analys för tillväxtmöjligheter',
-      'Bokföring verktyg',
-      'Max 10 användare',
-    ],
+    features: ['Allt i Growth, plus:', ...featuresAddedIn('enterprise').map((f) => f.name)],
     cta: 'Kontakta oss',
     href: '/onboarding/login',
     featured: false,
@@ -75,12 +54,12 @@ const faqs = [
   {
     question: 'Kan jag byta plan?',
     answer:
-      'Ja, du kan uppgradera eller nedgradera när som helst. Ändringar träder i kraft från nästa faktureringscykel. Inga avgifter för ändringar.',
+      'Ja. Hör av dig till oss så byter vi paket åt dig.',
   },
   {
     question: 'Vad händer om jag säger upp?',
     answer:
-      'Ingen bindningstid. Säg upp när som helst med en månads uppsägningstid. Du behåller full åtkomst under uppsägningstiden. Vi kan exportera din data vid behov.',
+      'Ingen bindningstid. Säg upp när som helst med en månads uppsägningstid. Du behåller full åtkomst under uppsägningstiden.',
   },
   {
     question: 'Finns det bindningstid?',
@@ -88,14 +67,14 @@ const faqs = [
       'Nej. Alla planer är månad till månad. Vi tror på att förtjäna din verksamhet varje månad.',
   },
   {
-    question: 'Vad ingår i AI-analys?',
+    question: 'Vad ingår i AI-insikter?',
     answer:
-      'Basic: Besökarbeteende, heatmaps, konverteringsspårning, veckovisa insikter. Advanced: + Prediktiv analys, anpassade rekommendationer, A/B-testning, dagliga insikter, API-åtkomst.',
+      'I Growth och Enterprise får du AI-insikter om din verksamhet i kundportalen och en chatt där du kan ställa frågor om din egen data.',
   },
   {
     question: 'Hur fungerar support?',
     answer:
-      'E-post: Alla planer (24h för Core, 12h för Growth, 2h för Enterprise). Chatt: Growth och Enterprise (i kundportalen). Video-möten: Endast Enterprise (månatliga schemalagda samtal).',
+      'Alla paket har AI-support och livechatt med oss direkt i kundportalen. Du kan också skicka ett ärende till oss därifrån.',
   },
 ];
 
@@ -264,6 +243,31 @@ export default function PricingPage() {
                   </ul>
                 </div>
 
+                <div className="mb-8 border-t border-gray-200 pt-6">
+                  <h3 className="font-semibold text-black mb-4 text-sm uppercase tracking-wide">
+                    {websiteServicesTitle}
+                  </h3>
+                  <ul className="space-y-3">
+                    {websiteServices[plan.planId as PlanId].map((service) => (
+                      <li key={service} className="flex items-start gap-3 text-gray-700">
+                        <svg
+                          className="w-5 h-5 text-teal-dark flex-shrink-0 mt-0.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span className="text-sm">{service}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 <button
                   type="button"
@@ -282,6 +286,8 @@ export default function PricingPage() {
           </div>
         </Container>
       </section>
+
+      <PricingFeatureOverview />
 
       {/* Add-ons */}
       <section className="py-20 md:py-32 bg-white">
