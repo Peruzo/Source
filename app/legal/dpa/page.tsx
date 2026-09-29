@@ -153,7 +153,7 @@ export default function DPAPage() {
               <span className="text-green-500">(DPA)</span>
             </h1>
             <p className="text-slate-400 text-sm">
-              Source Solutions AB, org.nr 559556-3551 &mdash; Senast uppdaterad: 2026-04-10
+              Source Solutions AB, org.nr 559556-3551 &mdash; Senast uppdaterad: 2026-09-30
             </p>
             <p className="text-slate-500 text-sm mt-2">
               Kunden är den juridiska person som registrerat konto i Tjänsten.
@@ -276,16 +276,11 @@ export default function DPAPage() {
               <ul className="list-disc list-inside space-y-1 text-slate-300 mb-3">
                 <li>åtkomstkontroller</li>
                 <li>kryptering av personuppgifter där det är tekniskt och organisatoriskt lämpligt</li>
-                <li>loggning och övervakning</li>
-                <li>redundans och incidenthantering</li>
+                <li>loggning</li>
               </ul>
-              <p className="text-slate-300 mb-2">Säkerhetsnivån motsvarar ISO/IEC 27001, SOC 2 Type II eller motsvarande standard.</p>
               <p className="text-slate-300 mb-2">Bolaget säkerställer:</p>
               <ul className="list-disc list-inside space-y-1 text-slate-300">
                 <li>pseudonymisering där lämpligt</li>
-                <li>kontinuerlig konfidentialitet, integritet, tillgänglighet och motståndskraft</li>
-                <li>förmåga att återställa tillgänglighet i rimlig tid vid incident</li>
-                <li>regelbunden testning och utvärdering av säkerhetsåtgärder</li>
               </ul>
             </section>
             <div className="border-t border-slate-800" />
@@ -297,19 +292,19 @@ export default function DPAPage() {
               </h2>
               <p className="text-slate-300 mb-2">Bolaget använder följande underbiträden:</p>
               <ul className="list-disc list-inside space-y-1 text-slate-300 mb-3">
-                <li>Stripe – betalningar</li>
-                <li>Auth0 – autentisering</li>
-                <li>Fortnox – bokföring</li>
-                <li>Google (Analytics/Ads) – analys och annonsering</li>
-                <li>Meta – annonsering</li>
-                <li>
-                  TikTok – annonsering{' '}
-                  <span className="text-slate-500 text-xs">
-                    (TikTok kan innebära regulatorisk risk. Bolaget kan avsluta denna integration utan förvarning om rättsläget kräver det.)
-                  </span>
-                </li>
-                <li>LinkedIn – annonsering</li>
-                <li>SendGrid – e-post</li>
+                <li>Google — drift, fillagring, loggning och hantering av hemligheter (Google Cloud, med Tjänstens servrar i EU, region europe-north1), platsuppslag (Google Places) och e-postutskick (Gmail)</li>
+                <li>MongoDB — databas för Tjänstens data</li>
+                <li>Auth0 — inloggning och autentisering</li>
+                <li>Stripe — betalningar, utbetalningar och kontoverifiering</li>
+                <li>Mailchimp Transactional — utskick av e-post, bland annat bekräftelser och fakturor</li>
+                <li>Brevo — utskick av e-post från Bolagets administration</li>
+                <li>OpenAI — AI-funktioner i Tjänsten, bland annat insikter, AI-support samt text- och bildgenerering</li>
+                <li>Anthropic — AI-baserad sökning och leadgenerering</li>
+                <li>Fortnox — bokföringsintegration, när Kunden kopplat sitt Fortnox-konto</li>
+                <li>PostNord — frakt och fraktetiketter</li>
+                <li>allabolag.se — företagsuppslag vid sökning</li>
+                <li>ipapi.co — geografisk uppslagning av IP-adress vid inloggning och besöksanalys</li>
+                <li>GitHub — hämtning av källkod från Kundens repository när Kunden kopplar GitHub i onboardingen</li>
               </ul>
               <p className="text-slate-300 mb-2">
                 Bolaget säkerställer att samtliga underbiträden är bundna av dataskyddsförpliktelser som motsvarar de dataskyddsförpliktelser som framgår av detta DPA, i enlighet med GDPR artikel 28(4).
@@ -391,7 +386,7 @@ export default function DPAPage() {
                 <li>omfattas av sekretess</li>
                 <li>får inte inkludera andra kunders data</li>
               </ul>
-              <p className="text-slate-300 mb-2">Bolaget kan ersätta revision med: ISO 27001 eller SOC 2 Type II rapport.</p>
+              <p className="text-slate-300 mb-2">Bolaget kan i stället för revision på plats tillhandahålla skriftlig dokumentation om sina säkerhetsåtgärder.</p>
               <p className="text-slate-300 mb-2">
                 Kunden ska säkerställa att revisorer eller representanter som genomför revision är bundna av sekretess och inte lämnar ut information om Bolagets system, processer eller teknik till tredje part.
               </p>
@@ -417,10 +412,11 @@ export default function DPAPage() {
               <p className="text-slate-300 mb-2">
                 På Kundens begäran ska Bolaget, i stället för radering, återlämna samtliga personuppgifter i ett maskinläsbart format (t.ex. CSV, JSON eller motsvarande).
               </p>
+              <p className="text-slate-300 mb-2">Export enligt ovan tillhandahålls inom 30 dagar från Kundens begäran.</p>
               <p className="text-slate-300 mb-2">I annat fall raderas data inom 30–90 dagar efter avtalets upphörande.</p>
               <p className="text-slate-300 mb-2">Kunden kan begära bekräftelse på radering.</p>
               <p className="text-slate-300 mb-2">
-                Detta inkluderar även säkerhetskopior, som raderas eller skrivs över inom maximalt 90 dagar från det att primär radering genomförts.
+                Uppgifter i säkerhetskopior raderas i takt med att säkerhetskopiorna ersätts enligt Bolagets rutin för säkerhetskopiering.
               </p>
               <p className="text-slate-300">
                 Radering sker med undantag för personuppgifter som Bolaget är skyldigt att behålla enligt lag. I sådana fall ska Kunden informeras om vilka uppgifter som bevaras, på vilken rättslig grund och under vilken tidsperiod.

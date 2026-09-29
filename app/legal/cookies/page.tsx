@@ -6,11 +6,8 @@ import Link from 'next/link';
 const sections = [
   { number: 1, title: 'Vad är cookies?' },
   { number: 2, title: 'Nödvändiga cookies' },
-  { number: 3, title: 'Analyscookies' },
-  { number: 4, title: 'Marknadsföringscookies' },
-  { number: 5, title: 'Tredjepartsleverantörer' },
-  { number: 6, title: 'Hantera samtycke' },
-  { number: 7, title: 'Kontakt' },
+  { number: 3, title: 'Analys och marknadsföring' },
+  { number: 4, title: 'Kontakt' },
 ];
 
 export default function CookiesPage() {
@@ -113,7 +110,7 @@ export default function CookiesPage() {
               className="px-5 py-4 cursor-pointer text-sm font-semibold text-green-400 select-none"
               style={{ backgroundColor: '#111827' }}
             >
-              Innehåll (§1–§7)
+              Innehåll (§1–§4)
             </summary>
             <div className="px-5 py-4 flex flex-col gap-1" style={{ backgroundColor: '#0f172a' }}>
               {sections.map(({ number, title }) => (
@@ -139,7 +136,7 @@ export default function CookiesPage() {
               Cookie<span className="text-green-500">policy</span>
             </h1>
             <p className="text-slate-400 text-sm">
-              Source Solutions AB &mdash; Senast uppdaterad: 2026-04-10
+              Source Solutions AB &mdash; Senast uppdaterad: 2026-09-30
             </p>
           </div>
 
@@ -152,7 +149,7 @@ export default function CookiesPage() {
                 <span className="text-green-500 font-bold">§1</span> Vad är cookies?
               </h2>
               <p className="text-slate-300">
-                Cookies är små textfiler som lagras på din enhet när du besöker vår webbplats. Vi använder cookies för att säkerställa att webbplatsen fungerar korrekt, analysera användning och visa relevant marknadsföring.
+                Cookies är små textfiler som lagras på din enhet när du besöker vår webbplats. Vi använder cookies för att säkerställa att webbplatsen och inloggningen fungerar korrekt.
               </p>
             </section>
             <div className="border-t border-slate-800" />
@@ -177,9 +174,11 @@ export default function CookiesPage() {
                   </thead>
                   <tbody>
                     {[
-                      { name: 'cookie_consent', purpose: 'Lagrar ditt samtyckesbeslut', duration: '12 månader', type: 'First-party' },
-                      { name: '__session', purpose: 'Auth0 sessionshantering', duration: 'Session', type: 'First-party' },
-                      { name: 'next-auth.session-token', purpose: 'Autentiseringstoken', duration: 'Session', type: 'First-party' },
+                      { name: '__session', purpose: 'Håller dig inloggad (Auth0). Kan delas upp i __session__0, __session__1 osv.', duration: 'Förnyas vid aktivitet; upphör efter 1 dygn utan aktivitet och senast efter 3 dygn', type: 'First-party' },
+                      { name: '__txn_<id>', purpose: 'Skyddar inloggningen medan den pågår (Auth0)', duration: '1 timme', type: 'First-party' },
+                      { name: 'source_onboarding_id', purpose: 'Kopplar det paket du valt till din registrering, sätts när du väljer paket', duration: '7 dagar', type: 'First-party' },
+                      { name: 'source_selected_plan', purpose: 'Kommer ihåg vilket paket du valt, sätts när du väljer paket', duration: '7 dagar', type: 'First-party' },
+                      { name: 'source_anonymous_session_id', purpose: 'Håller ihop din registrering i GitHub-steget innan du loggat in', duration: '30 dagar', type: 'First-party' },
                     ].map((row) => (
                       <tr key={row.name} style={{ borderBottom: '1px solid #0f172a' }}>
                         <td className="py-3 pr-4 text-green-400 font-mono text-xs">{row.name}</td>
@@ -197,133 +196,26 @@ export default function CookiesPage() {
             {/* §3 */}
             <section id="section-3" style={{ scrollMarginTop: '100px' }} className="py-8">
               <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
-                <span className="text-green-500 font-bold">§3</span> Analyscookies
+                <span className="text-green-500 font-bold">§3</span> Analys och marknadsföring
               </h2>
-              <p className="text-slate-300 mb-4">
-                Används för att förstå hur besökare använder webbplatsen. Aktiveras endast efter samtycke.
+              <p className="text-slate-300">
+                Vi använder i dag endast nödvändiga kakor som krävs för att webbplatsen och inloggningen ska fungera. Dessa kräver inte samtycke. Om vi i framtiden börjar använda kakor för analys eller marknadsföring kommer vi att be om ditt samtycke innan de sätts och uppdatera denna policy.
               </p>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                      <th className="text-left py-2 pr-4 text-slate-400 font-medium">Cookie</th>
-                      <th className="text-left py-2 pr-4 text-slate-400 font-medium">Syfte</th>
-                      <th className="text-left py-2 pr-4 text-slate-400 font-medium">Livslängd</th>
-                      <th className="text-left py-2 text-slate-400 font-medium">Typ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { name: '_ga', purpose: 'Google Analytics', duration: '2 år', type: 'Third-party (Google)' },
-                      { name: '_ga_XXXX', purpose: 'Google Analytics session', duration: '2 år', type: 'Third-party (Google)' },
-                      { name: '_gid', purpose: 'Google Analytics daglig identifierare', duration: '24 timmar', type: 'Third-party (Google)' },
-                    ].map((row) => (
-                      <tr key={row.name} style={{ borderBottom: '1px solid #0f172a' }}>
-                        <td className="py-3 pr-4 text-green-400 font-mono text-xs">{row.name}</td>
-                        <td className="py-3 pr-4 text-slate-300">{row.purpose}</td>
-                        <td className="py-3 pr-4 text-slate-400">{row.duration}</td>
-                        <td className="py-3 text-slate-400">{row.type}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-slate-500 text-xs mt-3">Google agerar som självständig personuppgiftsansvarig för sina analystjänster.</p>
             </section>
             <div className="border-t border-slate-800" />
 
             {/* §4 */}
             <section id="section-4" style={{ scrollMarginTop: '100px' }} className="py-8">
               <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
-                <span className="text-green-500 font-bold">§4</span> Marknadsföringscookies
-              </h2>
-              <p className="text-slate-300 mb-4">
-                Används för att visa relevant annonsering. Aktiveras endast efter samtycke.
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                      <th className="text-left py-2 pr-4 text-slate-400 font-medium">Cookie</th>
-                      <th className="text-left py-2 pr-4 text-slate-400 font-medium">Syfte</th>
-                      <th className="text-left py-2 pr-4 text-slate-400 font-medium">Livslängd</th>
-                      <th className="text-left py-2 text-slate-400 font-medium">Typ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { name: '_fbp', purpose: 'Meta Pixel', duration: '90 dagar', type: 'Third-party (Meta)' },
-                      { name: 'li_fat_id', purpose: 'LinkedIn Insight Tag', duration: '30 dagar', type: 'Third-party (LinkedIn)' },
-                      { name: '_ttp', purpose: 'TikTok Pixel', duration: '13 månader', type: 'Third-party (TikTok)' },
-                      { name: '_gcl_au', purpose: 'Google Ads konverteringsspårning', duration: '90 dagar', type: 'Third-party (Google)' },
-                    ].map((row) => (
-                      <tr key={row.name} style={{ borderBottom: '1px solid #0f172a' }}>
-                        <td className="py-3 pr-4 text-green-400 font-mono text-xs">{row.name}</td>
-                        <td className="py-3 pr-4 text-slate-300">{row.purpose}</td>
-                        <td className="py-3 pr-4 text-slate-400">{row.duration}</td>
-                        <td className="py-3 text-slate-400">{row.type}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-slate-500 text-xs mt-3">Meta, LinkedIn och TikTok agerar som självständiga personuppgiftsansvariga för sina annonseringstjänster.</p>
-            </section>
-            <div className="border-t border-slate-800" />
-
-            {/* §5 */}
-            <section id="section-5" style={{ scrollMarginTop: '100px' }} className="py-8">
-              <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
-                <span className="text-green-500 font-bold">§5</span> Tredjepartsleverantörer
-              </h2>
-              <p className="text-slate-300 mb-4">
-                Efter samtycke kan tredjepartsleverantörer behandla personuppgifter som egna personuppgiftsansvariga enligt deras egna integritetspolicys. Mer information:
-              </p>
-              <ul className="space-y-2">
-                {[
-                  { label: 'Google Privacy Policy', href: 'https://policies.google.com/privacy' },
-                  { label: 'Meta Privacy Policy', href: 'https://www.facebook.com/privacy/policy' },
-                  { label: 'LinkedIn Privacy Policy', href: 'https://www.linkedin.com/legal/privacy-policy' },
-                  { label: 'TikTok Privacy Policy', href: 'https://www.tiktok.com/legal/page/eea/privacy-policy/en' },
-                ].map((link) => (
-                  <li key={link.href}>
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-400 hover:text-green-300 underline text-sm transition-colors"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <div className="border-t border-slate-800" />
-
-            {/* §6 */}
-            <section id="section-6" style={{ scrollMarginTop: '100px' }} className="py-8">
-              <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
-                <span className="text-green-500 font-bold">§6</span> Hantera samtycke
-              </h2>
-              <p className="text-slate-300">
-                Du kan när som helst ändra dina cookie-inställningar genom att klicka på &quot;Cookie-inställningar&quot; längst ner på sidan. Du kan också blockera cookies via din webbläsares inställningar, men detta kan påverka webbplatsens funktionalitet.
-              </p>
-            </section>
-            <div className="border-t border-slate-800" />
-
-            {/* §7 */}
-            <section id="section-7" style={{ scrollMarginTop: '100px' }} className="py-8">
-              <h2 className="text-xl font-semibold mb-4 flex items-baseline gap-3" style={{ color: '#f0fdf4' }}>
-                <span className="text-green-500 font-bold">§7</span> Kontakt
+                <span className="text-green-500 font-bold">§4</span> Kontakt
               </h2>
               <p className="text-slate-300">
                 Vid frågor om vår cookiepolicy, kontakta oss på{' '}
                 <a
-                  href="mailto:legal@sourcesolutions.se"
+                  href="mailto:help@sourcesolutions.se"
                   className="text-green-400 hover:text-green-300 underline transition-colors"
                 >
-                  legal@sourcesolutions.se
+                  help@sourcesolutions.se
                 </a>
               </p>
             </section>

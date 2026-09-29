@@ -112,7 +112,7 @@ const menuContent: Record<string, MenuContent> = {
       'Inga säljsnack – bara öppna samtal',
       'Svar inom 24 timmar på alla förfrågningar',
       'Vi hjälper dig förstå om vi passar',
-      'E-post: help@source.com',
+      'E-post: help@sourcesolutions.se',
       'Telefon: +46 73 322 12 12',
     ],
     href: '/kontakt',
