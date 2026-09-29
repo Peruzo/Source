@@ -1,5 +1,6 @@
 import type { OnboardingEvent } from '@/lib/storage/onboarding-events';
 import { isGithubRepoAcceptedFromEvents } from '@/lib/storage/onboarding-events';
+import type { TermsAcceptanceRecord } from '@/lib/legal/terms-acceptance';
 
 /**
  * Formell onboarding-status (FSM - Finite State Machine).
@@ -127,6 +128,8 @@ export type OnboardingState = {
     name: string;
     price: string;
   } | null;
+  // Senaste terms_accepted-eventet (serversatt tid och version). Ingen FSM-status.
+  termsAcceptance: TermsAcceptanceRecord | null;
   updatedAt: string | null;
   createdAt: string | null;
 };
@@ -155,6 +158,7 @@ export function reduceOnboarding(
       github: null,
       stripe: null,
       plan: null,
+      termsAcceptance: null,
       updatedAt: null,
       createdAt: null,
     };
@@ -171,6 +175,7 @@ export function reduceOnboarding(
     github: null,
     stripe: null,
     plan: null,
+    termsAcceptance: null,
     updatedAt: null,
     createdAt: null,
   };
@@ -275,6 +280,11 @@ export function reduceOnboarding(
 
       // github_public_repo_confirmed är inte heller ett FSM-event; läses bara i låsningen ovan
       case 'github_public_repo_confirmed':
+        break;
+
+      // terms_accepted är inget FSM-event; senaste godkännandet vinner
+      case 'terms_accepted':
+        state.termsAcceptance = event.payload;
         break;
 
       case 'stripe_started':
