@@ -1,9 +1,25 @@
 'use client';
 
 import Image from 'next/image';
+import { AnimatedButton } from '@/components/ui/AnimatedButton';
+import { PrivatVaxandeSections } from '@/components/sections/for-dig/PrivatVaxandeSections';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import { privatVaxandeFrakt } from '@/lib/data/for-dig/privat-vaxande';
 
 export default function PrivatVaxandePage() {
+  const reduceMotion = usePrefersReducedMotion();
+
+  // "Boka demo" links to /kontakt, where every other "Boka demo" on the site goes (Hero.tsx).
+  // "Se hur det fungerar" scrolls to section 1. globals.css sets scroll-behavior: smooth on *, so the
+  // reduced-motion case has to ask for 'instant' explicitly – 'auto' would
+  // still follow the CSS and animate.
+  const showHow = () => {
+    document.getElementById(privatVaxandeFrakt.id)?.scrollIntoView({ behavior: reduceMotion ? 'instant' : 'smooth', block: 'start' });
+  };
+
   return (
+    <>
+    {/* Hero – unchanged apart from the two buttons under the title: the start page's buttons, with actions. */}
     <section className="relative w-full overflow-hidden bg-black text-white md:min-h-[100svh]">
       {/* Media band: fixed height on small screens, full-bleed background from md */}
       <div className="relative h-[60svh] min-h-[420px] w-full md:absolute md:inset-0 md:h-auto md:min-h-0">
@@ -22,6 +38,16 @@ export default function PrivatVaxandePage() {
             <h1 className="text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
               Ta din e-handel till nästa nivå
             </h1>
+
+            {/* Same buttons as the start page hero (components/sections/Hero.tsx) and the Företag pages. */}
+            <div className="mt-6 flex justify-center gap-4">
+              <AnimatedButton href="/kontakt" variant="primary" size="lg">
+                Boka demo
+              </AnimatedButton>
+              <AnimatedButton onClick={showHow} variant="secondary" size="lg" onDark>
+                Se hur det fungerar
+              </AnimatedButton>
+            </div>
           </div>
         </div>
       </div>
@@ -74,5 +100,8 @@ export default function PrivatVaxandePage() {
         </div>
       </div>
     </section>
+
+      <PrivatVaxandeSections />
+    </>
   );
 }
