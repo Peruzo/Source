@@ -85,7 +85,7 @@ export function PricingTeaser() {
           </motion.div>
 
           <FadeIn delay={0.5} className="text-center mt-12">
-            <p className="text-gray-600 text-sm md:text-base">* Alla priser exklusive moms. Uppgradera eller nedgradera när som helst.</p>
+            <p className="text-gray-600 text-sm md:text-base">* Alla priser exklusive moms.</p>
           </FadeIn>
         </div>
       </div>

@@ -63,7 +63,6 @@ const HOTSPOTS: HotCat[] = [
       { name: 'Logistik',       href: 'https://sourceportal.se/logistik' },
       { name: 'Integrationer',  href: 'https://sourceportal.se/integrationer' },
       { name: 'Kunder',         href: 'https://sourceportal.se/kunder-layout2' },
-      { name: 'Leads',          href: 'https://sourceportal.se/leads-layout2' },
       { name: 'Analyser',       href: 'https://sourceportal.se/analyser-layout2' },
       { name: 'Statistik',      href: 'https://sourceportal.se/statistik-layout2' },
       { name: 'Marknadsföring', href: 'https://sourceportal.se/marknadsforing-layout2' },

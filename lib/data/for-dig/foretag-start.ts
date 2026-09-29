@@ -296,7 +296,7 @@ export const foretagMer = {
     { icon: CubeIcon, title: 'Lagersaldo', body: 'Se hur många du har kvar av varje produkt och variant.' },
     { icon: DocumentChartBarIcon, title: 'Fakturaöversikt', body: 'Följ dina fakturor samlat, med belopp och status.' },
     { icon: CreditCardIcon, title: 'Kortbetalning i kassan', body: 'Kunden betalar med kort, och Source tar ingen avgift på din försäljning.' },
-    { icon: LifebuoyIcon, title: 'Hjälp när du behöver den', body: 'AI-support i portalen och livechatt vardagar 08–20.' },
+    { icon: LifebuoyIcon, title: 'Hjälp när du behöver den', body: 'AI-support i portalen och livechatt varje dag 08–20.' },
   ] satisfies FeatureItem[],
 };
 

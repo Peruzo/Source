@@ -34,7 +34,7 @@ type ChipDef = { label: string; fx: number; fy: number; start: number; end: numb
 // fx/fy = scatter-position (fraktion av container, relativt mitten)
 // start/end = när chippet flyger in (i scroll-progress 0–1)
 const CHIPS: ChipDef[] = [
-  { label: 'Leads',          fx: -0.40, fy: -0.30, start: 0.06, end: 0.34 },
+  { label: 'Offerter',       fx: -0.40, fy: -0.30, start: 0.06, end: 0.34 },
   { label: 'Kampanjer',      fx:  0.42, fy: -0.26, start: 0.10, end: 0.38 },
   { label: 'Betalningar',    fx: -0.46, fy:  0.02, start: 0.08, end: 0.36 },
   { label: 'Analyser',       fx:  0.47, fy:  0.06, start: 0.13, end: 0.41 },

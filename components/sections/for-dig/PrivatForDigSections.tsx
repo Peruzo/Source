@@ -5,6 +5,7 @@ import { CampaignWidgets } from './CampaignWidgets';
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { SubscriptionWidgets } from './SubscriptionWidgets';
+import { subscriptionWidgetsDefaults } from './subscription-widgets/content';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
 import { PaymentCards } from './PaymentCards';
@@ -129,9 +130,8 @@ export function PrivatForDigSections() {
         title="Börja ta betalt"
         height="tall"
         body={[
-          // TODO: ledtid för aktivering — bekräftas mot admin-portalen
-          'Här står texten om att komma igång med betalningar. Tidsangivelsen för hur snabbt det går att aktivera ska in i den här meningen när den är bekräftad.',
-          'Här står ett andra stycke om vad som ingår och vad du slipper hålla reda på. Två till tre meningar.',
+          'Skapa en betalningslänk och skicka den till kunden, så betalar kunden med kort direkt via länken.',
+          'Betalningarna samlas i kundportalen, där du ser vad som har kommit in.',
           // TODO: verifiera att vi inte tar transaktionsavgift
         ]}
       >
@@ -170,8 +170,8 @@ export function PrivatForDigSections() {
         eyebrow="EKONOMI"
         title="Fakturor"
         body={[
-          'Här står texten om fakturering. Två till tre meningar som förklarar vad som sker automatiskt och vad du själv styr över.',
-          'Här står ett kort andra stycke om uppföljning och påminnelser.',
+          'Skapa fakturan med momsen uträknad per rad och ladda ner den som PDF. Lägg till en betalningslänk, så kan kunden betala direkt.',
+          'Blir en faktura sen skickar du en påminnelse från kundens profil.',
         ]}
       >
         <InvoiceWidgets />
@@ -209,12 +209,17 @@ export function PrivatForDigSections() {
         eyebrow="ÅTERKOMMANDE INTÄKTER"
         title="Prenumerationer"
         body={[
-          'Här står texten om prenumerationer och återkommande betalningar. Två till tre meningar.',
-          // TODO: pris
-          'Här står ett andra stycke. Om prisnivån ska nämnas någonstans är det troligen här – den får inte in förrän prissättningen är bekräftad.',
+          'Sälj prenumerationer i din butik. Kunden betalar med kort när prenumerationen tecknas, och sedan dras betalningen automatiskt varje period.',
+          'Du följer alla prenumerationer i kundportalen.',
         ]}
       >
-        <SubscriptionWidgets />
+        <SubscriptionWidgets
+          incoming={{ ...subscriptionWidgetsDefaults.incoming, paymentMethod: 'Kort' }}
+          create={{
+            ...subscriptionWidgetsDefaults.create,
+            paymentMethod: { ...subscriptionWidgetsDefaults.create.paymentMethod, value: 'Faktura' },
+          }}
+        />
       </FullBleedImageSection>
 
       {/* 8 – Så kommer du igång. Fullbreddsbild med mörk gradient från vänster. */}

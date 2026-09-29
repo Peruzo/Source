@@ -28,7 +28,7 @@ const faqs = [
   },
   {
     question: 'Hur fungerar supporten?',
-    answer: '24/7 e-post, chatt för Growth+, prioritet för Enterprise.',
+    answer: 'Alla paket har livechatt med oss i kundportalen varje dag 08–20. Därefter skickar du ett ärende. Enterprise har livechatt även utanför kontorstid.',
   },
 ];
 
@@ -109,11 +109,7 @@ export default function ContactPage() {
                 Behöver du hjälp?
               </h3>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Har du redan ett konto? Logga in i kundportalen. Eller ring oss på{' '}
-                <a href="tel:+46733221212" className="text-teal font-medium hover:text-teal-hover">
-                  +46 73 322 12 12
-                </a>{' '}
-                vardagar 09–17.
+                Har du redan ett konto? Logga in i kundportalen och chatta med oss varje dag 08–20.
               </p>
               <Link
                 href="/onboarding/login"

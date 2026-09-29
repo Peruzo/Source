@@ -67,7 +67,7 @@ const menuContent: Record<string, MenuContent> = {
   },
   'om-oss': {
     title: 'Om oss',
-    description: 'Tre grundare med en gemensam vision',
+    description: 'Två grundare med en gemensam vision',
     features: [
       'Alla från kundservice-branchen',
       'Specialister inom AI, e-handel och design',

@@ -67,7 +67,6 @@ const services = [
     included: [
       'Chatt i kundportalen',
       'E-post support',
-      'Video-möten (beroende på plan)',
       'Feedback-driven utveckling',
       'Nya funktioner automatiskt',
       'Säkerhetsuppdateringar',
@@ -688,11 +687,10 @@ export default function ServicesPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.75, ease: 'easeOut', delay: 0.15 }}
-                    className="grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-2 mt-40 md:mt-56 lg:mt-72"
+                    className="grid w-full max-w-sm grid-cols-1 gap-6 mt-40 md:mt-56 lg:mt-72"
                   >
                     {[
                       { title: 'Betalningar', value: '282 804 kr', label: 'Månadsflöde' },
-                      { title: 'Hosting', value: '99.9%', label: 'Uptime SLA' },
                     ].map((item) => (
                       <div
                         key={item.title}
@@ -745,7 +743,7 @@ export default function ServicesPage() {
               imageAlt: 'Stripe-visualisering med neonpunkter.',
             },
             {
-              title: 'Kundsupport dygnet runt',
+              title: 'Livechatt varje dag 08–⁠20',
               imageSrc: '/supportbild.png',
               imageAlt: 'Person med telefon och chattmeddelande.',
             },
