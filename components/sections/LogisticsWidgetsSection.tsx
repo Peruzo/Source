@@ -22,8 +22,8 @@ const tabViews = {
     { name: 'Pågående', amount: '8 st', icon: 'refresh', active: false },
   ],
   shipping: [
-    { name: 'PostNord Express', amount: '5 st', icon: 'truck', active: true },
-    { name: 'PostNord Standard', amount: '3 st', icon: 'inbox', active: false },
+    { name: 'Utlämningsställe', amount: '5 st', icon: 'truck', active: true },
+    { name: 'Hemleverans', amount: '3 st', icon: 'inbox', active: false },
   ],
   status: [
     { name: 'På väg', amount: '7 st', icon: 'location', active: true },
@@ -104,7 +104,7 @@ export function LogisticsWidgetsSection() {
                   <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal/15">
                     <BoltIcon className="h-10 w-10 text-teal" />
                   </div>
-                  <h3 className="mb-2 text-base font-semibold text-gray-900">Express/Standard</h3>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Leveranssätt</h3>
                   <p className="text-xs text-gray-500">Välj leverans</p>
                 </motion.div>
 
@@ -119,8 +119,8 @@ export function LogisticsWidgetsSection() {
                   <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal/15">
                     <MapPinIcon className="h-10 w-10 text-teal" />
                   </div>
-                  <h3 className="mb-2 text-base font-semibold text-gray-900">Status påväg</h3>
-                  <p className="text-xs text-gray-500">Realtid</p>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Spårningslänk</h3>
+                  <p className="text-xs text-gray-500">Till kunden</p>
                 </motion.div>
               </div>
             </motion.div>
@@ -226,12 +226,12 @@ export function LogisticsWidgetsSection() {
 
             <FadeIn delay={0.15}>
               <p className="text-base md:text-lg text-gray-500">
-                Alla logistikwidgets är integrerade i realtid och synkar automatiskt med dina partners.
+                Bokning, fraktsedel och spårningslänk sköts med PostNord direkt från portalen.
               </p>
             </FadeIn>
 
             <FadeIn delay={0.2}>
-              <Link href="/logistik" className="mt-6 inline-flex items-center justify-center rounded-full bg-gray-900 px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-gray-800">
+              <Link href="/kontakt" className="mt-6 inline-flex items-center justify-center rounded-full bg-gray-900 px-[22px] py-3 text-[15px] font-medium leading-tight text-white transition-colors hover:bg-gray-800">
                 Kom igång med logistik
               </Link>
             </FadeIn>

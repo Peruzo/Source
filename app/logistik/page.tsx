@@ -176,8 +176,8 @@ export default function LogistikPage() {
                   <ul className="space-y-6 text-left md:space-y-7">
                     {[
                       'Eget system för att administrativt styra returerna',
-                      'Kopplat mot inventarier och automatisk refund policy',
-                      'Full kontroll över returflödet i realtid',
+                      'Godkänn, avvisa och återbetala i samma returärende',
+                      'Överblick över varje returärende och dess status',
                       'Smidigare upplevelse för både kund och support',
                     ].map((point, index) => (
                       <li
