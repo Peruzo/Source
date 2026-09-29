@@ -291,7 +291,11 @@ export function CodeUploadForm() {
     const planId = typeof window !== 'undefined' ? searchParams.get('plan') ?? getStoredPlanId() : null;
     const stripeUrl = getStripeOnboardingUrl(planId);
     const returnTo = stripeUrl + (stripeUrl.includes('?') ? '&' : '?') + 'autostart=true';
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}&screen_hint=signup`;
+    // Användaren är redan inloggad: kodstegets routes kräver Auth0-session. Gå därför direkt
+    // till Stripe-steget i stället för en ny Auth0-inloggning med signup-förval (som visade
+    // "Skapa konto" för en befintlig användare). Saknas sessionen ändå skickar Stripe-steget
+    // själv till inloggning och tillbaka (stripe-start.tsx).
+    window.location.href = returnTo;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
