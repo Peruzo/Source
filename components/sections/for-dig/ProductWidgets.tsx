@@ -16,7 +16,10 @@ export {
   ServiceBooking,
 } from './product-widgets/widgets';
 
-type ProductWidgetsProps = Partial<ProductWidgetsContent>;
+type ProductWidgetsProps = Partial<ProductWidgetsContent> & {
+  /** false shows the service without times and book button. Default true. */
+  booking?: boolean;
+};
 
 /**
  * Visual for "Lägg upp dina produkter eller tjänster": the shop screen – a
@@ -35,7 +38,7 @@ type ProductWidgetsProps = Partial<ProductWidgetsContent>;
  *   ≥ 576 px  grid 5 × 2, service card wide
  * The dialog shows every field in all three.
  */
-export function ProductWidgets(props: ProductWidgetsProps) {
+export function ProductWidgets({ booking = true, ...props }: ProductWidgetsProps) {
   const { currency, locale, grid, addProduct, service } = {
     ...productWidgetsDefaults,
     ...props,
@@ -68,7 +71,7 @@ export function ProductWidgets(props: ProductWidgetsProps) {
       </div>
 
       <div className="mt-4 shrink-0 @xl:mt-5">
-        <ServiceBooking content={service} {...money} />
+        <ServiceBooking content={service} booking={booking} {...money} />
       </div>
     </div>
   );

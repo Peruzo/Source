@@ -8,15 +8,18 @@ import { SubscriptionWidgets } from './SubscriptionWidgets';
 import { subscriptionWidgetsDefaults } from './subscription-widgets/content';
 import { GettingStartedSection, type GettingStartedStep } from './GettingStartedSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
+import { invoiceWidgetsDefaults } from './invoice-widgets/content';
 import { PaymentCards } from './PaymentCards';
+import { paymentCardsDefaults } from './payment-cards/content';
 import { ProductWidgets } from './ProductWidgets';
+import { productWidgetsDefaults } from './product-widgets/content';
 
 /*
  * INNEHÅLL – "För dig / Privat"
  *
- * Allt brödtext nedan är PLATSHÅLLARE. Meningarna är skrivna i rätt längd så
- * du ser hur mycket text varje sektion rymmer – byt ut dem rakt av.
- * Rubrikerna är däremot de riktiga och ska normalt stå kvar.
+ * Brödtexten nedan är riktig copy, belagd mot kundportalen (se
+ * ~/cc-rapporter/privat-start-copy-1.md). Byt inte ut den mot påståenden som
+ * inte går att belägga. Rubrikerna är de riktiga och ska normalt stå kvar.
  *
  * Sektionskomponenterna är generiska och tar props, så företagssegmentet kan
  * återanvända dem med eget innehåll (se ClippedImageSection m.fl.).
@@ -34,23 +37,23 @@ const IMG = '/images/for-dig/privat';
 const steps: GettingStartedStep[] = [
   {
     number: '01',
-    title: 'Placeholder – steg ett',
-    body: 'Här står en mening om det första steget, ungefär så här lång.',
+    title: 'Välj paket och skapa konto',
+    body: 'Välj det paket som passar dig och skapa ditt konto.',
   },
   {
     number: '02',
-    title: 'Placeholder – steg två',
-    body: 'Här står en mening om vad som händer i steg två och vad du gör.',
+    title: 'Svara på några frågor',
+    body: 'Berätta om dig och om du redan har en hemsida.',
   },
   {
     number: '03',
-    title: 'Placeholder – steg tre',
-    body: 'Här står en mening om steg tre – en rad räcker på desktop.',
+    title: 'Godkänn villkoren och koppla Stripe',
+    body: 'Skapa ditt Stripe-konto, så kan du ta emot betalningar.',
   },
   {
     number: '04',
-    title: 'Placeholder – steg fyra',
-    body: 'Här står en mening om steg fyra – ta bort steget om ni landar i tre.',
+    title: 'Vi granskar och öppnar kontot',
+    body: 'Vi går igenom kontot och hör av oss. Sedan loggar du in i kundportalen.',
   },
 ];
 
@@ -73,9 +76,8 @@ export function PrivatForDigSections() {
         sticky={false}
         background="white"
         body={[
-          'Här står den bärande texten i sektionen. Den får vara några rader längre än på övriga sektioner, eftersom det är den här sidan ska landa hos besökaren. Skriv ungefär så här mycket.',
-          'Här står ett andra stycke som tar hand om invändningen. Två till tre meningar räcker – det ska kännas lugnt, inte som en argumentlista.',
-          'Här står ett kort avslutande stycke som leder vidare till nästa sektion.',
+          'Vi bygger en responsiv hemsida åt dig med upp till fem sidor, som fungerar lika bra i mobilen som på datorn.',
+          'Du behöver inte kunna något tekniskt och inte ha någon hemsida sedan tidigare. Har du redan en, delar du koden med oss när du kommer igång.',
         ]}
         // Renderad i ~/projects/source-motion, se README i public/images/for-dig/privat/.
         video={{
@@ -85,7 +87,7 @@ export function PrivatForDigSections() {
         }}
       >
         <Button href="/kontakt" variant="primary" size="lg">
-          Placeholder – primär knapp
+          Boka demo
         </Button>
         {/* CC BY 4.0 kräver synlig kreditering där verket används. Ta bort
             raden bara om videon tas bort. Se README i public/images/for-dig/privat/. */}
@@ -135,7 +137,13 @@ export function PrivatForDigSections() {
           // TODO: verifiera att vi inte tar transaktionsavgift
         ]}
       >
-        <PaymentCards />
+        {/* Bara kortbetalning: andra betalsätt via Klarna ingår i Growth. */}
+        <PaymentCards
+          checkout={{
+            ...paymentCardsDefaults.checkout,
+            methodGroups: [paymentCardsDefaults.checkout.methodGroups[0].filter((m) => m.id === 'kort')],
+          }}
+        />
       </FullBleedImageSection>
 
       {/* 4 – Lägg upp dina produkter eller tjänster. Widgetarna till vänster
@@ -150,14 +158,23 @@ export function PrivatForDigSections() {
         sticky={false}
         background="white"
         body={[
-          'Här står den bärande texten om hur du lägger upp det du säljer. Skriv ungefär så här mycket – tre till fyra rader på desktop.',
-          'Här står ett andra stycke som förklarar vad du kan styra själv och vad vi gör åt dig.',
+          'Lägg upp det du säljer, både varor och tjänster, med namn, pris och bild.',
+          'Sortera dem i kategorier, så hittar kunden rätt i din butik.',
         ]}
         media={
           // Panel kant till kant i klippformen. Djupt hörn (10rem) uppe till
           // höger på lg – därför 80px luft upptill mot 32px på sidan.
           <div className="flex flex-col bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-12 lg:pl-8 lg:pr-8 lg:pt-20 xl:pl-12">
-            <ProductWidgets />
+            {/* En tjänst med pris utan bokningsbara tider: bokning ingår i Growth. */}
+            <ProductWidgets
+              booking={false}
+              service={{
+                ...productWidgetsDefaults.service,
+                name: 'Ändringssömnad',
+                details: 'Kortning av byxor',
+                price: 249,
+              }}
+            />
           </div>
         }
       />
@@ -174,7 +191,13 @@ export function PrivatForDigSections() {
           'Blir en faktura sen skickar du en påminnelse från kundens profil.',
         ]}
       >
-        <InvoiceWidgets />
+        {/* Utan märkningen "Bokförd i": bokföring ingår i Growth. */}
+        <InvoiceWidgets
+          list={{
+            ...invoiceWidgetsDefaults.list,
+            rows: invoiceWidgetsDefaults.list.rows.map((row) => ({ ...row, integrationId: undefined })),
+          }}
+        />
       </FullBleedImageSection>
 
       {/* 6 – Kampanjer. Kollaget till höger på en ljus panel som fyller
@@ -188,8 +211,8 @@ export function PrivatForDigSections() {
         sticky={false}
         background="white"
         body={[
-          'Här står den bärande texten om kampanjer. Skriv ungefär så här mycket text så att sektionen väger jämnt mot sektion 2 och 4.',
-          'Här står ett andra stycke om vad du kan mäta och följa upp.',
+          'Skapa en rabattkod med procent eller ett fast belopp, och bestäm hur många gånger den får användas och när den slutar gälla.',
+          'Kunden anger koden i kassan, och rabatten räknas av på köpet.',
         ]}
         media={
           // Panel kant till kant i klippformen. Djupt hörn (10rem) nere till
@@ -236,30 +259,30 @@ export function PrivatForDigSections() {
         {/* TODO: pris */}
         {/* secondary, inte primary: vit text på teal är bara 2,26:1. Teal på
             sektionens mörka ton (#001310) är 8,1:1. */}
-        <Button href="/kontakt" variant="secondary" size="lg">
-          Placeholder – knapp under stegen
+        <Button href="/priser" variant="secondary" size="lg">
+          Kom igång
         </Button>
       </GettingStartedSection>
 
       {/* 9 – Avslutande CTA. */}
       <FullBleedImageSection
         id="kom-igang-cta"
-        title="Placeholder – avslutande rubrik"
+        title="Redo att komma igång?"
         height="tall"
         body={[
-          'Här står den avslutande texten. En till två meningar som tar besökaren vidare till kontaktformuläret.',
+          'Välj ett paket och kom igång, eller boka en demo så visar vi hur det fungerar.',
         ]}
         image={{
           src: `${IMG}/09-avslutande-cta.svg`,
-          alt: 'TODO: alt-text – beskriv bilden för den avslutande CTA-sektionen',
+          alt: 'Mörk grå bakgrund.',
         }}
       >
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button href="/kontakt" variant="primary" size="lg">
-            Placeholder – primär CTA
+          <Button href="/priser" variant="primary" size="lg">
+            Kom igång
           </Button>
           <Button href="/kontakt" variant="secondary" size="lg" onDark>
-            Placeholder – sekundär CTA
+            Boka demo
           </Button>
         </div>
       </FullBleedImageSection>
