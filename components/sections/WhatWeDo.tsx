@@ -67,7 +67,7 @@ const services: Service[] = [
       'Betalningar & fakturor (Stripe)',
       'Bokföring & rapporter',
       'Lager & inventariehantering',
-      'PostNord, DHL & Fortnox-integrationer',
+      'PostNord- och Fortnox-integrationer',
     ],
     imagePlaceholder: 'Payment Systems',
     imageSrc: '/logositske.png',
@@ -79,12 +79,12 @@ const services: Service[] = [
     number: '04',
     title: 'Support & Utveckling',
     description:
-      'Vi växer med dig. Inte bara vid start, utan hela vägen. 24/7 support och kontinuerliga uppdateringar.',
+      'Vi växer med dig. Inte bara vid start, utan hela vägen. Livechatt varje dag 08–20 och kontinuerliga uppdateringar.',
     details: [
       'Chatt & e-post support',
       'Kontinuerlig optimering',
       'Månatliga uppdateringar',
-      'Dedikerad kontakt',
+      'Personlig hjälp',
     ],
     imagePlaceholder: 'Support Portal',
     imageSrc: '/supportfordem.png',
