@@ -95,6 +95,18 @@ const SERVICES = {
     // A person with a phone in a concrete hall (x 56–71 %). Crop x 870–1734 keeps her whole.
     { slot: 'support', file: 'support-A.png', portrait: { left: 870 } },
   ],
+  // /privat-vaxande (Privat Växande). Portrait crops are 3:4 at full height (864 px wide).
+  'privat-vaxande': [
+    // A woman at a parcel locker on the street with a package (variant A). Crop x 584–1448 keeps her
+    // face, the package and her hand on the locker door; the back of her hat is cut.
+    { slot: 'frakt', file: 'frakt-a.png', portrait: { left: 584 } },
+    // A man unpacking a box on a stair landing by a window (variant A). Crop x 717–1581 keeps him,
+    // his hands and the box.
+    { slot: 'kunder', file: 'kunder-a.png', portrait: { left: 717 } },
+    // The owner at the desk of a small studio, seen through a doorway (variant A). Crop x 880–1744
+    // keeps her face, her hands and the phone.
+    { slot: 'boka', file: 'boka-a.png', portrait: { left: 880 } },
+  ],
   // /tjanster/kampanjer – abstract studio sculptures, used only as pauses between the demos.
   kampanjer: [
     // S1 – paper arch on teal (x 1106–1710). Portrait centred on the arch; the left half is free for text.
@@ -118,6 +130,7 @@ const OPTIONS = {
   'foretag-start': { outDir: 'public/for-dig/foretag-start', portraitAspect: 3 / 4 },
   'foretag-vaxa': { outDir: 'public/for-dig/foretag-vaxa', portraitAspect: 3 / 4 },
   'foretag-etablerade': { outDir: 'public/for-dig/foretag-etablerade', portraitAspect: 3 / 4 },
+  'privat-vaxande': { outDir: 'public/for-dig/privat-vaxande', portraitAspect: 3 / 4 },
 };
 
 const [service, srcDir] = process.argv.slice(2);
