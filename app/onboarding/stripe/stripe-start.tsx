@@ -1,27 +1,37 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getOrCreateSessionId } from '@/lib/onboarding/storage';
 import { useOnboardingState } from '@/lib/onboarding/backend-state';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { normalizeError } from '@/lib/utils/normalize-error';
+import {
+  isCurrentTermsAcceptance,
+  LEGAL_DOCUMENT_PATHS,
+  LEGAL_DOCUMENTS,
+  LEGAL_TERMS_VERSION,
+  TERMS_NOT_ACCEPTED_MESSAGE,
+  type LegalDocument,
+} from '@/lib/legal/terms-acceptance';
+
+// Obockade från start. Kryssen sätts bara av kundens eget klick, eller återställs från
+// kundens eget tidigare sparade godkännande om det har tidsstämpel och aktuell version.
+const NO_DOCUMENTS_ACCEPTED: Record<LegalDocument, boolean> = { terms: false, privacy: false, dpa: false };
 
 export function StripeStart() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const shouldAutoStart = searchParams.get('autostart') === 'true';
   const { onboardingId, userSub, loading: onboardingIdLoading, error: onboardingIdError } = useOnboardingId();
   const { state, loading: stateLoading } = useOnboardingState(userSub || '', onboardingId);
   const [sessionId, setSessionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [acceptedDocuments, setAcceptedDocuments] = useState<Record<LegalDocument, boolean>>(NO_DOCUMENTS_ACCEPTED);
+  const [restoredAcceptedAt, setRestoredAcceptedAt] = useState<string | null>(null);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
-  const termsScrollRef = useRef<HTMLDivElement>(null);
-  const autoStartedRef = useRef(false);
+  const restoreCheckedRef = useRef(false);
+  const termsAccepted = LEGAL_DOCUMENTS.every((doc) => acceptedDocuments[doc]);
 
   const loadingState = onboardingIdLoading || stateLoading;
 
@@ -34,10 +44,11 @@ export function StripeStart() {
 
   // Fallback när Stripe-anropet saknar giltig session: vanlig inloggning (kontot finns redan,
   // därför inget signup-förval) och tillbaka till Stripe-steget med samma query (plan) för
-  // samma onboarding. autostart tas bort med flit: om sessionen finns men onboardingen inte
-  // tillhör användaren (också 404) skulle autostart ge en tyst inloggningsslinga.
+  // samma onboarding. Stripe startar endast på kundens eget klick efter villkorsgodkännandet,
+  // så returnTo bär ingen autostart. Querysträngen läses ur window.location (anropas bara från
+  // klickhanterare i webbläsaren) i stället för useSearchParams, som villkorsrättningen tog bort.
   const stripeStepReturnTo = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     params.delete('autostart');
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
@@ -48,10 +59,9 @@ export function StripeStart() {
     window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
-  const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 50;
-    if (isAtBottom) setHasScrolledToBottom(true);
+  const toggleDocument = (doc: LegalDocument, checked: boolean) => {
+    setAcceptedDocuments((prev) => ({ ...prev, [doc]: checked }));
+    setRestoredAcceptedAt(null);
   };
 
   // Visa fel om onboardingId saknas
@@ -61,13 +71,17 @@ export function StripeStart() {
     }
   }, [onboardingIdError]);
 
-  // Auto-start Stripe efter återkomst från Auth0 (returnTo med ?autostart=true)
+  // Ingen autostart: Stripe startas bara av kundens eget klick efter att villkoren
+  // kryssats i. Ett tidigare sparat eget godkännande återställs endast om det har
+  // tidsstämpel och AKTUELL villkorsversion (en gång, så att kunden kan kryssa ur).
   useEffect(() => {
-    if (shouldAutoStart && !loadingState && onboardingId && !autoStartedRef.current) {
-      autoStartedRef.current = true;
-      startStripe();
+    if (loadingState || !state || restoreCheckedRef.current) return;
+    restoreCheckedRef.current = true;
+    if (isCurrentTermsAcceptance(state.termsAcceptance)) {
+      setAcceptedDocuments({ terms: true, privacy: true, dpa: true });
+      setRestoredAcceptedAt(state.termsAcceptance.acceptedAt);
     }
-  }, [shouldAutoStart, loadingState, onboardingId]);
+  }, [state, loadingState]);
 
   // FSM: Backend-driven guards baserat på formell status
   // Status är enda sanningskällan - inga heuristiska kontroller
@@ -103,6 +117,11 @@ export function StripeStart() {
       return;
     }
 
+    if (!termsAccepted) {
+      setError(TERMS_NOT_ACCEPTED_MESSAGE);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -110,7 +129,14 @@ export function StripeStart() {
       const response = await fetch('/api/onboarding/stripe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, onboardingId }),
+        body: JSON.stringify({
+          sessionId,
+          onboardingId,
+          termsAcceptance: {
+            termsVersion: LEGAL_TERMS_VERSION,
+            documents: LEGAL_DOCUMENTS.filter((doc) => acceptedDocuments[doc]),
+          },
+        }),
       });
 
       // 404 = saknad session eller onboardingId som inte tillhör anroparen (routen skiljer inte).
@@ -177,24 +203,8 @@ export function StripeStart() {
               >✕</button>
             </div>
 
-            {/* Scroll indicator */}
-            {!hasScrolledToBottom && (
-              <div style={{
-                background: '#f0fdf4',
-                borderBottom: '1px solid #d1fae5',
-                padding: '8px 24px',
-                color: '#059669',
-                fontSize: '13px',
-                textAlign: 'center',
-                fontWeight: 500
-              }}>
-                📜 Scrolla ner för att läsa hela villkoren och godkänna
-              </div>
-            )}
-
             {/* Scrollable content */}
             <div
-              onScroll={handleTermsScroll}
               style={{
                 flex: 1,
                 overflowY: 'auto',
@@ -241,55 +251,33 @@ export function StripeStart() {
               <div style={{ marginTop: '20px', padding: '14px 16px', background: '#f0fdf4', borderRadius: '10px', border: '1px solid #d1fae5' }}>
                 <p style={{ margin: 0, color: '#059669', fontSize: '13px' }}>
                   Fullständiga villkor: {' '}
-                  <a href="/legal/terms" target="_blank" style={{ color: '#10b981', fontWeight: 600 }}>Användarvillkor</a>
-                  {' '}&{' '}
-                  <a href="/legal/privacy" target="_blank" style={{ color: '#10b981', fontWeight: 600 }}>Integritetspolicy</a>
+                  <a href={LEGAL_DOCUMENT_PATHS.terms} target="_blank" rel="noopener noreferrer" style={{ color: '#10b981', fontWeight: 600 }}>Användarvillkor</a>
+                  {', '}
+                  <a href={LEGAL_DOCUMENT_PATHS.privacy} target="_blank" rel="noopener noreferrer" style={{ color: '#10b981', fontWeight: 600 }}>Integritetspolicy</a>
+                  {' '}och{' '}
+                  <a href={LEGAL_DOCUMENT_PATHS.dpa} target="_blank" rel="noopener noreferrer" style={{ color: '#10b981', fontWeight: 600 }}>Personuppgiftsbiträdesavtal</a>
                 </p>
               </div>
             </div>
 
-            {/* Modal footer */}
+            {/* Modal footer: stänger bara. Godkännandet sker med kryssrutorna på sidan. */}
             <div style={{
               padding: '16px 24px',
               borderTop: '1px solid #f3f4f6',
               display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
               justifyContent: 'flex-end',
               background: '#fafafa'
             }}>
-              {!hasScrolledToBottom && (
-                <span style={{ color: '#9ca3af', fontSize: '13px', marginRight: 'auto' }}>
-                  Scrolla ner för att aktivera godkännande
-                </span>
-              )}
               <button
+                type="button"
                 onClick={() => setShowTermsModal(false)}
                 style={{
-                  padding: '10px 20px', borderRadius: '10px',
-                  border: '1px solid #e5e7eb', background: '#fff',
-                  color: '#6b7280', cursor: 'pointer', fontSize: '14px'
-                }}
-              >
-                Avbryt
-              </button>
-              <button
-                onClick={() => {
-                  setTermsAccepted(true);
-                  setShowTermsModal(false);
-                }}
-                disabled={!hasScrolledToBottom}
-                style={{
                   padding: '10px 24px', borderRadius: '10px',
-                  background: hasScrolledToBottom ? '#10b981' : '#e5e7eb',
-                  color: hasScrolledToBottom ? '#fff' : '#9ca3af',
-                  border: 'none',
-                  cursor: hasScrolledToBottom ? 'pointer' : 'not-allowed',
-                  fontSize: '14px', fontWeight: 600,
-                  transition: 'all 0.2s'
+                  border: '1px solid #e5e7eb', background: '#fff',
+                  color: '#374151', cursor: 'pointer', fontSize: '14px', fontWeight: 600
                 }}
               >
-                {hasScrolledToBottom ? '✓ Jag godkänner villkoren' : 'Läs villkoren först...'}
+                Stäng
               </button>
             </div>
           </div>
@@ -318,57 +306,55 @@ export function StripeStart() {
             </div>
           )}
 
-          {/* Terms card */}
-          <div style={{
+          {/* Villkor: tre obockade kryssrutor, alla krävs */}
+          <fieldset style={{
             border: termsAccepted ? '2px solid #10b981' : '2px solid #e5e7eb',
             borderRadius: '20px',
-            padding: '24px',
-            marginBottom: '24px',
+            padding: '20px 24px',
+            margin: '0 0 24px',
             background: termsAccepted ? '#f0fdf4' : '#fff',
-            transition: 'all 0.3s',
-            cursor: termsAccepted ? 'default' : 'pointer'
-          }}
-            onClick={() => !termsAccepted && setShowTermsModal(true)}
-          >
-            {termsAccepted ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%',
-                  background: '#10b981', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', flexShrink: 0
-                }}>
-                  <span style={{ color: '#fff', fontSize: '20px' }}>✓</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, color: '#065f46', fontWeight: 600, fontSize: '15px' }}>Villkor godkända</p>
-                  <p style={{ margin: '2px 0 0', color: '#059669', fontSize: '13px' }}>Du har läst och godkänt användarvillkoren och integritetspolicyn.</p>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setTermsAccepted(false); setHasScrolledToBottom(false); }}
-                  style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
-                >
-                  Ångra
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%',
-                  background: '#f3f4f6', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', flexShrink: 0
-                }}>
-                  <span style={{ fontSize: '20px' }}>📋</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, color: '#111827', fontWeight: 600, fontSize: '15px' }}>Läs & godkänn villkor</p>
-                  <p style={{ margin: '2px 0 0', color: '#6b7280', fontSize: '13px' }}>
-                    Klicka för att läsa användarvillkor och integritetspolicy
-                  </p>
-                </div>
-                <span style={{ color: '#10b981', fontSize: '20px' }}>›</span>
-              </div>
+            transition: 'all 0.3s'
+          }}>
+            <legend style={{ padding: '0 6px', color: '#111827', fontWeight: 600, fontSize: '15px' }}>
+              Villkor (version {LEGAL_TERMS_VERSION})
+            </legend>
+            <button
+              type="button"
+              onClick={() => setShowTermsModal(true)}
+              style={{ background: 'none', border: 'none', padding: 0, margin: '0 0 14px', color: '#059669', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
+            >
+              Läs en sammanfattning av villkoren
+            </button>
+            {([
+              { doc: 'terms', before: 'Jag har läst och godkänner ', link: 'användarvillkoren', after: '.' },
+              { doc: 'privacy', before: 'Jag har tagit del av ', link: 'integritetspolicyn', after: '.' },
+              { doc: 'dpa', before: 'Jag godkänner ', link: 'personuppgiftsbiträdesavtalet (DPA)', after: ' för de personuppgifter som behandlas i tjänsten.' },
+            ] as { doc: LegalDocument; before: string; link: string; after: string }[]).map(({ doc, before, link, after }) => (
+              <label
+                key={doc}
+                htmlFor={`legal-${doc}`}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px', cursor: 'pointer', color: '#374151', fontSize: '14px', lineHeight: 1.5 }}
+              >
+                <input
+                  id={`legal-${doc}`}
+                  type="checkbox"
+                  checked={acceptedDocuments[doc]}
+                  onChange={(e) => toggleDocument(doc, e.target.checked)}
+                  style={{ marginTop: '3px', width: '18px', height: '18px', flexShrink: 0, accentColor: '#10b981' }}
+                />
+                <span>
+                  {before}
+                  <a href={LEGAL_DOCUMENT_PATHS[doc]} target="_blank" rel="noopener noreferrer" style={{ color: '#059669', fontWeight: 600 }}>{link}</a>
+                  {after}
+                </span>
+              </label>
+            ))}
+            {restoredAcceptedAt && (
+              <p style={{ margin: '4px 0 0', color: '#059669', fontSize: '12px' }}>
+                Du godkände version {LEGAL_TERMS_VERSION} den {new Date(restoredAcceptedAt).toLocaleString('sv-SE')}.
+              </p>
             )}
-          </div>
+          </fieldset>
 
           {/* CTA button */}
           <button
