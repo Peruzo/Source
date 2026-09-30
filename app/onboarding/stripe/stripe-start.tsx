@@ -232,7 +232,7 @@ export function StripeStart() {
                 { num: '§12', title: 'Underbiträden', text: 'Stripe, Auth0, Fortnox, Google, Meta, TikTok, LinkedIn, SendGrid används. Ändringar meddelas minst 14 dagar i förväg.' },
                 { num: '§13', title: 'Dataöverföring', text: 'Sker via SCC eller EU-US DPF. Information om skyddsåtgärder tillhandahålls på begäran.' },
                 { num: '§14', title: 'Hosting och DNS', text: 'Ingen garanti för tillgänglighet. Bolaget ansvarar inte för innehåll publicerat av Kunden.' },
-                { num: '§15', title: 'DSA och innehåll', text: 'Kontakt: support@sourcesolutions.se. Anmälan hanteras inom 24–72h.' },
+                { num: '§15', title: 'DSA och innehåll', text: 'Kontakt: legal@sourcesolutions.se. Anmälan hanteras inom 24–72h.' },
                 { num: '§16', title: 'Säkerhet', text: 'Skydd enligt ISO/IEC 27001 och SOC 2 Type II eller motsvarande.' },
                 { num: '§17', title: 'Incidenter', text: 'Meddelas inom 48 timmar från det att Bolaget fått kännedom.' },
                 { num: '§18', title: 'Ansvarsbegränsning', text: 'Bolaget ansvarar inte för indirekta skador. Ansvar begränsas till avgifter senaste 6 månader eller 10 000 SEK.' },

@@ -320,10 +320,10 @@ export default function CookiesPage() {
               <p className="text-slate-300">
                 Vid frågor om vår cookiepolicy, kontakta oss på{' '}
                 <a
-                  href="mailto:support@sourcesolutions.se"
+                  href="mailto:legal@sourcesolutions.se"
                   className="text-green-400 hover:text-green-300 underline transition-colors"
                 >
-                  support@sourcesolutions.se
+                  legal@sourcesolutions.se
                 </a>
               </p>
             </section>
