@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback, useSyncExternalStore } from 'react';
 import {
   motion,
   useScroll,
@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import Image from 'next/image';
 import RockHotspots from './RockHotspots';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
@@ -26,7 +27,36 @@ import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove a
  */
 
 const VIDEO_SRC = '/rock-grow.mp4';
+// Videons sista ruta (1280×720), samma bild som desktop visar när scenen är klar.
+const FINAL_FRAME_SRC = '/rock-grow-slut.webp';
 const ROCK_DONE = 0.9; // sten helt grön vid 90% scroll; sista 10% = budskap
+
+// Under md (Tailwinds 768px) är scenen statisk: ingen sticky-scroll, ingen scrollstyrd rörelse.
+// Mobilwebbläsare ritar inte pålitligt en video som bara spolas med currentTime (iOS Safari
+// visar ingen ruta innan videon har spelats, och videon förladdas ofta inte alls), så stenen
+// visas i stället som en stillbild av slutläget.
+const MOBILE_QUERY = '(max-width: 767px)';
+
+function subscribeMobile(onChange: () => void) {
+  const mql = window.matchMedia(MOBILE_QUERY);
+  mql.addEventListener('change', onChange);
+  return () => mql.removeEventListener('change', onChange);
+}
+
+/** false på servern och vid hydreringen, därefter den riktiga matchningen (samma mönster som usePrefersReducedMotion). */
+function useIsMobile() {
+  return useSyncExternalStore(subscribeMobile, () => window.matchMedia(MOBILE_QUERY).matches, () => false);
+}
+
+// Samma utseende för videon och stillbilden: full bredd, mjukt maskade kanter.
+const ROCK_MEDIA_STYLE = {
+  width: '100%',
+  height: 'auto',
+  display: 'block',
+  pointerEvents: 'none',
+  WebkitMaskImage: 'radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)',
+  maskImage: 'radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)',
+} as const;
 const ROCK_CENTER_OFFSET = { x: 0, y: 0 }; // fraktion av container; tuna in mot stenens mitt
 
 type ChipDef = { label: string; fx: number; fy: number; start: number; end: number };
@@ -61,6 +91,9 @@ export default function PlatformRock() {
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const reduce = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
+  // Statisk scen på mobil och vid reducerad rörelse: slutläget direkt, ingen scrollstyrning.
+  const isStatic = reduce || isMobile;
   const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
 
   const { scrollYProgress } = useScroll({
@@ -87,7 +120,7 @@ export default function PlatformRock() {
     if (doneRef.current || !(p > maxSeen.current)) return;
     maxSeen.current = p;
     progress.set(p);
-    if (p >= 1 && !reduce) {
+    if (p >= 1 && !isStatic) {
       doneRef.current = true;
       heightBeforeUnpin.current = sectionRef.current?.offsetHeight ?? 0;
       // Chrome and Firefox would otherwise anchor-adjust the scroll position themselves when the
@@ -96,6 +129,17 @@ export default function PlatformRock() {
       setDone(true);
     }
   });
+
+  // Statisk scen: hoppa direkt till slutläget (budskap, hotspots) och lås det, utan att scrollen
+  // styr något. Samma låsta läge som när desktop-scenen spelats klart, så en storleksändring
+  // till desktop efteråt visar den färdiga scenen i stället för att starta om den.
+  useEffect(() => {
+    if (!isStatic || doneRef.current) return;
+    maxSeen.current = 1;
+    doneRef.current = true;
+    progress.set(1);
+    setDone(true);
+  }, [isStatic, progress]);
 
   // Runs after the DOM has the new 100vh height but before paint: move the scroll position by
   // exactly the amount the visible content would otherwise jump, so nothing on screen moves.
@@ -137,12 +181,12 @@ export default function PlatformRock() {
     if (!v) return;
     const onMeta = () => {
       durationRef.current = v.duration || 0;
-      try { v.currentTime = reduce ? (v.duration || 0) : 0; } catch {}
+      try { v.currentTime = isStatic ? (v.duration || 0) : 0; } catch {}
     };
     if (v.readyState >= 1 && v.duration) onMeta();
     else v.addEventListener('loadedmetadata', onMeta);
     return () => v.removeEventListener('loadedmetadata', onMeta);
-  }, [reduce]);
+  }, [isStatic]);
 
   // Scrubba videon mot scrollen (max en seek per frame)
   const seek = useCallback(() => {
@@ -155,7 +199,7 @@ export default function PlatformRock() {
   }, []);
 
   useMotionValueEvent(progress, 'change', (p) => {
-    if (reduce) return;
+    if (isStatic) return;
     const dur = durationRef.current;
     if (!dur) return;
     const rockP = Math.min(Math.max(p / ROCK_DONE, 0), 1);
@@ -176,13 +220,13 @@ export default function PlatformRock() {
   return (
     <section
       ref={sectionRef}
-      style={{ position: 'relative', height: reduce || done ? '100vh' : '240vh' }}
+      style={{ position: 'relative', height: isStatic || done ? '100vh' : '240vh' }}
       aria-label="Hela din verksamhet, samlad"
     >
       <div
         ref={stickyRef}
         style={{
-          position: done ? 'relative' : 'sticky',
+          position: done || isStatic ? 'relative' : 'sticky',
           top: 0,
           height: '100vh',
           overflow: 'hidden',
@@ -194,28 +238,30 @@ export default function PlatformRock() {
             'radial-gradient(circle farthest-corner at 50% 34%, #ecedeb 0%, #d2d3cf 38%, #adada8 70%, #9a9a92 100%)',
         }}
       >
-        {/* Stenen (video) med subtil float */}
+        {/* Stenen (video) med subtil float; statisk scen: slutrutan som stillbild, utan float */}
         <div
-          className={reduce ? undefined : 'rock-float'}
+          className={isStatic ? undefined : 'rock-float'}
           style={{ position: 'relative', width: 'min(92vw, 1040px)' }}
         >
-          <video
-            ref={videoRef}
-            src={VIDEO_SRC}
-            muted
-            playsInline
-            preload="auto"
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              pointerEvents: 'none',
-              WebkitMaskImage:
-                'radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)',
-              maskImage:
-                'radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%)',
-            }}
-          />
+          {isStatic ? (
+            <Image
+              src={FINAL_FRAME_SRC}
+              alt=""
+              width={1280}
+              height={720}
+              sizes="(max-width: 767px) 92vw, 1040px"
+              style={ROCK_MEDIA_STYLE}
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              src={VIDEO_SRC}
+              muted
+              playsInline
+              preload="auto"
+              style={ROCK_MEDIA_STYLE}
+            />
+          )}
         </div>
 
         {/* Skuggorna i början (vinjett) som ljusnar */}
@@ -224,7 +270,7 @@ export default function PlatformRock() {
           style={{
             position: 'absolute',
             inset: 0,
-            opacity: reduce ? 0 : shadowOpacity,
+            opacity: isStatic ? 0 : shadowOpacity,
             background:
               'radial-gradient(72% 64% at 50% 46%, rgba(6,10,12,0) 32%, rgba(6,10,12,0.34) 64%, rgba(4,7,9,0.74) 100%)',
             pointerEvents: 'none',
@@ -237,7 +283,7 @@ export default function PlatformRock() {
           style={{
             position: 'absolute',
             inset: 0,
-            opacity: reduce ? 0.3 : glowOpacity,
+            opacity: isStatic ? 0.3 : glowOpacity,
             background:
               'radial-gradient(58% 54% at 50% 42%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 72%)',
             pointerEvents: 'none',
@@ -245,7 +291,7 @@ export default function PlatformRock() {
         />
 
         {/* Funktionerna som slår in mot stenen */}
-        {!reduce && size.w > 0 &&
+        {!isStatic && size.w > 0 &&
           CHIPS.map((c) => <Chip key={c.label} def={c} size={size} progress={progress} />)}
 
         {/* Budskapet på slutet */}
@@ -257,8 +303,8 @@ export default function PlatformRock() {
             bottom: '11%',
             textAlign: 'center',
             padding: '0 24px',
-            opacity: reduce ? 1 : msgOpacity,
-            y: reduce ? 0 : msgY,
+            opacity: isStatic ? 1 : msgOpacity,
+            y: isStatic ? 0 : msgY,
             zIndex: 6,
           }}
         >
