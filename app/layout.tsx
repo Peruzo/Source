@@ -22,7 +22,7 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://source.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://sourcesolutions.se'),
   title: {
     default: 'Source - Allt du behöver på ett ställe',
     template: '%s | Source',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'sv_SE',
-    url: 'https://source.com',
+    url: 'https://sourcesolutions.se',
     siteName: 'Source',
     title: 'Source - Allt du behöver på ett ställe',
     description: 'AI-driven design, e-handel och analys för företagstillväxt.',

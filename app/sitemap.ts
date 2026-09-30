@@ -4,7 +4,7 @@ export const dynamic = 'force-static';
 export const revalidate = 0;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://source.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sourcesolutions.se';
 
   const routes = ['', '/tjanster', '/portfolio', '/om-oss', '/priser', '/kontakt', '/hjalp'];
   
