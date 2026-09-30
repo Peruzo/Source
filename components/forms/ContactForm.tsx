@@ -65,8 +65,8 @@ export function ContactForm() {
         </p>
         <p className="text-sm text-green-600">
           Om du har akuta frågor, ring oss på{' '}
-          <a href="tel:+46733221212" className="font-semibold underline">
-            +46 73 322 12 12
+          <a href="tel:+46106413114" className="font-semibold underline">
+            010-641 31 14
           </a>
         </p>
         <button
@@ -219,8 +219,8 @@ export function ContactForm() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700">
             Ett fel uppstod. Försök igen eller kontakta oss på{' '}
-            <a href="mailto:help@source.com" className="font-semibold underline">
-              help@source.com
+            <a href="mailto:support@sourcesolutions.se" className="font-semibold underline">
+              support@sourcesolutions.se
             </a>
           </p>
         </div>

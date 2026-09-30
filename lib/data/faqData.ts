@@ -692,7 +692,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'har-ni-chatt-telefon-mejl',
         question: 'Har ni chatt, telefon eller mejl?',
-        answer: 'Du når oss via livechatt i kundportalen varje dag 08–20 och via ärenden därifrån. Telefonsupport har vi inte.',
+        answer: 'Du når oss via livechatt i kundportalen varje dag 08–20, på växelnumret 010-641 31 14 och på support@sourcesolutions.se.',
         category: 'support-hjalp',
         subcategory: 'Kontakt & hjälp',
       },

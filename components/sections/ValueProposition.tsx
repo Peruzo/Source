@@ -16,6 +16,18 @@ const LINE_STAGGER = 0.1;
 const CLOSING_DELAY = (SYSTEM_LINES.length - 1) * LINE_STAGGER + 0.35;
 
 /**
+ * Övergången till stenen (PlatformRock). Sektionen slutar i surface-stone-deep (#d2d3cf),
+ * medan stenens scen börjar i en radiell vinjett som är mörkast i hörnen, så ingen enskild
+ * färg matchar hela dess överkant. I stället hänger ett lager ut under sektionen, över
+ * stenens översta 20vh: det börjar i exakt #d2d3cf (samma färg som sektionens sista rad)
+ * och tonar ut till genomskinligt längs en utjämnad kurva, så att varken en kant eller ett
+ * band syns. Lagret följer sektionen och har scrollat bort innan stenens första chips når
+ * dit; det ligger under sidhuvudet och tar inga klick.
+ */
+const ROCK_FADE =
+  'linear-gradient(to bottom, rgba(210,211,207,1) 0%, rgba(210,211,207,0.738) 19%, rgba(210,211,207,0.541) 34%, rgba(210,211,207,0.382) 47%, rgba(210,211,207,0.278) 56.5%, rgba(210,211,207,0.194) 65%, rgba(210,211,207,0.126) 73%, rgba(210,211,207,0.075) 80.2%, rgba(210,211,207,0.042) 86.1%, rgba(210,211,207,0.021) 91%, rgba(210,211,207,0.008) 95.2%, rgba(210,211,207,0.002) 98.2%, rgba(210,211,207,0) 100%)';
+
+/**
  * One line of the headline. Fades up in place when the section scrolls into view,
  * or renders straight away when the visitor prefers reduced motion.
  *
@@ -77,6 +89,15 @@ export function ValueProposition() {
           </Line>
         </h2>
       </div>
+
+      {/* Mjuk övergång in i stenens scen, se ROCK_FADE. Lagret börjar 2px ovanför sektionens
+          kant (samma färg där), så att en kant som hamnar på en halv enhetspixel vid 125 %
+          skalning inte släpper igenom stenens mörka bakgrund på en rad. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[calc(100%-2px)] z-20 h-[calc(20vh+2px)]"
+        style={{ background: ROCK_FADE }}
+      />
     </section>
   );
 }
