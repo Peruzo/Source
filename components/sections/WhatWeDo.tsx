@@ -4,7 +4,6 @@ import { FadeIn } from '@/components/animations/FadeIn';
 import { ScrollTimeline } from '@/components/ui/ScrollTimeline';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
 type Service = {
@@ -257,24 +256,6 @@ export function WhatWeDo() {
         })}
         </div>
       </ScrollTimeline>
-
-      {/* Bottom CTA - Outside timeline */}
-      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-20 mt-20 lg:mt-32">
-        <FadeIn className="text-center">
-          <Link
-            href="/tjanster"
-            className="inline-flex items-center gap-2 text-teal hover:text-teal-hover font-semibold text-lg group transition-colors duration-200"
-          >
-            Se alla tjänster i detalj
-            <motion.span
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              →
-            </motion.span>
-          </Link>
-        </FadeIn>
-      </div>
     </section>
   );
 }
