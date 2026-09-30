@@ -99,7 +99,7 @@ export function Footer({ serverYear }: FooterProps) {
                 <li>
                   <motion.a
                     whileHover={{ x: 5 }}
-                    href="https://portal.source.com"
+                    href="https://sourceportal.se/dashboard"
                     className="text-teal hover:text-white transition-colors text-sm inline-flex items-center gap-2 group"
                     target="_blank"
                     rel="noopener noreferrer"
