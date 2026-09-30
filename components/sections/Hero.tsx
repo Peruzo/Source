@@ -123,6 +123,15 @@ export function Hero() {
   const imageY = useTransform(scrollYProgress, [0, 0.5], ['0%', '42%']);
   const imageRadius = useTransform(scrollYProgress, [0, 0.25, 0.5], [0, 24, 40]);
   const framePadding = useTransform(scrollYProgress, [0, 0.5], [0, 96]); // px top-padding
+  // Bottenluften under bilden växer på samma sätt från 0 till --hero-pb (2.5rem, md: 4rem).
+  // Den var tidigare fast, så att bilden i toppläget slutade ~50px ovanför herons nederkant och
+  // lämnade en remsa av den mörka bakgrunden (gradient-mesh + brus) synlig – mest märkbart på
+  // låga fönster, t.ex. Windows med 125 % skalning. Vid 0 täcker bilden nu hela ytan; från
+  // halva scrollen är luften densamma som förut.
+  const framePaddingBottom = useTransform(
+    scrollYProgress,
+    (p) => `calc(var(--hero-pb) * ${Math.min(Math.max(p / 0.5, 0), 1)})`
+  );
   const imageOpacity = useTransform(scrollYProgress, [0.3, 0.55], [1, 0]); // fade out mot slutet av hero-rörelsen
 
   // BACKGROUND TRANSFORM
@@ -194,14 +203,15 @@ export function Hero() {
       <motion.div
         style={
           heroOff
-            ? { paddingTop: 0 } // TEMP: flicker bisect, remove after diagnosis
+            ? { paddingTop: 0, paddingBottom: 'var(--hero-pb)' } // TEMP: flicker bisect, remove after diagnosis
             : {
                 paddingTop: framePadding,
+                paddingBottom: framePaddingBottom,
                 willChange: 'transform',
                 transform: 'translateZ(0)',
               }
         }
-        className="relative z-[2] w-full h-screen flex items-end justify-center pb-10 md:pb-16"
+        className="relative z-[2] w-full h-screen flex items-end justify-center [--hero-pb:2.5rem] md:[--hero-pb:4rem]"
       >
         {/* Picture that transitions from full-page to small box */}
         <motion.div
