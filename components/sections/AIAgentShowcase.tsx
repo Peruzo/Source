@@ -72,7 +72,7 @@ export function AIAgentShowcase() {
                 <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/90 backdrop-blur-sm text-xs md:text-sm font-medium text-gray-900 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    AI-agenten i Source, i praktiken.
+                    Source AI i praktiken.
                   </div>
                 </div>
               )}

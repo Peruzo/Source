@@ -28,6 +28,7 @@ const menuContent: Record<string, MenuContent> = {
       'Betalning & Hosting',
       'Bokföring',
       'Bokningssystem',
+      'AI-assistent',
     ],
     featureLinks: [
       { label: 'Inventarier', href: '/tjanster/inventarier' },
@@ -38,6 +39,7 @@ const menuContent: Record<string, MenuContent> = {
       { label: 'Betalning & Hosting', href: '/tjanster/betalningar-hosting' },
       { label: 'Bokföring', href: '/bokforing' },
       { label: 'Bokningssystem', href: '/bokningssystem' },
+      { label: 'AI-assistent', href: '/ai-assistent' },
     ],
     href: '/tjanster',
   },
