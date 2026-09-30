@@ -276,15 +276,18 @@ export type InvoiceProviderContent = {
   submit: string;
 };
 
-export function InvoiceProviderCard({ content }: { content: InvoiceProviderContent }) {
+/** `compact` leaves out the customer and the note – for the card over the photo in I4, which must stay low enough to clear the faces. */
+export function InvoiceProviderCard({ content, compact = false }: { content: InvoiceProviderContent; compact?: boolean }) {
   const titleId = useId();
   const c = content;
   return (
     <Card titleId={titleId} title={c.title}>
-      <Box label={c.customer.label} className="mt-3">
-        {c.customer.value}
-      </Box>
-      <div className="mt-2">
+      {compact ? null : (
+        <Box label={c.customer.label} className="mt-3">
+          {c.customer.value}
+        </Box>
+      )}
+      <div className={compact ? 'mt-3' : 'mt-2'}>
         <p className="text-ui-label text-gray-600">{c.providerLabel}</p>
         <ul className={`mt-1 grid gap-1 bg-gray-100 p-1 ${RADIUS.field}`} style={{ gridTemplateColumns: `repeat(${c.providers.length}, minmax(0, 1fr))` }}>
           {c.providers.map((provider) => {
@@ -302,7 +305,7 @@ export function InvoiceProviderCard({ content }: { content: InvoiceProviderConte
           })}
         </ul>
       </div>
-      <p className="text-ui-label mt-2 text-gray-700">{c.note}</p>
+      {compact ? null : <p className="text-ui-label mt-2 text-gray-700">{c.note}</p>}
       <span className={`text-ui-body mt-3 flex w-full items-center justify-center bg-teal-dark px-4 py-2 text-white ${RADIUS.control}`}>{c.submit}</span>
     </Card>
   );

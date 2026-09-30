@@ -24,7 +24,7 @@ import {
   LinkSlashIcon,
   TableCellsIcon,
 } from '@heroicons/react/24/outline';
-import type { FeatureItem, ServiceCta } from '@/components/sections/tjanster/types';
+import type { FeatureItem, ServiceCta, ServiceImage } from '@/components/sections/tjanster/types';
 import type {
   FortnoxConnectDemoContent,
   IntegrationListContent,
@@ -51,6 +51,45 @@ export const FLAGGOR = {
 };
 
 const S = FLAGGOR.spiris;
+
+// Photos (scripts/tjanster-bilder/integrationer.mjs). Both sit beside the text, never under it.
+const IMG = '/tjanster/integrationer/integrationer';
+
+export const integrationerImages = {
+  // I4 – two colleagues going through papers at a table.
+  faktura: {
+    base: `${IMG}-faktura`,
+    alt: 'Två kollegor lutar sig över ett bord och går igenom papper tillsammans.',
+    widths: [640, 1024, 1536, 2048],
+    portraitWidths: [480, 720, 920],
+    // Between the two faces, on the paper they hold, so both people stay in the tall column.
+    focus: '52% 50%',
+    portraitFocus: '50% 50%',
+  },
+  // I8 – a potter fixing a handle to a cup; a fixed crop, used at every width.
+  avslut: {
+    base: `${IMG}-avslut`,
+    alt: 'En keramiker fäster ett öra på en kopp vid arbetsbordet, med hyllor fulla av koppar bakom sig.',
+    widths: [640, 1024, 1536],
+    // The face and the hands at the cup (x 25–45 %), with the cup at the bottom kept in view.
+    focus: '28% 100%',
+  },
+} satisfies Record<string, ServiceImage>;
+
+/*
+ * The widgets on the photos, from xl (ImageAnchoredCard, anchored to the photo). Below xl
+ * they stack under the photo. Coordinates are percent of the photo file.
+ *   faktura – top-left corner at x 921, y 23 of P4 (2048×1152): right of the man's face
+ *             (it ends at x ≈ 900) and over the top row of box labels (x 905–1275,
+ *             y 25–65). The card is compact so it ends above the woman's face (y 350).
+ *   avslut  – top-left corner at x 559, y 29 of the P2 crop (1748×960): the shelves right
+ *             of the potter's head (it ends at x ≈ 512). The list grows downwards over his
+ *             shoulder, never to his hands (y ≥ 785), also with Spiris switched on.
+ */
+export const integrationerKort = {
+  faktura: { anchor: { x: 45, y: 2 }, origin: 'top-left' as const },
+  avslut: { anchor: { x: 32, y: 3 }, aspect: 1748 / 960, origin: 'top-left' as const },
+};
 
 /*
  * I1 – inledning. Belägg: vitlistan och "Kommer snart" (integrations.js 6, 10), kortens

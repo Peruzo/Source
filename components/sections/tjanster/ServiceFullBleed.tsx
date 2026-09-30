@@ -272,30 +272,44 @@ const fraction = (value: string | undefined, axis: 0 | 1) => {
  * uses its container query units. Portrait below md (4:5 crop, portraitFocus),
  * landscape from md (16:9, focus). Fixed card width: the card sits on a motif
  * (a phone, a notebook) and must not outgrow it.
+ *
+ * Exported for photos outside ServiceFullBleed (e.g. the photo column of
+ * ClippedImageSection on /integrationer). Two optional extras, both off by
+ * default so ServiceFullBleed renders exactly as before:
+ *   aspect  – the landscape files' width ÷ height when they are not 16:9 (a
+ *             fixed crop from the image script).
+ *   origin  – 'top-left' puts the card's top-left corner on the anchor instead
+ *             of its centre, so a card of any height starts at the same spot.
+ * Outside ServiceFullBleed there is no parallax: pass parallax undefined and
+ * reduce true.
  */
-function ImageAnchoredCard({
+export function ImageAnchoredCard({
   card,
   image,
   parallax,
   reduce,
   reveal,
+  aspect,
+  origin = 'center',
 }: {
   card: ServiceFullBleedCard;
   image: ServiceImage;
   parallax: CSSProperties | undefined;
   reduce: boolean;
   reveal: Record<string, unknown>;
+  aspect?: number;
+  origin?: 'center' | 'top-left';
 }) {
   const hasPortrait = Boolean(image.portraitWidths?.length);
   const portraitAnchor = card.anchorPortrait ?? card.anchor;
   const portraitFocus = hasPortrait ? image.portraitFocus ?? image.focus : image.focus;
   const vars = {
-    '--ar-p': String(hasPortrait ? 0.8 : 16 / 9),
+    '--ar-p': String(hasPortrait ? 0.8 : aspect ?? 16 / 9),
     '--fx-p': String(fraction(portraitFocus, 0)),
     '--fy-p': String(fraction(portraitFocus, 1)),
     '--px-p': `${portraitAnchor.x}%`,
     '--py-p': `${portraitAnchor.y}%`,
-    '--ar-l': String(16 / 9),
+    '--ar-l': String(aspect ?? 16 / 9),
     '--fx-l': String(fraction(image.focus, 0)),
     '--fy-l': String(fraction(image.focus, 1)),
     '--px-l': `${card.anchor.x}%`,
@@ -314,7 +328,9 @@ function ImageAnchoredCard({
           role="group"
           aria-label={card.label}
           {...reveal}
-          className="pointer-events-auto absolute left-[var(--px)] top-[var(--py)] w-[min(20rem,calc(100cqw-3rem))] -translate-x-1/2 -translate-y-1/2"
+          className={`pointer-events-auto absolute left-[var(--px)] top-[var(--py)] w-[min(20rem,calc(100cqw-3rem))] ${
+            origin === 'top-left' ? '' : '-translate-x-1/2 -translate-y-1/2'
+          }`}
         >
           {card.content}
         </motion.div>
