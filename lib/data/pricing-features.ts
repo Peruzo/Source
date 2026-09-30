@@ -65,6 +65,10 @@ export const pricingFeatureCategories: PricingFeatureCategory[] = [
       { name: 'Produktomdömen', from: 'growth' },
       // config/packageTiers.js:69 och 152, server.js:3558
       { name: 'Nyheter', from: 'growth' },
+      // Kundportalen 59816137: config/packageTiers.js:85 och 155, server.js:3279,
+      // routes/leadsRoutes.js:76 (growth och enterprise), pitchanalys routes/leadsRoutes.js:1200.
+      // Se ~/cc-rapporter/leads-recon.md.
+      { name: 'Leads', detail: 'förslag på nya kunder med betyg och pitchanalys', from: 'growth' },
       // config/packageTiers.js:135 och 172, server.js:3185
       { name: 'Support-inkorg', detail: 'dina kunders mejl samlade som ärenden', from: 'enterprise' },
     ],

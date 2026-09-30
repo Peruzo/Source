@@ -46,6 +46,26 @@ export type OfferViewContent = {
   secondaryAction: string;
 };
 
+/** The follow-up step a lead is in, drawn as a status pill. */
+export type LeadStage = 'new' | 'contacted' | 'won';
+
+export type LeadListContent = {
+  label: string;
+  title: string;
+  ratingLabel: string;
+  leads: {
+    id: string;
+    company: string;
+    place: string;
+    /** Letter grade as in the portal: A, B, C, D or F. */
+    rating: string;
+    motivation: string;
+    stage: LeadStage;
+    status: string;
+  }[];
+  action: string;
+};
+
 export type BrandedCheckoutContent = {
   label: string;
   logoSlot: string;
@@ -179,6 +199,64 @@ export const vaxaOfferter = {
     primaryAction: 'Gör om till faktura',
     secondaryAction: 'Betalningslänk',
   } satisfies OfferViewContent,
+};
+
+/*
+ * 2b – Leads, direkt efter offerterna. Belägg i kundportalen (northlab-io/source.database origin/develop 59816137,
+ * ~/cc-rapporter/leads-recon.md): sidan och API:erna kräver paketet (config/packageTiers.js:85,
+ * server.js:3279), kunden väljer branscher och orter (public/leads-layout2.html:522-559,
+ * routes/leadsRoutes.js:326-478), förslagen hämtas från flera källor
+ * (services/aiLeadGeneration.js:955-1088) och får betyg och motivering (models/Lead.js:29-34,
+ * services/aiLeadGeneration.js:576-586), pitchanalys per lead (routes/leadsRoutes.js:1200,
+ * services/leads/pitchAnalysisService.js), status från nytt lead till vunnen eller ingen affär
+ * (routes/leadsRoutes.js:1042-1107, 1113-1158, public/leads-layout2.html:1398-1412), import och
+ * export (routes/leadsRoutes.js:598-726). Statusorden och knappen är portalens egna.
+ * Nämn inte källornas namn, schemaläggning, ifyllda kontaktuppgifter, tider, antal eller storlek.
+ * Exempelföretagen är påhittade och branschneutrala.
+ */
+export const vaxaLeads = {
+  id: 'leads',
+  eyebrow: 'LEADS',
+  title: 'Hitta nya kunder',
+  body: [
+    'Välj vilka kunder du vill nå, efter bransch och ort, så letar Source fram företag som passar från flera källor – med ett betyg och en kort motivering för varje.',
+    'Be om en pitchanalys innan du hör av dig och följ varje lead från nytt till vunnen affär. Du kan också importera egna listor och exportera dina leads.',
+  ],
+  list: {
+    label: 'Exempel: tre leads med betyg, motivering och status',
+    title: 'Leads',
+    ratingLabel: 'Betyg',
+    leads: [
+      {
+        id: 'l1',
+        company: 'Exempel Nord AB',
+        place: 'Umeå',
+        rating: 'A',
+        motivation: 'Samma bransch och ort som i din profil.',
+        stage: 'new',
+        status: 'Nytt lead',
+      },
+      {
+        id: 'l2',
+        company: 'Exempel Väst AB',
+        place: 'Göteborg',
+        rating: 'B',
+        motivation: 'Matchar en av branscherna du har valt.',
+        stage: 'contacted',
+        status: 'Kontaktad',
+      },
+      {
+        id: 'l3',
+        company: 'Exempel Syd AB',
+        place: 'Malmö',
+        rating: 'A',
+        motivation: 'Ligger i en av orterna du har valt.',
+        stage: 'won',
+        status: 'Vunnen',
+      },
+    ],
+    action: 'Analysera & pitch',
+  } satisfies LeadListContent,
 };
 
 /*

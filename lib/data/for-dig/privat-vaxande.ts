@@ -124,6 +124,10 @@ export const privatVaxandeKassa = {
  * 3 – Kunderna kommer tillbaka. Belägg: e-post med utskick och egen avsändardomän
  * (config/packageTiers.js:97), kundomdömen med publicering på webbplatsen
  * (routes/productReviewRoutes.js:36), nyheter i butiken (config/packageTiers.js:69).
+ * Segmenten ur egna kunder: leadssidans B2C-läge visar vilande kunder, engångsköpare och
+ * toppkunder ur kundens egna ordrar, utan AI och utan extern källa (kundportalen origin/develop
+ * 59816137, routes/leadsRoutes.js:531-596, public/leads-layout2.html:576-580, spärrat till
+ * paketet i server.js:3279). Inga gränser i dagar eller procent i texten.
  * Köp- och återköpsbekräftelse och påminnelser nämns inte. Omdömet har inget citat.
  */
 export const privatVaxandeKunder = {
@@ -133,6 +137,7 @@ export const privatVaxandeKunder = {
   body: [
     'Skicka nyhetsbrev från din egen avsändaradress och berätta om det som är nytt direkt i butiken.',
     'Samla kundernas omdömen och visa dem på din webbplats.',
+    'Se vilka kunder som inte har handlat på ett tag, vilka som bara har handlat en gång och vilka som handlar mest, så vet du vem du ska höra av dig till.',
   ],
   review: {
     title: 'Nytt omdöme',
