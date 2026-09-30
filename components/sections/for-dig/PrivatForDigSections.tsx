@@ -170,9 +170,9 @@ export function PrivatForDigSections() {
               booking={false}
               service={{
                 ...productWidgetsDefaults.service,
-                name: 'Ändringssömnad',
-                details: 'Kortning av byxor',
-                price: 249,
+                name: 'Konsultation',
+                details: '60 minuter',
+                price: 895,
               }}
             />
           </div>
