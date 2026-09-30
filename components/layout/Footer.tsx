@@ -128,18 +128,18 @@ export function Footer({ serverYear }: FooterProps) {
               <ul className="space-y-3">
                 <li>
                   <a
-                    href="mailto:help@source.com"
+                    href="mailto:support@sourcesolutions.se"
                     className="text-gray-400 hover:text-teal transition-colors text-sm block"
                   >
-                    help@source.com
+                    support@sourcesolutions.se
                   </a>
                 </li>
                 <li>
                   <a
-                    href="tel:+46733221212"
+                    href="tel:+46106413114"
                     className="text-gray-400 hover:text-teal transition-colors text-sm block"
                   >
-                    +46 73 322 12 12
+                    010-641 31 14
                   </a>
                 </li>
               </ul>

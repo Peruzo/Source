@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Ett fel uppstod. Försök igen eller kontakta oss på help@source.com',
+        message: 'Ett fel uppstod. Försök igen eller kontakta oss på support@sourcesolutions.se',
       },
       { status: 500 }
     );

@@ -401,14 +401,14 @@ export default function TermsPage() {
               </h2>
               <p className="text-slate-300 mb-2">
                 Kontakt:{' '}
-                <a href="mailto:legal@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
-                  legal@sourcesolutions.se
+                <a href="mailto:support@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
+                  support@sourcesolutions.se
                 </a>
               </p>
               <p className="text-slate-300 mb-2">
                 Kontaktpunkt för EU-myndigheter:{' '}
-                <a href="mailto:legal@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
-                  legal@sourcesolutions.se
+                <a href="mailto:support@sourcesolutions.se" className="text-green-400 hover:text-green-300 underline">
+                  support@sourcesolutions.se
                 </a>
               </p>
               <p className="text-slate-300 mb-2">Anmälan ska innehålla: identifiering, beskrivning, kontakt.</p>
