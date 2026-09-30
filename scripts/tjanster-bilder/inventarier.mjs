@@ -1,6 +1,4 @@
 export const entries = [
-  // A1 – hero. Portrait centred on the person (x 1100–1734).
-  { slot: 'hero', file: 'A1.png', portrait: { left: 956 } },
   // B2 – sticky steps. Portrait around the box and the phone (x 650–1180).
   { slot: 'skanna', file: 'B2.png', portrait: { left: 540 } },
   // C2 – recommended purchases. Portrait keeps the woman with the tablet and

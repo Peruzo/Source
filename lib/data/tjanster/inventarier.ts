@@ -24,15 +24,6 @@ const LANDSCAPE = [640, 1024, 1536, 2048];
 const PORTRAIT = [480, 720, 920];
 
 export const inventarierImages = {
-  // A1 – person med telefon framför staplade kartonger; ljus vägg till vänster för texten.
-  hero: {
-    base: `${IMG}-hero`,
-    alt: 'En person står bland staplade kartonger och tittar på sin telefon.',
-    widths: LANDSCAPE,
-    portraitWidths: PORTRAIT,
-    focus: '62% 40%',
-    portraitFocus: '50% 35%',
-  },
   // B2 – över axeln, telefonen riktad mot en kartong med streckkod.
   skanna: {
     base: `${IMG}-skanna`,
@@ -59,24 +50,6 @@ export const inventarierImages = {
     focus: '8% 60%',
   },
 } satisfies Record<string, ServiceImage>;
-
-/*
- * Koll i vardagen – A1 som egen sektion direkt efter originalheron (som står
- * kvar oförändrad med sin H1). Egen H2, ingen upprepning av herons text.
- * Belägg: försäljning via betalflödet minskar saldot
- * (routes/stripePaymentWebhook.js), skanning och import ändrar saldot
- * (inventarier-layout2.html, routes/inventoryImportRoutes.js), live-uppdatering
- * via SSE (routes/inventoryRoutes.js /api/inventory/stream). Originalheron har
- * ingen CTA, så sektionens CTA dubblerar ingenting.
- */
-export const inventarierVardag = {
-  eyebrow: 'I vardagen',
-  title: 'Koll på lagret, mitt i allt annat',
-  body: [
-    'Saldot ändras när du säljer, skannar eller importerar, och ändringen syns direkt i inventarielistan för alla i teamet.',
-  ],
-  cta: { label: 'Boka en genomgång', href: '/kontakt' } satisfies ServiceCta,
-};
 
 /*
  * Sticky scroll. Belägg: skanning EAN-13/EAN-8/UPC-A med BarcodeDetector och

@@ -21,7 +21,6 @@ import {
   inventarierRestock,
   inventarierReturns,
   inventarierSteps,
-  inventarierVardag,
   inventarierWidgets as w,
 } from '@/lib/data/tjanster/inventarier';
 
@@ -136,17 +135,6 @@ export default function InventarierPage() {
       </section>
 
       <ServicePageLayout>
-        {/* 2 – Koll i vardagen: A1 som egen sektion efter originalheron */}
-        <ServiceFullBleed
-          eyebrow={inventarierVardag.eyebrow}
-          title={inventarierVardag.title}
-          body={inventarierVardag.body}
-          cta={inventarierVardag.cta}
-          image={inventarierImages.hero}
-          tone="dark"
-          textPosition="top-left"
-        />
-
         {/* 3 – Håll koll i realtid (unchanged) */}
         <section className="flex min-h-[100svh] items-center bg-[#eceef2] py-20 md:py-24 lg:py-28">
           <Container size="xl" className="max-w-[1520px]">

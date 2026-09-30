@@ -171,8 +171,7 @@ export const analysReports = {
 /*
  * Widgetdata. Neutral exempeldata som hänger ihop:
  * intäkter 48 600 kr mot 45 000 kr = +8 %, ordrar 312 mot 297 = +5 %,
- * snittorder 156 kr mot 151,5 kr = +3 %; kunder 250 aktiva = 160 nya + 90 återkommande;
- * besökare just nu 12 = 5 + 4 + 2 + 1.
+ * snittorder 156 kr mot 151,5 kr = +3 %; kunder 250 aktiva = 160 nya + 90 återkommande.
  */
 export const analysWidgets = {
   trend: {
@@ -212,17 +211,6 @@ export const analysWidgets = {
       { name: 'Anteckningsbok', value: '2 950 kr', move: 'new' },
     ],
   },
-  pages: {
-    title: 'Mest besökta sidor',
-    nowLabel: 'Just nu',
-    now: 12,
-    pages: [
-      { label: 'Startsida', path: '/', count: 5 },
-      { label: 'Produkter', path: '/produkter', count: 4 },
-      { label: 'Kontakt', path: '/kontakt', count: 2 },
-      { label: 'Om oss', path: '/om-oss', count: 1 },
-    ],
-  },
   insight: {
     label: 'AI-insikt',
     category: 'Kunder & beteende',
@@ -239,4 +227,89 @@ export const analysWidgets = {
     sections: ['Aktiva kunder', 'Nya', 'Återkommande'],
     action: 'Öppna PDF',
   },
+} as const;
+
+/*
+ * Analyssidan på datorn i sektionen "Se vad besökarna tittar på just nu". Byggd efter
+ * kundportalens analyser-layout2.html 224–298 (rubrik med live besökare, periodval 7/30/90
+ * dagar med 30 förvalt, KPI-raden Unika besökare/Sidvisningar/Avbrutna kassor, Besökstrend,
+ * Sidvisningar per sida) och CSS/analyser-layout2.css (platta kort, accent #1AB65C).
+ * Neutral exempeldata som hänger ihop: trendserien summerar till 9 716 sidvisningar, samma tal
+ * som KPI-kortet och seriepillen; sidorna i tabellen är en del av dem (8 162), resten är andra
+ * sidor. Unika besökare 3 482 i KPI-kortet och seriepillen. Datumen är fasta exempel.
+ */
+export const analysDashboard = {
+  title: 'Analyser',
+  subtitle: 'Avancerad dataanalys och insikter',
+  live: 12,
+  liveLabel: 'live besökare',
+  periodLabel: 'Period:',
+  periods: ['Senaste 7 dagarna', 'Senaste 30 dagarna', 'Senaste 90 dagarna'],
+  activePeriod: 1,
+  kpis: [
+    { label: 'Unika besökare', value: '3 482' },
+    { label: 'Sidvisningar', value: '9 716', delta: '+6,2 %', deltaText: 'mot perioden innan' },
+    { label: 'Avbrutna kassor', value: '38', delta: '−4 %', deltaText: 'mot perioden innan' },
+  ],
+  trend: {
+    title: 'Besökstrend',
+    series: [
+      { label: 'Sidvisningar', total: '9 716' },
+      { label: 'Unika besökare', total: '3 482' },
+    ],
+    values: [282, 294, 288, 307, 322, 310, 297, 290, 304, 318, 332, 326, 314, 310, 323, 337, 344, 330, 321, 328, 340, 352, 346, 333, 328, 341, 354, 363, 350, 332],
+    // Etikett var femte dag, från den första till den sista.
+    ticks: [
+      { index: 0, label: '2 sep' },
+      { index: 5, label: '7 sep' },
+      { index: 10, label: '12 sep' },
+      { index: 15, label: '17 sep' },
+      { index: 20, label: '22 sep' },
+      { index: 25, label: '27 sep' },
+      { index: 29, label: '1 okt' },
+    ],
+  },
+  table: {
+    title: 'Sidvisningar per sida',
+    columns: ['Sida', 'Visningar', 'Unika besökare'],
+    rows: [
+      { path: '/', views: '4 120', unique: '2 310' },
+      { path: '/produkter', views: '2 684', unique: '1 402' },
+      { path: '/kontakt', views: '842', unique: '611' },
+      { path: '/om-oss', views: '516', unique: '402' },
+    ],
+  },
+} as const;
+
+/*
+ * Globsektionen: besök per land och stad. Belägg: routes/analytics.js 1501 (geografi – besökare,
+ * köp och intäkter per land och stad). Exempeldata, inte resultat: andelen är stadens del av
+ * landets besök (Stockholm 38 % av 12 663 = 4 812), resten av besöken kommer från andra städer.
+ */
+export const analysGeo = {
+  exampleLabel: 'Exempeldata',
+  visitsLabel: 'besök',
+  totalLabel: 'Totalt',
+  countries: [
+    {
+      id: 'sverige',
+      name: 'Sverige',
+      total: 12663,
+      cities: [
+        { name: 'Stockholm', share: 38, visits: 4812 },
+        { name: 'Göteborg', share: 24, visits: 3039 },
+        { name: 'Malmö', share: 17, visits: 2153 },
+      ],
+    },
+    {
+      id: 'italien',
+      name: 'Italien',
+      total: 8400,
+      cities: [
+        { name: 'Milano', share: 31, visits: 2604 },
+        { name: 'Rom', share: 27, visits: 2268 },
+        { name: 'Turin', share: 12, visits: 1008 },
+      ],
+    },
+  ],
 } as const;

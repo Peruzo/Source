@@ -2,9 +2,21 @@
 
 import { Container } from '@/components/ui/Container';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { CampaignVisualShowcase } from '@/components/sections/CampaignVisualShowcase';
 import { KampanjerSections } from '@/components/sections/tjanster/kampanjer/KampanjerSections';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
+
+// The hero video's own background, measured on its edges (left, right and corners of the
+// frame it rests on: #f2f2f2–#f4f4f6). The section takes that colour and the video fades out
+// on all four sides, so no edge of the frame shows against the page.
+const VIDEO_EDGE = '#f4f4f5';
+const videoMask =
+  'linear-gradient(to right, transparent 0%, #000 24%, #000 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%)';
+const videoMaskStyle: CSSProperties = {
+  maskImage: videoMask,
+  WebkitMaskImage: videoMask,
+  maskComposite: 'intersect',
+  WebkitMaskComposite: 'source-in',
+};
 
 export default function CampaignsPage() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -55,7 +67,7 @@ export default function CampaignsPage() {
 
   return (
     <>
-      <section ref={sectionRef} className="bg-white text-gray-900">
+      <section ref={sectionRef} className="overflow-hidden text-gray-900" style={{ backgroundColor: VIDEO_EDGE }}>
         <Container className="min-h-[100svh] py-24 lg:py-0">
           <div className="grid min-h-[100svh] grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-[140px]">
             <FadeIn className="max-w-[500px] space-y-6">
@@ -78,13 +90,13 @@ export default function CampaignsPage() {
                 muted
                 playsInline
                 preload="auto"
-                className="w-full h-auto mix-blend-normal drop-shadow-[0_80px_140px_rgba(0,0,0,0.12)] [mask-image:linear-gradient(to_right,rgba(0,0,0,0)_0%,rgba(0,0,0,1)_25%,rgba(0,0,0,1)_100%)] [-webkit-mask-image:linear-gradient(to_right,rgba(0,0,0,0)_0%,rgba(0,0,0,1)_25%,rgba(0,0,0,1)_100%)] lg:w-[1100px] lg:max-w-none lg:translate-x-[15%]"
+                className="h-auto w-full lg:w-[1100px] lg:max-w-none lg:translate-x-[15%]"
+                style={videoMaskStyle}
               />
             </div>
           </div>
         </Container>
       </section>
-      <CampaignVisualShowcase />
       <KampanjerSections />
     </>
   );
