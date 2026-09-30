@@ -20,7 +20,13 @@ type DeviceShowcaseProps = {
    * this is image-anchored). From md it sits on the screen; below md, where a
    * card would cover the whole device, it sits under the photo.
    */
-  card: { content: ReactNode; label: string; anchor: CardAnchor };
+  card?: { content: ReactNode; label: string; anchor: CardAnchor };
+  /**
+   * A whole screen's worth of UI that fills the device's display at every width.
+   * `rect` is the display in percent of the photo. The display is a size container:
+   * content sized in `cqw` or in `em` from a `cqw` font size scales with it, sharp.
+   */
+  screen?: { content: ReactNode; label: string; rect: { x: number; y: number; width: number; height: number } };
 };
 
 /*
@@ -29,7 +35,7 @@ type DeviceShowcaseProps = {
  * position in percent holds at every width), the UI anchored to the screen.
  * Dark only: made for pages with a dark layout and a white header (/analys).
  */
-export function DeviceShowcase({ id, eyebrow, title, body, image, card }: DeviceShowcaseProps) {
+export function DeviceShowcase({ id, eyebrow, title, body, image, card, screen }: DeviceShowcaseProps) {
   const { reveal } = useReveal();
   const headingId = useId();
 
@@ -60,19 +66,38 @@ export function DeviceShowcase({ id, eyebrow, title, body, image, card }: Device
 
         <motion.div {...reveal(0.2, 48)} className="relative mx-auto mt-12 aspect-[16/9] w-full max-w-[1100px] md:mt-16">
           <ServicePicture image={image} sizes="(min-width: 1180px) 1100px, 100vw" />
-          <div
-            role="group"
-            aria-label={card.label}
-            className="absolute hidden -translate-x-1/2 -translate-y-1/2 md:block"
-            style={{ left: `${card.anchor.x}%`, top: `${card.anchor.y}%` }}
-          >
-            {card.content}
-          </div>
+          {screen ? (
+            <div
+              role="group"
+              aria-label={screen.label}
+              className="@container absolute overflow-hidden"
+              style={{
+                left: `${screen.rect.x}%`,
+                top: `${screen.rect.y}%`,
+                width: `${screen.rect.width}%`,
+                height: `${screen.rect.height}%`,
+              }}
+            >
+              {screen.content}
+            </div>
+          ) : null}
+          {card ? (
+            <div
+              role="group"
+              aria-label={card.label}
+              className="absolute hidden -translate-x-1/2 -translate-y-1/2 md:block"
+              style={{ left: `${card.anchor.x}%`, top: `${card.anchor.y}%` }}
+            >
+              {card.content}
+            </div>
+          ) : null}
         </motion.div>
 
-        <div role="group" aria-label={card.label} className="mx-auto mt-6 max-w-[22rem] md:hidden">
-          {card.content}
-        </div>
+        {card ? (
+          <div role="group" aria-label={card.label} className="mx-auto mt-6 max-w-[22rem] md:hidden">
+            {card.content}
+          </div>
+        ) : null}
       </div>
     </section>
   );

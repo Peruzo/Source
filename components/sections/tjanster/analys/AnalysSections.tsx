@@ -16,8 +16,8 @@ import {
   PeriodTrendCard,
   ReportCard,
   TopListCard,
-  TopPagesCard,
 } from '@/components/sections/tjanster/widgets/AnalyticsWidgets';
+import { AnalysDashboard } from './AnalysDashboard';
 import {
   analysFeatures,
   analysImages,
@@ -59,7 +59,7 @@ export function AnalysIntro() {
   );
 }
 
-/** Everything after the existing "Global analys" section. */
+/** Everything after the "Global analys" section (AnalysGlobe). */
 export function AnalysSections() {
   const steps = [
     {
@@ -91,14 +91,11 @@ export function AnalysSections() {
         title={analysPages.title}
         body={analysPages.body}
         image={analysImages.sidor}
-        card={{
-          content: (
-            <div className={cardWidth}>
-              <TopPagesCard {...w.pages} />
-            </div>
-          ),
-          label: 'Exempel: mest besökta sidor just nu',
-          anchor: { x: 51, y: 41 },
+        screen={{
+          content: <AnalysDashboard />,
+          label: 'Exempel: analyssidan i kundportalen',
+          // The display inside the bezel, measured in analys-sidor-2048.webp: x 422–1676, y 72–904.
+          rect: { x: 20.61, y: 6.25, width: 61.23, height: 72.22 },
         }}
       />
 

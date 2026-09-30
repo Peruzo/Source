@@ -260,54 +260,6 @@ export function TopListCard({
   );
 }
 
-/** Visitors right now and the pages they are on. */
-export function TopPagesCard({
-  title,
-  nowLabel,
-  now,
-  pages,
-}: {
-  title: string;
-  nowLabel: string;
-  now: number;
-  pages: readonly { label: string; path: string; count: number }[];
-}) {
-  const reduce = usePrefersReducedMotion();
-  const titleId = useId();
-  const max = Math.max(...pages.map((p) => p.count));
-  return (
-    <CardShell labelledBy={titleId}>
-      <div className="flex items-center justify-between gap-3">
-        <h3 id={titleId} className="text-ui-title">
-          {title}
-        </h3>
-        <span className="text-ui-label flex items-center gap-2 text-gray-700">
-          <span aria-hidden="true" className="relative flex h-2 w-2">
-            {!reduce ? <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal opacity-60" /> : null}
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-dark" />
-          </span>
-          {nowLabel} <span className="font-semibold tabular-nums text-black">{now}</span>
-        </span>
-      </div>
-      <ul className="mt-3 space-y-2.5">
-        {pages.map((page) => (
-          <li key={page.path}>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-ui-body truncate text-black">
-                {page.label} <span className="text-gray-500">{page.path}</span>
-              </span>
-              <span className="text-ui-body font-semibold tabular-nums text-black">{page.count}</span>
-            </div>
-            <div className={`mt-1 h-1.5 w-full bg-gray-100 ${RADIUS.control}`} aria-hidden="true">
-              <div className={`h-full bg-teal-dark ${RADIUS.control}`} style={{ width: `${(page.count / max) * 100}%` }} />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </CardShell>
-  );
-}
-
 /** One AI insight: category, what stands out, and a suggested next step. */
 export function InsightCard({
   label,

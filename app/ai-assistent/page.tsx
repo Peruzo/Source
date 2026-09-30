@@ -1,6 +1,5 @@
 "use client";
 
-import Image from 'next/image';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { motion } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
@@ -20,22 +19,15 @@ export default function AIAssistentPage() {
 
   return (
     <div className="bg-white">
-      {/* Hero – layout and photo unchanged. The copy is corrected (ai-assistent-plan.md 3.1) and the
-          start page's two buttons are added. */}
-      <section className="relative pt-32 md:pt-40 lg:pt-44 pb-20 md:pb-28 lg:pb-32 min-h-[640px] md:min-h-[720px] bg-white overflow-hidden">
-        {/* Full-height background image for the whole section */}
-        <div className="pointer-events-none absolute inset-0">
-          <Image
-            src="/womenincouch.png"
-            alt="Person som använder Source AI-assistenten i soffan"
-            fill
-            priority
-            className="object-cover object-center md:object-[center_60%]"
-            sizes="100vw"
-          />
-        </div>
+      {/* Hero – full screen on a dark, calm background like the /analys hero, no photo. The copy
+          (ai-assistent-plan.md 3.1), the two buttons and the chat card are unchanged. */}
+      <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-black pt-28 pb-20 md:pt-32 md:pb-24">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_78%_50%,rgba(0,191,166,0.10),transparent_70%),linear-gradient(to_bottom,#07090a_0%,#000_100%)]"
+        />
 
-        <div className="relative max-w-6xl mx-auto px-6 md:px-10 lg:px-20 grid gap-12 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] items-start md:items-center">
+        <div className="relative w-full max-w-6xl mx-auto px-6 md:px-10 lg:px-20 grid gap-12 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] items-start md:items-center">
           {/* Left: text content */}
           <FadeIn className="space-y-6 md:space-y-7">
             <p className="text-overline text-teal">{aiHero.overline}</p>
@@ -53,7 +45,7 @@ export default function AIAssistentPage() {
             </div>
           </FadeIn>
 
-          {/* Right: conversation card over the full-bleed image */}
+          {/* Right: conversation card */}
           <FadeIn className="relative flex justify-center md:justify-end">
             <motion.div
               initial={{ opacity: 0, y: 20, x: 10 }}
