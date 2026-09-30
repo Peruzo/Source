@@ -15,6 +15,7 @@ import {
   vaxaKassa,
   vaxaKomIgang,
   vaxaKunder,
+  vaxaLeads,
   vaxaMer,
   vaxaMoney,
   vaxaOfferter,
@@ -23,7 +24,7 @@ import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { ServiceBooking } from './ProductWidgets';
-import { BrandedCheckout, EmailRow, GiftCard, OfferView, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
+import { BrandedCheckout, EmailRow, GiftCard, LeadList, OfferView, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
 
 const STEP_ICONS = [CheckCircleIcon, TruckIcon, ArrowUturnLeftIcon];
 
@@ -78,6 +79,24 @@ export function ForetagVaxaSections() {
           <div className="flex flex-col items-center justify-center bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-12 lg:pl-8 lg:pr-8 lg:pt-20 xl:pl-12">
             <div className="w-full max-w-[26rem]">
               <OfferView content={vaxaOfferter.offer} {...vaxaMoney} />
+            </div>
+          </div>
+        }
+      />
+
+      {/* 2b – Leads. Widgets only, no photo: the list on the stone panel, mirrored against Offerter. */}
+      <ClippedImageSection
+        id={vaxaLeads.id}
+        eyebrow={vaxaLeads.eyebrow}
+        title={vaxaLeads.title}
+        body={vaxaLeads.body}
+        imageSide="right"
+        sticky={false}
+        background="white"
+        media={
+          <div className="flex flex-col items-center justify-center bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-20 lg:pl-8 lg:pr-8 lg:pt-12 xl:pr-12">
+            <div className="w-full max-w-[26rem]">
+              <LeadList content={vaxaLeads.list} />
             </div>
           </div>
         }

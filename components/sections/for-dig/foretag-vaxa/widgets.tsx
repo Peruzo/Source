@@ -9,6 +9,8 @@ import type {
   BrandedCheckoutContent,
   EmailRowContent,
   GiftCardContent,
+  LeadListContent,
+  LeadStage,
   OfferViewContent,
   ReviewCardContent,
   StatusCardContent,
@@ -144,6 +146,66 @@ export function OfferView({ content, currency, locale }: { content: OfferViewCon
         <FauxButton variant="quiet">{content.secondaryAction}</FauxButton>
       </div>
     </article>
+  );
+}
+
+/*
+ * Status pill per follow-up step. The step is written out in the pill, so the
+ * colour is never the only signal: a plain outline for a new lead, grey for
+ * contacted, the paid green (as in EmailRow) for won.
+ */
+const LEAD_STAGE_PILL: Record<LeadStage, string> = {
+  new: 'border border-gray-300 text-gray-700',
+  contacted: 'bg-gray-100 text-black',
+  won: 'bg-status-paid-bg text-status-paid',
+};
+
+/**
+ * A short lead list as on the portal's leads page: company and place, the
+ * letter grade, a one-line motivation and the follow-up status, with the
+ * pitch-analysis button under the list. Illustration only: the button is a
+ * look-alike and no score numbers are shown.
+ */
+export function LeadList({ content }: { content: LeadListContent }) {
+  const titleId = useId();
+
+  return (
+    <div role="group" aria-labelledby={titleId} className={`w-full bg-white p-4 text-left text-black ${CARD_EDGE} ${RADIUS.card}`}>
+      <h3 id={titleId} className="text-ui-title">
+        {content.title}
+      </h3>
+      <p className="sr-only">{content.label}</p>
+
+      <ul className="mt-3 divide-y divide-gray-200 border-y border-gray-200">
+        {content.leads.map((lead) => (
+          <li key={lead.id} className="flex items-start gap-3 py-3">
+            <span
+              aria-label={`${content.ratingLabel} ${lead.rating}`}
+              role="img"
+              className={`text-ui-body flex h-8 w-8 shrink-0 items-center justify-center bg-teal-dark font-semibold text-white ${RADIUS.control}`}
+            >
+              {lead.rating}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <span className="text-ui-body min-w-0 break-words font-semibold">{lead.company}</span>
+                <span className={`text-ui-label shrink-0 whitespace-nowrap px-2 py-0.5 ${RADIUS.control} ${LEAD_STAGE_PILL[lead.stage]}`}>
+                  {lead.status}
+                </span>
+              </span>
+              <span className="text-ui-label block text-gray-600">{lead.place}</span>
+              <span className="text-ui-label mt-1 block break-words text-gray-700">{lead.motivation}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 flex">
+        <span className={`text-ui-label inline-flex items-center whitespace-nowrap bg-teal-dark px-3.5 py-1.5 text-white ${RADIUS.control}`}>
+          {content.action}
+        </span>
+      </div>
+    </div>
   );
 }
 
