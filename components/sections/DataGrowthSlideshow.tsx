@@ -17,12 +17,6 @@ const slides = [
     title: 'Bokningssystem för alla branscher',
     body: 'Ett flexibelt bokningsflöde som anpassas efter din verklighet – oavsett om du driver salong, byrå eller konsultverksamhet.',
   },
-  {
-    id: 'fortnox',
-    image: '/newbooking.webp',
-    title: 'Verktyg som kopplar bokningar till Fortnox',
-    body: 'Automatisera flödet från bokning till bokföring med färdiga integrationer mot Fortnox och tydliga rapporter.',
-  },
 ];
 
 const SLIDE_DURATION = 8000;

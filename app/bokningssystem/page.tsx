@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { Container } from '@/components/ui/Container';
-import { BookingInPersonShowcaseSection } from '@/components/sections/BookingInPersonShowcaseSection';
+import { BokningSections } from '@/components/sections/tjanster/bokning/BokningSections';
+import { bokningHero } from '@/lib/data/tjanster/bokning';
 
 export default function BokningssystemPage() {
   const heroSectionRef = useRef<HTMLElement | null>(null);
@@ -59,9 +60,12 @@ export default function BokningssystemPage() {
 
   return (
     <>
+      {/* overflow-x-clip: the video is 150 % wide and reached 521px on a 390px screen, which
+          gave the page a horizontal overflow (also on origin/develop). Clip only cuts what is
+          already off screen; nothing visible changes and no scroll container is created. */}
       <section
         ref={heroSectionRef}
-        className="relative min-h-screen flex items-center"
+        className="relative min-h-screen flex items-center overflow-x-clip"
         style={{
           background: `
             radial-gradient(ellipse 120% 100% at 85% 50%, rgba(240, 253, 250, 0.8) 0%, rgba(236, 253, 245, 0.6) 30%, rgba(249, 250, 251, 0.4) 60%, rgba(255, 255, 255, 1) 100%),
@@ -72,14 +76,16 @@ export default function BokningssystemPage() {
         <Container className="w-full py-24 md:py-32 overflow-visible">
           <div className="grid grid-cols-1 lg:grid-cols-[0.32fr_0.68fr] gap-12 lg:gap-20 items-center">
             <div className="space-y-6">
+              {/* Copy in lib/data/tjanster/bokning.ts: the title stays, the body is corrected
+                  (bokningssystem-plan.md 6.1). Layout and video unchanged. */}
               <p className="text-sm uppercase tracking-[0.2em] text-gray-500">
-                Bokningssystem
+                {bokningHero.overline}
               </p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight">
-                Ett bokningssystem byggt för alla branscher
+                {bokningHero.title}
               </h1>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                Automatisera bokningar, betalningar och flöden i ett system som anpassar sig efter ditt sätt att arbeta.
+                {bokningHero.body}
               </p>
             </div>
 
@@ -102,7 +108,7 @@ export default function BokningssystemPage() {
         </Container>
       </section>
 
-      <BookingInPersonShowcaseSection />
+      <BokningSections />
     </>
   );
 }

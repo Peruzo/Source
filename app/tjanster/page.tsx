@@ -44,18 +44,13 @@ const services = [
   {
     id: 'payments',
     number: '03',
-    title: 'Betalningar & Hosting',
+    title: 'Betalningar',
     intro: 'Allt ingår. Inga dolda kostnader. Inga tredjeparter.',
     included: [
       'Stripe-integration',
       'Flera valutor',
       'Prenumerationer',
       'Refunds & rapporter',
-      'Render/Vercel hosting',
-      'Auto-scaling',
-      'SSL-certifikat',
-      'CDN',
-      'Backup dagligen',
     ],
     result: 'Du behöver inte hantera tekniska detaljer.',
   },
@@ -674,7 +669,7 @@ export default function ServicesPage() {
                     className="pt-4"
                   >
                     <AnimatedButton
-                      href="/tjanster/betalningar-hosting"
+                      href="/tjanster/betalningar"
                       variant="primary"
                       size="lg"
                     >

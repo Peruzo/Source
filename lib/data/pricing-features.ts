@@ -32,16 +32,16 @@ export const pricingFeatureCategories: PricingFeatureCategory[] = [
       { name: 'Produkter och kategorier', detail: 'med varianter och bilder', from: 'core' },
       // server.js:1295 (page:inventarier), core
       { name: 'Lager och inventarier', detail: 'lagersaldo och förslag på inköp', from: 'core' },
-      // server.js:1228 (page:betalningar), core
-      { name: 'Kortbetalningar och återbetalningar', from: 'core' },
+      // server.js:1228 (page:betalningar), core. Kassan tar bara kort
+      // (b25b58c1 services/storefrontCheckoutService.js:2327) och Stripe-anslutningen är core
+      // (b25b58c1 server.js:3307-3316).
+      { name: 'Kortbetalningar och återbetalningar', detail: 'kassan tar betalt med kort', from: 'core' },
       // server.js:1260-1261 och 3503 (page:betalningslank), core
       { name: 'Betalningslänk', from: 'core' },
       // server.js:1293 (page:prenumerationer), core
       { name: 'Prenumerationer', detail: 'återkommande köp för dina kunder', from: 'core' },
       // server.js:1296 (page:kampanjer), core
       { name: 'Kampanjer och rabattkoder', from: 'core' },
-      // server.js:3296 och 3302, integrationsgaten kräver growth
-      { name: 'Klarna i kassan', from: 'growth' },
       // config/packageTiers.js:80 och 168
       { name: 'Kassa i ditt utseende', from: 'growth' },
       // config/packageTiers.js:110 och 162
