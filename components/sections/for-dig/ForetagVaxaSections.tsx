@@ -24,9 +24,10 @@ import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { ServiceBooking } from './ProductWidgets';
-import { BrandedCheckout, EmailRow, GiftCard, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
+import { EmailRow, GiftCard, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
 import { OfferWidget } from './interactive/OfferWidget';
 import { LeadsWidget } from './interactive/LeadsWidget';
+import { CheckoutWidget } from './interactive/CheckoutWidget';
 
 const STEP_ICONS = [CheckCircleIcon, TruckIcon, ArrowUturnLeftIcon];
 
@@ -132,8 +133,8 @@ export function ForetagVaxaSections() {
         background="white"
         media={
           <div className="flex flex-col justify-center gap-4 bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-20 lg:pl-8 lg:pr-8 lg:pt-12 xl:pr-12">
-            <div className="w-full max-w-[22rem] self-center">
-              <BrandedCheckout content={k.checkout} {...vaxaMoney} />
+            <div className="w-full max-w-[40rem] self-center">
+              <CheckoutWidget content={k.checkout} {...vaxaMoney} />
             </div>
             <div className="w-full max-w-[20rem] self-end">
               <GiftCard content={k.giftCard} />

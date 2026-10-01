@@ -23,6 +23,7 @@ import type { ServiceBookingContent } from '@/components/sections/for-dig/produc
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
 import type { OfferWidgetContent } from '@/components/sections/for-dig/interactive/OfferWidget';
 import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
+import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
 
 /** One status row: a title and a short line under it. */
 export type StatusRowContent = { title: string; note: string };
@@ -33,15 +34,6 @@ export type StatusCardContent = {
   value: string;
   pill?: string;
   row: StatusRowContent;
-};
-
-export type BrandedCheckoutContent = {
-  label: string;
-  logoSlot: string;
-  orderLine: string;
-  amount: number;
-  methods: { id: string; label: string; note?: string }[];
-  payLabel: string;
 };
 
 export type GiftCardContent = {
@@ -293,31 +285,38 @@ export const vaxaBokforing = {
 
 /*
  * 4 – Kassan i ditt utseende. Belägg: checkout-inställningar med logotyp och
- * färger (config/packageTiers.js:80, routes/checkoutSettingsRoutes.js:229-309),
- * Klarna i kassan med Swish som betalalternativ (routes/klarnaRoutes.js:1-4,
- * server.js:3231), presentkort (config/packageTiers.js:110, 186, 199;
- * routes/giftCardRoutes.js:418, 751, 1010).
+ * accentfärg (config/packageTiers.js:80, routes/checkoutSettingsRoutes.js:229-309),
+ * presentkort (config/packageTiers.js:110, 186, 199; routes/giftCardRoutes.js:418,
+ * 751, 1010). Widgeten (source.database origin/develop e7f702d6): en accentfärg och
+ * en logotyp (public/checkout-layout2.html:396-423, services/checkoutBrandingService.js:87,
+ * 106-122), kort som enda betalsätt (services/storefrontCheckoutService.js:2327),
+ * rabattkodsfältet i kassan (:2336-2338). Presentkortet löses in i butiken före kassan
+ * (routes/storefrontRoutes.js:1579, 1813-1847). Klarna och Swish är inte kopplade till
+ * butikens kassa och nämns inte.
  */
 export const vaxaKassa = {
   id: 'kassan',
   eyebrow: 'KASSAN',
   title: 'Kassan i ditt utseende',
   body: [
-    'Lägg in din logotyp och dina färger, så känner kunden igen dig hela vägen till betalningen.',
-    'Slå på Klarna för fler sätt att betala, bland annat Swish, och sälj presentkort i din butik.',
+    'Lägg in din logotyp och din accentfärg, så känner kunden igen dig hela vägen till betalningen.',
+    'Kunden betalar med kort och kan ange en rabattkod i kassan. Sälj presentkort i din butik, som kunden löser in innan betalningen.',
   ],
   checkout: {
-    label: 'Exempel: kassan med egen logotyp och färg',
-    logoSlot: 'Din logotyp',
-    orderLine: 'Din order',
-    amount: 1245,
-    methods: [
-      { id: 'kort', label: 'Kort' },
-      { id: 'klarna', label: 'Klarna' },
-      { id: 'swish', label: 'Swish', note: 'via Klarna' },
+    label: 'Exempel: kassan med egen logotyp och färg, där en rabattkod läggs till',
+    shopName: 'Ditt företag',
+    summaryTitle: 'Din order',
+    lines: [
+      { id: 'c1', name: 'Startpaket Plus', quantity: 1, unitPrice: 1490 },
+      { id: 'c2', name: 'Tillbehör', quantity: 2, unitPrice: 149 },
     ],
+    subtotalLabel: 'Delsumma',
+    code: { label: 'Rabattkod', placeholder: 'Lägg till rabattkod', value: 'VALKOMMEN10', rate: 0.1, applyLabel: 'Lägg till', appliedLabel: 'Rabatt' },
+    totalLabel: 'Att betala',
+    payment: { title: 'Betalning', method: 'Kort', cardNumber: '1234 1234 1234 1234', expiry: 'MM / ÅÅ', cvc: 'CVC' },
     payLabel: 'Betala',
-  } satisfies BrandedCheckoutContent,
+    secureNote: 'Säker kortbetalning',
+  } satisfies CheckoutWidgetContent,
   giftCard: {
     title: 'Presentkort',
     code: { label: 'Kod', value: 'PRESENT-7Q4M' },

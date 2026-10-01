@@ -4,9 +4,8 @@ import { useId } from 'react';
 import type { ComponentType } from 'react';
 import { EnvelopeIcon, GiftIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/20/solid';
-import { CARD_EDGE, CardShell, RADIUS, formatMoney } from '../payment-cards/primitives';
+import { CARD_EDGE, RADIUS } from '../payment-cards/primitives';
 import type {
-  BrandedCheckoutContent,
   EmailRowContent,
   GiftCardContent,
   ReviewCardContent,
@@ -22,7 +21,6 @@ import type {
  */
 
 type Icon = ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
-type MoneyFormat = { currency: string; locale: string };
 
 /**
  * One status row: icon, title and a short line. About 53 px tall, so in
@@ -88,48 +86,6 @@ export function StatusCard({ content, icon: Icon, tone }: { content: StatusCardC
         </span>
       </div>
     </div>
-  );
-}
-
-/**
- * The customer's checkout in the shop's own look: a header in the shop's
- * colour with a logo slot, the amount, the payment methods and the pay button
- * in the same colour. The logo slot is an empty frame – it never draws a logo.
- */
-export function BrandedCheckout({ content, currency, locale }: { content: BrandedCheckoutContent } & MoneyFormat) {
-  return (
-    <CardShell label={content.label} flush>
-      <div className="bg-black-tertiary p-5 text-white">
-        <span className={`text-ui-label inline-flex items-center border border-dashed border-white/60 px-3 py-1.5 text-white/85 ${RADIUS.field}`}>
-          {content.logoSlot}
-        </span>
-        <p className="text-ui-label mt-6 text-white/85">{content.orderLine}</p>
-        <p className="text-ui-amount mt-1 tabular-nums">{formatMoney(content.amount, currency, locale)}</p>
-      </div>
-
-      <div className="p-5">
-        <ul className={`divide-y divide-gray-200 border border-gray-200 px-3.5 ${RADIUS.field}`}>
-          {content.methods.map((method, i) => (
-            <li key={method.id} className="flex items-center gap-3 py-3">
-              {/* The first method is shown chosen: a filled ring, not colour alone. */}
-              <span
-                aria-hidden="true"
-                className={`flex h-4 w-4 shrink-0 items-center justify-center border-2 ${RADIUS.control} ${
-                  i === 0 ? 'border-black-tertiary' : 'border-gray-400'
-                }`}
-              >
-                {i === 0 ? <span className={`h-2 w-2 bg-black-tertiary ${RADIUS.control}`} /> : null}
-              </span>
-              <span className="text-ui-body text-black">{method.label}</span>
-              {method.note ? <span className="text-ui-label ml-auto text-gray-600">{method.note}</span> : null}
-            </li>
-          ))}
-        </ul>
-        <span className={`text-ui-body mt-4 flex items-center justify-center bg-black-tertiary px-4 py-2.5 text-white ${RADIUS.control}`}>
-          {content.payLabel}
-        </span>
-      </div>
-    </CardShell>
   );
 }
 
