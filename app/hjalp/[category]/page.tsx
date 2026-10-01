@@ -12,18 +12,19 @@ export function generateStaticParams() {
 }
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     category: string;
-  };
+  }>;
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
-  const category = getCategoryById(params.category);
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { category: categoryId } = await params;
+  const category = getCategoryById(categoryId);
 
   if (!category) {
     notFound();
   }
 
-  return <CategoryClient category={category} categoryId={params.category} />;
+  return <CategoryClient category={category} categoryId={categoryId} />;
 }
 
