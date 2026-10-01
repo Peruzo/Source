@@ -24,6 +24,7 @@ import type { OfferWidgetContent } from '@/components/sections/for-dig/interacti
 import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
 import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
 import type { CustomersWidgetContent } from '@/components/sections/for-dig/interactive/CustomersWidget';
+import type { ShippingStepCardContent } from '@/components/sections/for-dig/interactive/ShippingStepCard';
 import type { BookingWidgetContent } from '@/components/sections/for-dig/interactive/BookingWidget';
 
 /** One status row: a title and a short line under it. */
@@ -94,36 +95,51 @@ export const vaxaImages = {
 } satisfies Record<string, ServiceImage>;
 
 /*
- * 1 – Frakt och returer. Belägg: logistiksidorna, ordrar, paketprofiler,
- * returer och PostNord-inställningar (config/packageTiers.js:71-77,
- * server.js:3031, 3168-3192), fraktbokning i PostNord-adaptern
- * (services/shipping/adapters/postnord.js:386) med returbokning och spårning.
+ * 1 – Frakt med PostNord. Belägg: logistiksidorna, ordrar, paketprofiler och
+ * PostNord-inställningar (config/packageTiers.js:71-77, server.js:3031, 3168-3192),
+ * fraktbokning i PostNord-adaptern (services/shipping/adapters/postnord.js:386).
  * Bara PostNord, och "boka frakt" – automatisk bokning kräver en flagga.
+ * Korten (source.database origin/develop 86e59e2c): en betald order med "Boka
+ * leverans" (public/js/logistics-actions.js:363, models/Order.js:16), bokningen
+ * från ordern (services/shipping/routes/shipments.js:68-393, utan flagga, bakom
+ * paketet och page:logistik, server.js:3229-3238), resultatet "Leverans bokad" med
+ * transportör, "Hämta fraktsedel" och "Följ leveransen" (logistics-actions.js:513-574),
+ * och leveransbekräftelsen till kunden med spårningsnummer och spårningslänk
+ * (shipments.js:517-545, public/js/email-automation-settings.js:14), med portalens
+ * egen text om när spårningen aktiveras (logistics-actions.js:510-511).
+ * Returer kräver FEATURE_RETURNS, som är av som standard (utils/featureFlags.js:4,
+ * services/shipping/routes/returns.js:261, 1552) – de visas därför inte som en
+ * funktion som fungerar. Ordernumret är ett exempel.
  */
 export const vaxaFrakt = {
   id: 'frakt-och-returer',
-  eyebrow: 'FRAKT & RETURER',
+  eyebrow: 'FRAKT',
   // Short title and intro: at 1366 × 768 the pinned text column (header plus three steps) has to fit in
-  // the frame, or the photo box grows past the bottom of the screen and cuts the row card.
-  title: 'Frakt och returer',
-  intro: 'Boka frakt med PostNord, följ paketet och ta emot returer – där ordern redan finns.',
+  // the frame, or the photo box grows past the bottom of the screen and cuts the step card.
+  title: 'Frakt med PostNord',
+  intro: 'Boka frakten från ordern, skriv ut fraktsedeln och låt kunden följa paketet.',
   steps: [
     {
       title: 'Ordern kommer in',
       body: 'När kunden har betalat ligger ordern i portalen, redo att packas.',
-      row: { title: 'Betald', note: 'Ny order' },
+      card: { title: 'Order 1042', pill: 'Betald', meta: '2 artiklar · Leverans med PostNord', actions: ['Boka leverans'] },
     },
     {
       title: 'Boka frakt med PostNord',
-      body: 'Välj paketprofil och boka frakten från ordern, så kan kunden följa paketet på vägen.',
-      row: { title: 'Frakt bokad med PostNord', note: 'Paketet kan spåras' },
+      body: 'Välj paketprofil och boka från ordern. Fraktsedel och spårningslänk finns direkt.',
+      card: { title: 'Leverans bokad', pill: 'PostNord', meta: 'Order 1042 · Paketprofil Liten låda', actions: ['Hämta fraktsedel', 'Följ leveransen'] },
     },
     {
-      title: 'Ta emot returer',
-      body: 'Registrera returen på samma ställe som ordern, så finns hela historiken samlad.',
-      row: { title: 'Retur registrerad', note: 'Kopplad till ordern' },
+      title: 'Kunden följer paketet',
+      body: 'Kunden får ett mejl med spårningsnummer och en länk för att följa leveransen.',
+      card: {
+        title: 'Leveransbekräftelse till kunden',
+        pill: 'Skickad',
+        meta: 'Spårningsnummer och spårningslänk',
+        note: 'Spårningen aktiveras när paketet har lämnats in.',
+      },
     },
-  ] satisfies { title: string; body: string; row: StatusRowContent }[],
+  ] satisfies { title: string; body: string; card: ShippingStepCardContent }[],
 };
 
 /*

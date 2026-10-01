@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowUturnLeftIcon, CheckCircleIcon, DocumentChartBarIcon, DocumentCheckIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { DocumentChartBarIcon, DocumentCheckIcon, EnvelopeIcon, ShoppingBagIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { FeatureCarousel } from '@/components/sections/tjanster/FeatureCarousel';
 import { ServiceFullBleed } from '@/components/sections/tjanster/ServiceFullBleed';
@@ -23,14 +23,15 @@ import {
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
-import { GiftCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
+import { GiftCard, StatusCard } from './foretag-vaxa/widgets';
 import { OfferWidget } from './interactive/OfferWidget';
 import { LeadsWidget } from './interactive/LeadsWidget';
 import { CheckoutWidget } from './interactive/CheckoutWidget';
 import { CustomersWidget } from './interactive/CustomersWidget';
 import { BookingWidget } from './interactive/BookingWidget';
+import { ShippingStepCard } from './interactive/ShippingStepCard';
 
-const STEP_ICONS = [CheckCircleIcon, TruckIcon, ArrowUturnLeftIcon];
+const STEP_ICONS = [ShoppingBagIcon, TruckIcon, EnvelopeIcon];
 
 /**
  * Everything under the hero on /foretag-vaxande (Företag Växa). The hero in
@@ -47,26 +48,22 @@ export function ForetagVaxaSections() {
 
   return (
     <>
-      {/* 1 – Frakt och returer. Target of the hero's "Se hur det fungerar". */}
+      {/* 1 – Frakt med PostNord. Target of the hero's "Se hur det fungerar". */}
       <StickySteps
         id={f.id}
         eyebrow={f.eyebrow}
         title={f.title}
         intro={f.intro}
         image={vaxaImages.frakt}
+        wideVisual
         steps={f.steps.map((step, i) => ({
           title: step.title,
           body: step.body,
-          // StickySteps puts the visual at bottom-8 left-8 of the photo. The photo has no sky, so
-          // the row goes on the strip of street under the doorway: 20 px lower from lg keeps it
-          // below the threshold down to 1366 × 768 (the strip is ~12 % of the photo's height).
-          // Below lg, and under reduced motion, the row sits under the step text, where the
-          // shift only moves it into the section's bottom padding.
-          visual: () => (
-            <div className="lg:translate-y-5">
-              <StatusRow content={step.row} icon={STEP_ICONS[i]} />
-            </div>
-          ),
+          // StickySteps puts the visual at bottom-8 left-8 of the photo, under the people in the
+          // doorway: the card covers the floor and the woman's feet, never a face or a hand
+          // (measured, see CC-RAPPORT-fordig-pr2.md). Below lg, and under reduced motion, the
+          // card sits under the step text.
+          visual: () => <ShippingStepCard content={step.card} icon={STEP_ICONS[i]} />,
         }))}
       />
 

@@ -22,10 +22,8 @@ import type {
 type Icon = ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
 
 /**
- * One status row: icon, title and a short line. About 53 px tall, so in
- * StickySteps it fits in the strip of street under the doorway of the frakt
- * photo (see ForetagVaxaSections). Solid white with the card edge, so it reads
- * the same over the photo and on the white page below lg.
+ * One status row: icon, title and a short line, about 53 px tall. Solid white
+ * with the card edge, so it reads the same over a photo and on a white page.
  */
 export function StatusRow({ content, icon: Icon }: { content: StatusRowContent; icon: Icon }) {
   return (
