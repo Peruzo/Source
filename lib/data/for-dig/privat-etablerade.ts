@@ -155,7 +155,7 @@ export const privatEtableradeMer = {
   items: [
     { icon: CreditCardIcon, title: 'Kassan i ditt utseende', body: 'Din logotyp och din accentfärg i kassan, där kunden betalar med kort.' },
     { icon: GiftIcon, title: 'Presentkort', body: 'Sälj presentkort som dina kunder kan ge bort.' },
-    { icon: TruckIcon, title: 'Frakt och returer', body: 'Boka frakt med PostNord och ta emot returer där ordern finns.' },
+    { icon: TruckIcon, title: 'Frakt med PostNord', body: 'Boka frakten från ordern och skicka kunden en länk för att följa paketet.' },
     { icon: StarIcon, title: 'Kundomdömen', body: 'Samla omdömen och visa dem på din webbplats.' },
     { icon: SparklesIcon, title: 'AI-insikter', body: 'Insikter om försäljning och kunder som uppdateras oftare.' },
     { icon: DocumentCheckIcon, title: 'Bokföring med Fortnox', body: 'Det du säljer och får betalt för hamnar i bokföringen som verifikat.' },

@@ -136,9 +136,8 @@ export default function InventarierPage() {
             </h2>
 
             <p className="text-base md:text-lg text-gray-800 leading-relaxed">
-              Alla förändringar uppdateras automatiskt – vid köp, returer,
-              reklamationer och lagerförändringar. Du har alltid korrekt data utan
-              manuellt arbete.
+              Alla förändringar uppdateras automatiskt – vid köp och
+              lagerförändringar. Du har alltid korrekt data utan manuellt arbete.
             </p>
           </div>
         </Container>

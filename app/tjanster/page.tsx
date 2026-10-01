@@ -552,7 +552,7 @@ export default function ServicesPage() {
                   >
                     Få en överblick över din logistik.
                     <span className="block text-2xl md:text-3xl text-white/80 mt-4">
-                      Synka leveranser, lager och returer i realtid.
+                      Håll ordning på leveranser och lager på ett ställe.
                     </span>
                   </motion.h2>
 
