@@ -18,15 +18,10 @@ import {
 } from '@heroicons/react/24/outline';
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { InvoiceWidgetsContent } from '@/components/sections/for-dig/invoice-widgets/content';
-import type { AddProductContent } from '@/components/sections/for-dig/product-widgets/content';
+import type { ProductsWidgetContent } from '@/components/sections/for-dig/interactive/ProductsWidget';
 import type { CampaignCodeContent, CreateCampaignContent } from '@/components/sections/for-dig/campaign-widgets/content';
 import type { SubscriptionWidgetsContent } from '@/components/sections/for-dig/subscription-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
-
-export type OfferListContent = {
-  title: string;
-  rows: { id: string; name: string; kind: string; price: number }[];
-};
 
 export type PhotoCardContent = {
   label: string;
@@ -68,6 +63,10 @@ export const foretagImages = {
  * 1 – Produkter och tjänster. Belägg: produktsidan och typerna product,
  * service och subscription är core (models/Product.js:279,
  * config/packageTiers.js:198-200). Bokningsbara tider är growth och visas inte.
+ * Widgeten (source.database origin/develop e7f702d6): typetiketterna Produkt,
+ * Tjänst och Prenumeration (public/produkter-layout2.html:3214), fälten
+ * Produktnamn, Pris (SEK), Huvudkategori och produktbild (:1378, :1392,
+ * :1521, :4096-4152). Presentkort är growth och visas inte här.
  */
 export const foretagProdukter = {
   id: 'produkter-och-tjanster',
@@ -77,23 +76,27 @@ export const foretagProdukter = {
     'Varor, tjänster eller abonnemang – lägg upp dem med namn, pris, bild och kategori, och se lagersaldot för det du har i lager.',
     'Allt du säljer finns på ett ställe, redo för din webbplats och för dina fakturor.',
   ],
-  offers: {
-    title: 'Det du säljer',
+  widget: {
+    label: 'Exempel: en ny produkt läggs till i listan över det du säljer',
+    listTitle: 'Det du säljer',
+    addLabel: 'Lägg till ny produkt',
     rows: [
-      { id: 'o1', name: 'Startpaket', kind: 'Vara', price: 1200 },
+      { id: 'o1', name: 'Startpaket', kind: 'Produkt', price: 1200 },
       { id: 'o2', name: 'Tjänst per timme', kind: 'Tjänst', price: 950 },
-      { id: 'o3', name: 'Månadsabonnemang', kind: 'Abonnemang', price: 299 },
-      { id: 'o4', name: 'Tillbehör', kind: 'Vara', price: 149 },
+      { id: 'o3', name: 'Månadsabonnemang', kind: 'Prenumeration', price: 299 },
+      { id: 'o4', name: 'Tillbehör', kind: 'Produkt', price: 149 },
     ],
-  } satisfies OfferListContent,
-  addProduct: {
-    title: 'Lägg till ny produkt',
-    name: { label: 'Produktnamn', value: 'Tjänst per timme' },
-    price: { label: 'Pris', amount: 950 },
-    category: { label: 'Kategori', value: 'Tjänster' },
-    upload: { label: 'Produktbild', hint: 'Dra hit en bild' },
-    submitLabel: 'Spara produkt',
-  } satisfies AddProductContent,
+    newRow: { id: 'o0', name: 'Startpaket Plus', kind: 'Produkt', price: 1490 },
+    dialog: {
+      title: 'Lägg till ny produkt',
+      name: { label: 'Produktnamn', value: 'Startpaket Plus' },
+      price: { label: 'Pris (SEK)', amount: 1490 },
+      category: { label: 'Kategori', value: 'Paket' },
+      type: { label: 'Typ', value: 'Produkt' },
+      image: { label: 'Produktbild', fileName: 'produktbild.jpg' },
+      submitLabel: 'Spara produkt',
+    },
+  } satisfies ProductsWidgetContent,
 };
 
 /*
