@@ -57,14 +57,19 @@ const faqs = [
       'Ja. Hör av dig till oss så byter vi paket åt dig.',
   },
   {
+    question: 'Vad händer när jag har valt paket?',
+    answer:
+      'Du skapar ett konto och går vidare till onboardingen. Där går vi igenom din verksamhet, du kopplar ditt Stripe-konto och vi bygger din hemsida eller integrerar den du har mot kundportalen inom 24 timmar.',
+  },
+  {
     question: 'Vad händer om jag säger upp?',
     answer:
-      'Ingen bindningstid. Säg upp när som helst med en månads uppsägningstid. Du behåller full åtkomst under uppsägningstiden.',
+      'Du kan avsluta när som helst. Hör av dig till oss så hjälper vi dig att exportera eller radera dina uppgifter.',
   },
   {
     question: 'Finns det bindningstid?',
     answer:
-      'Nej. Alla planer är månad till månad. Vi tror på att förtjäna din verksamhet varje månad.',
+      'Nej. Alla paket betalas per månad och du kan avsluta när som helst.',
   },
   {
     question: 'Vad ingår i AI-insikter?',

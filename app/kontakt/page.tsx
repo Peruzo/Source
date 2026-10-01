@@ -11,7 +11,7 @@ const faqs = [
   {
     question: 'Hur lång tid tar det?',
     answer:
-      'Typisk tidslinje är 4-8 veckor från start till lansering, beroende på komplexitet.',
+      'Efter onboardingen har du din nya hemsida, eller din befintliga hemsida integrerad mot kundportalen, inom 24 timmar.',
   },
   {
     question: 'Vad kostar det?',
@@ -19,12 +19,12 @@ const faqs = [
   },
   {
     question: 'Kan jag se exempel?',
-    answer: 'Absolut! Vi har flera mockups i vår portfolio.',
+    answer: 'Ja. I vår portfolio finns demosajter som du kan öppna och klicka runt i.',
   },
   {
     question: 'Jobbar ni med min bransch?',
     answer:
-      'Vi jobbar med alla branscher. Vår AI anpassar lösningen efter din specifika verksamhet.',
+      'Ja. Source är byggt för alla typer av företag, och paketen bestämmer vilka delar du har tillgång till.',
   },
   {
     question: 'Hur fungerar supporten?',
