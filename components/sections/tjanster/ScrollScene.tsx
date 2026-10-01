@@ -3,6 +3,7 @@
 import { useId, useRef, type ReactNode } from 'react';
 import { motion, useMotionValue, useScroll, useTransform, type MotionValue } from 'framer-motion';
 import { useReveal } from '@/components/sections/for-dig/useReveal';
+import { usePinnedScrollHint } from '@/components/ui/ScrollHint';
 
 type ScrollSceneProps = {
   id?: string;
@@ -73,6 +74,7 @@ export function ScrollScene({
   const done = useMotionValue(1);
 
   const pinned = !shouldReduceMotion;
+  usePinnedScrollHint(trackRef, pinned);
 
   const text = (withId: boolean) => (
     <div className="max-w-[34rem]">

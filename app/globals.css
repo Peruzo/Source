@@ -288,6 +288,67 @@ body {
 }
 
 /*
+ * "Scrolla nedåt" (components/ui/ScrollHint.tsx). Bottom left, so it never meets
+ * the chat button at the bottom right; above the safe area on phones. Fixed, so
+ * it moves nothing. Hidden while the chat panel is open (data-chat-open is set
+ * on <html> by components/ui/AIAssistantProvider.tsx).
+ */
+.scroll-reminder {
+  position: fixed;
+  left: calc(1rem + env(safe-area-inset-left));
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  z-index: 9000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(0 0 0 / 0.08);
+  background: rgb(255 255 255 / 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  animation: scroll-reminder-in 300ms ease-out both;
+}
+
+html[data-chat-open] .scroll-reminder {
+  display: none;
+}
+
+.scroll-reminder__mouse {
+  flex-shrink: 0;
+}
+
+.scroll-reminder__wheel {
+  animation: scroll-reminder-wheel 1.6s ease-in-out infinite;
+}
+
+@keyframes scroll-reminder-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scroll-reminder-wheel {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+/* Defence in depth: nothing pins under reduced motion, so the hint never shows there. */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reminder,
+  .scroll-reminder__wheel {
+    animation: none;
+  }
+}
+
+/*
  * Carousel tracks drive their own scroll animation from JS (scrollTo with an
  * explicit behavior), so the global `scroll-behavior: smooth` must not apply —
  * it would animate pointer-drag updates to scrollLeft.

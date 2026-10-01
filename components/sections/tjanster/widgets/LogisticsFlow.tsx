@@ -4,6 +4,7 @@ import { useId, useRef, type ReactNode } from 'react';
 import { motion, useMotionValue, useScroll, useTransform, type MotionValue } from 'framer-motion';
 import { RADIUS } from '@/components/sections/for-dig/payment-cards/primitives';
 import { useReveal } from '@/components/sections/for-dig/useReveal';
+import { usePinnedScrollHint } from '@/components/ui/ScrollHint';
 import {
   Box,
   Card,
@@ -334,6 +335,7 @@ export function LogisticsFlowSection({ content }: { content: LogisticsFlowConten
   const { scrollYProgress } = useScroll({ target: trackRef, offset: ['start start', 'end end'] });
   const progress = useTransform(scrollYProgress, [0.06, 0.9], [0, 1], { clamp: true });
   const pinned = !shouldReduceMotion;
+  usePinnedScrollHint(trackRef, pinned);
 
   const renders: StepRender[] = [
     (p) => <CheckoutStep p={p} c={c.checkout} />,
