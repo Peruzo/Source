@@ -15,6 +15,8 @@ type StickyStepsProps = {
   steps: ServiceStep[];
   /** `dark` for pages with a dark layout (and a white header), e.g. /analys. Default `light`. */
   theme?: 'light' | 'dark';
+  /** Room for a larger step widget over the photo: 30rem instead of 22rem. Default off. */
+  wideVisual?: boolean;
 };
 
 const themes = {
@@ -37,7 +39,7 @@ const themes = {
  * at every width without knowing the viewport. The hidden one is display:none,
  * so it is out of the accessibility tree.
  */
-export function StickySteps({ id, eyebrow, title, intro, image, steps, theme = 'light' }: StickyStepsProps) {
+export function StickySteps({ id, eyebrow, title, intro, image, steps, theme = 'light', wideVisual = false }: StickyStepsProps) {
   const t = themes[theme];
   const trackRef = useRef<HTMLDivElement | null>(null);
   const headingId = useId();
@@ -75,7 +77,7 @@ export function StickySteps({ id, eyebrow, title, intro, image, steps, theme = '
                 className="pointer-events-none absolute inset-0"
                 style={{ background: 'linear-gradient(0deg, rgba(14,11,8,0.35) 0%, rgba(14,11,8,0) 45%)' }}
               />
-              <div className="absolute bottom-8 left-8 w-[min(22rem,calc(100%-4rem))]">
+              <div className={`absolute bottom-8 left-8 ${wideVisual ? 'w-[min(30rem,calc(100%-4rem))]' : 'w-[min(22rem,calc(100%-4rem))]'}`}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={active}

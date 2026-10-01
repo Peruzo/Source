@@ -24,6 +24,8 @@ import type { OfferWidgetContent } from '@/components/sections/for-dig/interacti
 import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
 import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
 import type { CustomersWidgetContent } from '@/components/sections/for-dig/interactive/CustomersWidget';
+import type { InsightsWidgetContent } from '@/components/sections/for-dig/interactive/InsightsWidget';
+import type { ShippingStepCardContent } from '@/components/sections/for-dig/interactive/ShippingStepCard';
 import type { BookingWidgetContent } from '@/components/sections/for-dig/interactive/BookingWidget';
 
 /** One status row: a title and a short line under it. */
@@ -94,36 +96,51 @@ export const vaxaImages = {
 } satisfies Record<string, ServiceImage>;
 
 /*
- * 1 – Frakt och returer. Belägg: logistiksidorna, ordrar, paketprofiler,
- * returer och PostNord-inställningar (config/packageTiers.js:71-77,
- * server.js:3031, 3168-3192), fraktbokning i PostNord-adaptern
- * (services/shipping/adapters/postnord.js:386) med returbokning och spårning.
+ * 1 – Frakt med PostNord. Belägg: logistiksidorna, ordrar, paketprofiler och
+ * PostNord-inställningar (config/packageTiers.js:71-77, server.js:3031, 3168-3192),
+ * fraktbokning i PostNord-adaptern (services/shipping/adapters/postnord.js:386).
  * Bara PostNord, och "boka frakt" – automatisk bokning kräver en flagga.
+ * Korten (source.database origin/develop 86e59e2c): en betald order med "Boka
+ * leverans" (public/js/logistics-actions.js:363, models/Order.js:16), bokningen
+ * från ordern (services/shipping/routes/shipments.js:68-393, utan flagga, bakom
+ * paketet och page:logistik, server.js:3229-3238), resultatet "Leverans bokad" med
+ * transportör, "Hämta fraktsedel" och "Följ leveransen" (logistics-actions.js:513-574),
+ * och leveransbekräftelsen till kunden med spårningsnummer och spårningslänk
+ * (shipments.js:517-545, public/js/email-automation-settings.js:14), med portalens
+ * egen text om när spårningen aktiveras (logistics-actions.js:510-511).
+ * Returer kräver FEATURE_RETURNS, som är av som standard (utils/featureFlags.js:4,
+ * services/shipping/routes/returns.js:261, 1552) – de visas därför inte som en
+ * funktion som fungerar. Ordernumret är ett exempel.
  */
 export const vaxaFrakt = {
   id: 'frakt-och-returer',
-  eyebrow: 'FRAKT & RETURER',
+  eyebrow: 'FRAKT',
   // Short title and intro: at 1366 × 768 the pinned text column (header plus three steps) has to fit in
-  // the frame, or the photo box grows past the bottom of the screen and cuts the row card.
-  title: 'Frakt och returer',
-  intro: 'Boka frakt med PostNord, följ paketet och ta emot returer – där ordern redan finns.',
+  // the frame, or the photo box grows past the bottom of the screen and cuts the step card.
+  title: 'Frakt med PostNord',
+  intro: 'Boka frakten från ordern, skriv ut fraktsedeln och låt kunden följa paketet.',
   steps: [
     {
       title: 'Ordern kommer in',
       body: 'När kunden har betalat ligger ordern i portalen, redo att packas.',
-      row: { title: 'Betald', note: 'Ny order' },
+      card: { title: 'Order 1042', pill: 'Betald', meta: '2 artiklar · Leverans med PostNord', actions: ['Boka leverans'] },
     },
     {
       title: 'Boka frakt med PostNord',
-      body: 'Välj paketprofil och boka frakten från ordern, så kan kunden följa paketet på vägen.',
-      row: { title: 'Frakt bokad med PostNord', note: 'Paketet kan spåras' },
+      body: 'Välj paketprofil och boka från ordern. Fraktsedel och spårningslänk finns direkt.',
+      card: { title: 'Leverans bokad', pill: 'PostNord', meta: 'Order 1042 · Paketprofil Liten låda', actions: ['Hämta fraktsedel', 'Följ leveransen'] },
     },
     {
-      title: 'Ta emot returer',
-      body: 'Registrera returen på samma ställe som ordern, så finns hela historiken samlad.',
-      row: { title: 'Retur registrerad', note: 'Kopplad till ordern' },
+      title: 'Kunden följer paketet',
+      body: 'Kunden får ett mejl med spårningsnummer och en länk för att följa leveransen.',
+      card: {
+        title: 'Leveransbekräftelse till kunden',
+        pill: 'Skickad',
+        meta: 'Spårningsnummer och spårningslänk',
+        note: 'Spårningen aktiveras när paketet har lämnats in.',
+      },
     },
-  ] satisfies { title: string; body: string; row: StatusRowContent }[],
+  ] satisfies { title: string; body: string; card: ShippingStepCardContent }[],
 };
 
 /*
@@ -511,21 +528,69 @@ export const vaxaBokningar = {
  * server.js:3067, 3288), schemalagda rapporter körs för paketet och uppåt
  * (config/packageTiers.js:281), AI-insikter (config/packageTiers.js:94-95,
  * server.js:3115-3116). Ingen export och inga kvoter.
+ * Widgeten (source.database origin/develop 86e59e2c): rapportmallen med avsnitten
+ * Försäljning, Kunder, Marknadsföring, AI-assistent, Support och Fakturor
+ * (models/ReportTemplate.js:55-80) och frekvens per avsnitt; veckorapporten tas fram
+ * måndagar (cron/reportGenerationCron.js:145-166, 527-549) och sparas utan PDF – den
+ * görs när man klickar "Ladda ner" (reportGenerationCron.js:170-171). Rapporten
+ * mejlas inte: mallens e-postfält sparas men läses inte av något utskick
+ * (routes/reportTemplates.js:40, ingen läsning i services/ eller cron/). AI-insikterna
+ * tas fram varje natt (cron/insightCron.js:178) och har prioritet, kategori, rubrik,
+ * fynd, underlag och "Åtgärd" (public/js/layout2.js:1226-1260, services/insightPrompts.js:86-99),
+ * i kategorierna "Översikt & trender", "Kunder & beteende" och "Marknadsföring &
+ * kampanjer" (services/insightCategories.js:26-62). Varje åtgärd ska kopplas till en
+ * portalfunktion, t.ex. kampanj, betalningslänk, presentkort eller e-postutskick
+ * (insightPrompts.js:57, 77). Marknadsföringen får inte påstå avkastning per kanal
+ * (insightPrompts.js:51), så exemplet gör det inte. Insikterna är exempeltext utan siffror.
  */
 export const vaxaInsikter = {
   id: 'insikter',
   eyebrow: 'INSIKTER & RAPPORTER',
   title: 'Insikter utan att gräva',
   body: [
-    'Schemalägg en rapport om försäljning och kunder, så kommer den till dig utan att du behöver ta fram den.',
-    'AI-insikterna sammanfattar vad som händer i butiken och föreslår vad du kan göra härnäst.',
+    'Schemalägg en rapport om försäljning, kunder och marknadsföring, så tas den fram automatiskt och ligger klar att ladda ner.',
+    'AI-insikterna går igenom statistik, försäljning och kampanjer och föreslår en konkret åtgärd för varje fynd.',
   ],
-  card: {
-    label: 'Rapport',
-    value: 'Skickad',
-    pill: 'Schemalagd',
-    row: { title: 'Försäljning och kunder', note: 'Sammanställd åt dig' },
-  } satisfies StatusCardContent,
+  widget: {
+    label: 'Exempel: en schemalagd veckorapport som blir klar, och tre AI-insikter med åtgärder',
+    title: 'Rapporter och AI-insikter',
+    report: {
+      name: 'Veckorapport',
+      pill: 'Schemalagd',
+      schedule: 'Varje måndag',
+      sections: 'Försäljning, kunder, marknadsföring',
+      pending: 'Tas fram …',
+      ready: 'Klar',
+      downloadLabel: 'Ladda ner',
+    },
+    insightsHeading: 'AI-insikter',
+    actionLabel: 'Åtgärd',
+    insights: [
+      {
+        id: 'trend',
+        priority: 'Hög prioritet',
+        category: 'Översikt & trender',
+        title: 'Fler besök, men inte fler order',
+        action: 'Skapa en kampanj med rabattkod för de mest besökta produkterna.',
+      },
+      {
+        id: 'aterkop',
+        priority: 'Medel prioritet',
+        category: 'Kunder & beteende',
+        title: 'Få kunder köper en andra gång',
+        action: 'Skicka ett e-postutskick till kunder som har köpt en gång.',
+      },
+      {
+        id: 'budget',
+        priority: 'Medel prioritet',
+        category: 'Marknadsföring & kampanjer',
+        title: 'Budgeten ligger på en enda kampanj',
+        action: 'Fördela budgeten på fler aktiva kampanjer.',
+      },
+    ],
+    note: 'Exempel. Insikterna tas fram ur din egen data varje natt.',
+    replayLabel: 'Spela igen',
+  } satisfies InsightsWidgetContent,
 };
 
 /*

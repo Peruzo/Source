@@ -52,6 +52,28 @@ export type ServiceFullBleedCard = {
   anchorTo?: 'section' | 'image';
 };
 
+/**
+ * A larger widget for a ServiceFullBleed section, for what does not fit in a
+ * card: over the photo from `lg`, at a fixed place in the section that keeps
+ * faces and hands clear (measure it), and under the photo, full width, below
+ * `lg` – a phone has no room beside the motif.
+ */
+export type ServiceFullBleedPanel = {
+  /** The widget itself: real React, never an image of UI. */
+  content: ReactNode;
+  /** Accessible name, e.g. "Exempel: kommande myndighetsdatum". */
+  label: string;
+  /**
+   * Where it goes from `lg`. 'photo' (default): at `position` over the photo.
+   * 'text': under the text in the text column, for photos where the people
+   * leave no room beside the text – the section grows with it and the photo
+   * keeps covering it.
+   */
+  place?: 'photo' | 'text';
+  /** With place 'photo': CSS lengths against the section box – `left` or `right`, `top` or `bottom`, and `width`. */
+  position?: { left?: string; right?: string; top?: string; bottom?: string; width: string };
+};
+
 export type FeatureItem = {
   /** A Heroicons outline icon (or any component taking className). */
   icon: ComponentType<{ className?: string }>;
