@@ -23,12 +23,12 @@ import {
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
-import { ServiceBooking } from './ProductWidgets';
 import { GiftCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
 import { OfferWidget } from './interactive/OfferWidget';
 import { LeadsWidget } from './interactive/LeadsWidget';
 import { CheckoutWidget } from './interactive/CheckoutWidget';
 import { CustomersWidget } from './interactive/CustomersWidget';
+import { BookingWidget } from './interactive/BookingWidget';
 
 const STEP_ICONS = [CheckCircleIcon, TruckIcon, ArrowUturnLeftIcon];
 
@@ -145,9 +145,9 @@ export function ForetagVaxaSections() {
       />
 
       {/* 5 – Bokningar. */}
-      <FullBleedImageSection id={vaxaBokningar.id} eyebrow={vaxaBokningar.eyebrow} title={vaxaBokningar.title} body={vaxaBokningar.body}>
-        <div className="@container mx-auto w-full max-w-[36rem]">
-          <ServiceBooking content={vaxaBokningar.booking} {...vaxaMoney} />
+      <FullBleedImageSection id={vaxaBokningar.id} eyebrow={vaxaBokningar.eyebrow} title={vaxaBokningar.title} body={vaxaBokningar.body} height="screen">
+        <div className="mx-auto w-full max-w-[68rem]">
+          <BookingWidget content={vaxaBokningar.booking} {...vaxaMoney} />
         </div>
       </FullBleedImageSection>
 
