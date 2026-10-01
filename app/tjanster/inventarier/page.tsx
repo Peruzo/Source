@@ -323,7 +323,9 @@ function ReturnsSection() {
         </div>
       </Container>
 
-      <div className="mt-12 md:mt-14 lg:mt-16">
+      {/* overflow-x-clip: the image drifts 10 px sideways (x below) and is full width on phones,
+          so without it the page scrolled sideways by up to 10 px. Clip, not hidden: no scroll box. */}
+      <div className="mt-12 overflow-x-clip md:mt-14 lg:mt-16">
         <motion.div
           className="relative mx-auto w-full max-w-[960px] px-4 md:max-w-[1080px] lg:max-w-[1120px]"
           animate={reduceMotion ? { x: 0 } : { x: [0, 10, 0] }}
