@@ -16,14 +16,14 @@ import {
   foretagPrenumerationer,
   foretagProdukter,
 } from '@/lib/data/for-dig/foretag-start';
-import { CampaignCode, CreateCampaignButton, CreateCampaignDialog } from './CampaignWidgets';
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
-import { AddProductDialog } from './ProductWidgets';
 import { SubscriptionWidgets } from './SubscriptionWidgets';
-import { DeadlineCard, OfferList, PaymentLinkCard } from './foretag-start/widgets';
+import { DeadlineCard, PaymentLinkCard } from './foretag-start/widgets';
+import { ProductsWidget } from './interactive/ProductsWidget';
+import { CampaignsWidget } from './interactive/CampaignsWidget';
 
 /**
  * Everything under the hero on /foretag-nya (Företag Start). The hero in
@@ -51,10 +51,9 @@ export function ForetagStartSections() {
         sticky={false}
         background="white"
         media={
-          <div className="@container flex flex-col justify-center gap-4 bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-12 lg:pl-8 lg:pr-8 lg:pt-20 xl:pl-12">
-            <OfferList content={p.offers} {...foretagMoney} />
-            <div className="w-full max-w-[20rem] self-end">
-              <AddProductDialog content={p.addProduct} fields="full" {...foretagMoney} />
+          <div className="flex flex-col items-center justify-center bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-12 lg:pl-8 lg:pr-8 lg:pt-20 xl:pl-12">
+            <div className="w-full max-w-[36rem]">
+              <ProductsWidget content={p.widget} {...foretagMoney} />
             </div>
           </div>
         }
@@ -82,7 +81,7 @@ export function ForetagStartSections() {
         }}
       />
 
-      {/* 4 – Kampanjer och rabattkoder. Dialog and code only – no product photos. */}
+      {/* 4 – Kampanjer och rabattkoder. The create flow and the active list – no product photos. */}
       <ClippedImageSection
         id={k.id}
         eyebrow={k.eyebrow}
@@ -92,28 +91,23 @@ export function ForetagStartSections() {
         sticky={false}
         background="white"
         media={
-          <div className="flex flex-col justify-center gap-4 bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-20 lg:pl-8 lg:pr-8 lg:pt-12 xl:pr-12">
-            <div>
-              <div className="mb-3">
-                <CreateCampaignButton label={k.create.buttonLabel} pressed />
-              </div>
-              <CreateCampaignDialog content={k.create} products={[]} fields="full" {...foretagMoney} />
-            </div>
-            <div className="w-full max-w-[22rem] self-end">
-              <CampaignCode content={k.code} rate={k.discountRate} locale={foretagMoney.locale} />
+          <div className="flex flex-col items-center justify-center bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-20 lg:pl-8 lg:pr-8 lg:pt-12 xl:pr-12">
+            <div className="w-full max-w-[36rem]">
+              <CampaignsWidget content={k.widget} />
             </div>
           </div>
         }
       />
 
-      {/* 5 – Prenumerationer. Card as payment method. */}
+      {/* 5 – Prenumerationer. Card as payment method. One full screen, with the levels at the larger scale. */}
       <FullBleedImageSection
         id={foretagPrenumerationer.id}
         eyebrow={foretagPrenumerationer.eyebrow}
         title={foretagPrenumerationer.title}
         body={foretagPrenumerationer.body}
+        height="screen"
       >
-        <SubscriptionWidgets {...foretagPrenumerationer.widgets} />
+        <SubscriptionWidgets {...foretagPrenumerationer.widgets} large discount={foretagPrenumerationer.discount} />
       </FullBleedImageSection>
 
       {/* 6 – Myndighetsdatum. Photo with the card on the pile of papers. */}

@@ -21,6 +21,10 @@ import {
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { ServiceBookingContent } from '@/components/sections/for-dig/product-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
+import type { OfferWidgetContent } from '@/components/sections/for-dig/interactive/OfferWidget';
+import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
+import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
+import type { CustomersWidgetContent } from '@/components/sections/for-dig/interactive/CustomersWidget';
 
 /** One status row: a title and a short line under it. */
 export type StatusRowContent = { title: string; note: string };
@@ -33,58 +37,9 @@ export type StatusCardContent = {
   row: StatusRowContent;
 };
 
-export type OfferViewContent = {
-  label: string;
-  sender: string;
-  status: string;
-  documentTitle: string;
-  number: { label: string; value: string };
-  recipient: { label: string; name: string };
-  lines: { id: string; description: string; amount: number }[];
-  totalLabel: string;
-  primaryAction: string;
-  secondaryAction: string;
-};
-
-/** The follow-up step a lead is in, drawn as a status pill. */
-export type LeadStage = 'new' | 'contacted' | 'won';
-
-export type LeadListContent = {
-  label: string;
-  title: string;
-  ratingLabel: string;
-  leads: {
-    id: string;
-    company: string;
-    place: string;
-    /** Letter grade as in the portal: A, B, C, D or F. */
-    rating: string;
-    motivation: string;
-    stage: LeadStage;
-    status: string;
-  }[];
-  action: string;
-};
-
-export type BrandedCheckoutContent = {
-  label: string;
-  logoSlot: string;
-  orderLine: string;
-  amount: number;
-  methods: { id: string; label: string; note?: string }[];
-  payLabel: string;
-};
-
 export type GiftCardContent = {
   title: string;
   code: { label: string; value: string };
-};
-
-export type EmailRowContent = {
-  title: string;
-  sender: string;
-  subject: string;
-  status: string;
 };
 
 export type ReviewCardContent = {
@@ -175,6 +130,14 @@ export const vaxaFrakt = {
  * 2 – Offerter. Belägg: skapa, PDF, skicka, gör om till faktura och
  * betalningslänk (routes/offerRoutes.js:181, 280, 305, 478, 647), sidan är
  * spärrad till paketet (config/packageTiers.js:114, server.js:3388).
+ * Widgeten (source.database origin/develop e7f702d6): PDF:ens rubrik, nummer,
+ * datum och Giltig till (services/pdfTemplates.js:350-354), Från och Till med
+ * org.nr och adress (:233-256), kolumnerna Beskrivning, Antal, À-pris, Moms och
+ * Belopp (:368-369), Delsumma, Moms och Att betala (:228-230, 375-377).
+ * Åtgärderna per status (public/offert-layout2.html:701-724): Redigera och Ta
+ * bort för utkast, Skicka, PDF och Duplicera, Accepterad/Avböjd sätts av dig
+ * på en skickad offert, Skapa faktura och Skapa betallänk på en accepterad.
+ * Ingen godkännandesida för kunden och ingen e-signering.
  */
 export const vaxaOfferter = {
   id: 'offerter',
@@ -185,20 +148,45 @@ export const vaxaOfferter = {
     'När kunden säger ja gör du om offerten till en faktura eller en betalningslänk, utan att skriva in något igen.',
   ],
   offer: {
-    label: 'Exempel: en skickad offert',
-    sender: 'Ditt företag AB',
-    status: 'Skickad',
+    label: 'Exempel: en offert som skickas, accepteras och kan göras om till faktura eller betallänk',
     documentTitle: 'Offert',
-    number: { label: 'Nr', value: '2026-031' },
-    recipient: { label: 'Till', name: 'Kund AB' },
+    sender: 'Ditt företag AB',
+    number: { label: 'Offertnummer', value: '2026-031' },
+    date: { label: 'Datum', value: '2026-11-02' },
+    validUntil: { label: 'Giltig till', value: '2026-12-02' },
+    from: {
+      label: 'Från',
+      name: 'Ditt företag AB',
+      lines: ['Exempelgatan 1, 123 45 Småstad', 'Org.nr 559000-0000', 'Momsnr SE559000000001'],
+    },
+    to: {
+      label: 'Till',
+      name: 'Kund AB',
+      lines: ['Kundvägen 2, 234 56 Exempelstad', 'Org.nr 556000-0000'],
+    },
+    columns: { description: 'Beskrivning', quantity: 'Antal', unitPrice: 'À-pris', vat: 'Moms', amount: 'Belopp' },
     lines: [
-      { id: 'l1', description: 'Uppdrag enligt överenskommelse', amount: 18000 },
-      { id: 'l2', description: 'Uppföljning', amount: 4500 },
+      { id: 'l1', description: 'Uppdrag enligt överenskommelse', quantity: 1, unitPrice: 18000, vatRate: 0.25 },
+      { id: 'l2', description: 'Uppföljningsmöte', quantity: 2, unitPrice: 2250, vatRate: 0.25 },
+      { id: 'l3', description: 'Material', quantity: 3, unitPrice: 400, vatRate: 0.25 },
     ],
-    totalLabel: 'Totalt inkl. moms',
-    primaryAction: 'Gör om till faktura',
-    secondaryAction: 'Betalningslänk',
-  } satisfies OfferViewContent,
+    subtotalLabel: 'Delsumma',
+    vatLabel: 'Moms',
+    totalLabel: 'Att betala',
+    statusLabel: 'Status',
+    statuses: { draft: 'Utkast', sent: 'Skickad', accepted: 'Accepterad' },
+    markAs: { accepted: 'Accepterad', declined: 'Avböjd' },
+    actionsLabel: 'Åtgärder för offerten',
+    actions: {
+      edit: 'Redigera',
+      pdf: 'Ladda ner PDF',
+      send: 'Skicka till kund',
+      duplicate: 'Duplicera',
+      delete: 'Ta bort',
+      invoice: 'Skapa faktura',
+      paymentLink: 'Skapa betallänk',
+    },
+  } satisfies OfferWidgetContent,
 };
 
 /*
@@ -213,6 +201,13 @@ export const vaxaOfferter = {
  * export (routes/leadsRoutes.js:598-726). Statusorden och knappen är portalens egna.
  * Nämn inte källornas namn, schemaläggning, ifyllda kontaktuppgifter, tider, antal eller storlek.
  * Exempelföretagen är påhittade och branschneutrala.
+ * Widgeten (source.database origin/develop e7f702d6): statusorden Nytt lead,
+ * Kontaktad, Vunnen och Ingen affär (public/leads-layout2.html:1400-1410), Ort,
+ * betyg A–F och AI-poäng (:2805-2822), Anteckningar (:2791), knappen Analysera &
+ * pitch (:3546-3570). Analysen har avsnitten Bakgrund, Relevans, Säljpitch,
+ * Samtalsöppningar och Troliga invändningar och ett underlagsmärke
+ * (routes/leadsRoutes.js:1252-1262, public/leads-layout2.html:3824-3844).
+ * Analysen har inget avsnitt för nästa steg, så widgeten visar inget sådant.
  */
 export const vaxaLeads = {
   id: 'leads',
@@ -222,41 +217,43 @@ export const vaxaLeads = {
     'Välj vilka kunder du vill nå, efter bransch och ort, så letar Source fram företag som passar från flera källor – med ett betyg och en kort motivering för varje.',
     'Be om en pitchanalys innan du hör av dig och följ varje lead från nytt till vunnen affär. Du kan också importera egna listor och exportera dina leads.',
   ],
-  list: {
-    label: 'Exempel: tre leads med betyg, motivering och status',
-    title: 'Leads',
+  widget: {
+    label: 'Exempel: en lead öppnas och analyseras med Analysera & pitch',
+    listTitle: 'Leads',
     ratingLabel: 'Betyg',
     leads: [
-      {
-        id: 'l1',
-        company: 'Exempel Nord AB',
-        place: 'Umeå',
-        rating: 'A',
-        motivation: 'Samma bransch och ort som i din profil.',
-        stage: 'new',
-        status: 'Nytt lead',
-      },
-      {
-        id: 'l2',
-        company: 'Exempel Väst AB',
-        place: 'Göteborg',
-        rating: 'B',
-        motivation: 'Matchar en av branscherna du har valt.',
-        stage: 'contacted',
-        status: 'Kontaktad',
-      },
-      {
-        id: 'l3',
-        company: 'Exempel Syd AB',
-        place: 'Malmö',
-        rating: 'A',
-        motivation: 'Ligger i en av orterna du har valt.',
-        stage: 'won',
-        status: 'Vunnen',
-      },
+      { id: 'l1', company: 'Exempel Nord AB', place: 'Umeå', rating: 'A', status: 'Nytt lead', tone: 'outline' },
+      { id: 'l2', company: 'Exempel Väst AB', place: 'Göteborg', rating: 'B', status: 'Kontaktad', tone: 'muted' },
+      { id: 'l3', company: 'Exempel Syd AB', place: 'Malmö', rating: 'A', status: 'Vunnen', tone: 'paid' },
+      { id: 'l4', company: 'Exempel Öst AB', place: 'Uppsala', rating: 'C', status: 'Ingen affär', tone: 'outline' },
     ],
-    action: 'Analysera & pitch',
-  } satisfies LeadListContent,
+    open: {
+      company: 'Exempel Nord AB',
+      details: [
+        { label: 'Ort', value: 'Umeå' },
+        { label: 'Betyg', value: 'A' },
+        { label: 'AI-poäng', value: '86/100' },
+        { label: 'Status', value: 'Nytt lead' },
+      ],
+      notesTitle: 'Anteckningar',
+      note: { date: '2026-11-02', text: 'Hittad via din profil. Hör av dig före månadsskiftet.' },
+      action: 'Analysera & pitch',
+      loading: 'Analyserar …',
+      answerTitle: 'Analys (exempel)',
+      evidence: 'Delvis underbyggd',
+      sections: [
+        { title: 'Bakgrund', body: 'Etablerat bolag i Umeå som säljer både på plats och via sin webbplats.' },
+        { title: 'Relevans', body: 'Samma bransch och ort som i din profil, och de växer i din region.' },
+        { title: 'Säljpitch', body: 'Visa hur försäljning, kunder och betalningar samlas på ett ställe, utan fler system att hålla ihop.' },
+        { title: 'Samtalsöppningar', body: 'Hur tar ni i dag emot beställningar som kommer in via webbplatsen?' },
+      ],
+      objection: {
+        title: 'Troliga invändningar',
+        question: 'Vi har redan ett system.',
+        answer: 'Börja med en del, till exempel betalningarna, och flytta resten när det passar.',
+      },
+    },
+  } satisfies LeadsWidgetContent,
 };
 
 /*
@@ -282,31 +279,38 @@ export const vaxaBokforing = {
 
 /*
  * 4 – Kassan i ditt utseende. Belägg: checkout-inställningar med logotyp och
- * färger (config/packageTiers.js:80, routes/checkoutSettingsRoutes.js:229-309),
- * Klarna i kassan med Swish som betalalternativ (routes/klarnaRoutes.js:1-4,
- * server.js:3231), presentkort (config/packageTiers.js:110, 186, 199;
- * routes/giftCardRoutes.js:418, 751, 1010).
+ * accentfärg (config/packageTiers.js:80, routes/checkoutSettingsRoutes.js:229-309),
+ * presentkort (config/packageTiers.js:110, 186, 199; routes/giftCardRoutes.js:418,
+ * 751, 1010). Widgeten (source.database origin/develop e7f702d6): en accentfärg och
+ * en logotyp (public/checkout-layout2.html:396-423, services/checkoutBrandingService.js:87,
+ * 106-122), kort som enda betalsätt (services/storefrontCheckoutService.js:2327),
+ * rabattkodsfältet i kassan (:2336-2338). Presentkortet löses in i butiken före kassan
+ * (routes/storefrontRoutes.js:1579, 1813-1847). Klarna och Swish är inte kopplade till
+ * butikens kassa och nämns inte.
  */
 export const vaxaKassa = {
   id: 'kassan',
   eyebrow: 'KASSAN',
   title: 'Kassan i ditt utseende',
   body: [
-    'Lägg in din logotyp och dina färger, så känner kunden igen dig hela vägen till betalningen.',
-    'Slå på Klarna för fler sätt att betala, bland annat Swish, och sälj presentkort i din butik.',
+    'Lägg in din logotyp och din accentfärg, så känner kunden igen dig hela vägen till betalningen.',
+    'Kunden betalar med kort och kan ange en rabattkod i kassan. Sälj presentkort i din butik, som kunden löser in innan betalningen.',
   ],
   checkout: {
-    label: 'Exempel: kassan med egen logotyp och färg',
-    logoSlot: 'Din logotyp',
-    orderLine: 'Din order',
-    amount: 1245,
-    methods: [
-      { id: 'kort', label: 'Kort' },
-      { id: 'klarna', label: 'Klarna' },
-      { id: 'swish', label: 'Swish', note: 'via Klarna' },
+    label: 'Exempel: kassan med egen logotyp och färg, där en rabattkod läggs till',
+    shopName: 'Ditt företag',
+    summaryTitle: 'Din order',
+    lines: [
+      { id: 'c1', name: 'Startpaket Plus', quantity: 1, unitPrice: 1490 },
+      { id: 'c2', name: 'Tillbehör', quantity: 2, unitPrice: 149 },
     ],
+    subtotalLabel: 'Delsumma',
+    code: { label: 'Rabattkod', placeholder: 'Lägg till rabattkod', value: 'VALKOMMEN10', rate: 0.1, applyLabel: 'Lägg till', appliedLabel: 'Rabatt' },
+    totalLabel: 'Att betala',
+    payment: { title: 'Betalning', method: 'Kort', cardNumber: '1234 1234 1234 1234', expiry: 'MM / ÅÅ', cvc: 'CVC' },
     payLabel: 'Betala',
-  } satisfies BrandedCheckoutContent,
+    secureNote: 'Säker kortbetalning',
+  } satisfies CheckoutWidgetContent,
   giftCard: {
     title: 'Presentkort',
     code: { label: 'Kod', value: 'PRESENT-7Q4M' },
@@ -368,7 +372,15 @@ export const vaxaInsikter = {
  * avsändardomän (config/packageTiers.js:97), kundomdömen med publicering på
  * webbplatsen (routes/productReviewRoutes.js:36), nyheter i butiken
  * (config/packageTiers.js:69, server.js:3491). Köp- och återköpsbekräftelse
- * är på väg och nämns inte. Omdömet visar betyg och status, inget påhittat citat.
+ * är på väg och nämns inte.
+ * Widgeten (source.database origin/develop e7f702d6): produktomdömen med betyg
+ * 1–5, kommentar, visningsnamn som "Anna S." och verifierat köp
+ * (models/ProductReview.js:47-71), reglaget "Kundnöjdhet på hemsidan" som gäller
+ * alla produkter (public/produkter-layout2.html:904-911, models/TenantConfig.js:305-306),
+ * omdömena följer med produktsidorna (routes/storefrontRoutes.js:384-416, 795-840).
+ * Utskick går till befintliga kunder, med urvalet köpt inom N månader
+ * (services/campaignSendService.js:65-95). Portalen har inget registreringsformulär
+ * för nyhetsbrev, så widgeten visar ett utskick i stället. Omdömena är exempeltext.
  */
 export const vaxaKunder = {
   id: 'hall-kunderna-nara',
@@ -378,19 +390,52 @@ export const vaxaKunder = {
     'Skicka nyhetsbrev från din egen avsändaradress och publicera nyheter direkt i butiken.',
     'Samla kundernas omdömen och visa dem på din webbplats.',
   ],
-  email: {
-    title: 'Utskick',
-    sender: 'hej@dittforetag.se',
-    subject: 'Nyheter i butiken',
-    status: 'Skickat',
-  } satisfies EmailRowContent,
-  review: {
-    title: 'Nytt omdöme',
-    stars: 5,
-    outOf: 5,
-    starsLabel: 'Betyg i exemplet',
-    status: 'Visas på webbplatsen',
-  } satisfies ReviewCardContent,
+  widget: {
+    label: 'Exempel: omdömen visas på webbplatsen och ett utskick skickas till kunderna',
+    reviews: {
+      title: 'Kundomdömen',
+      toggleLabel: 'Kundnöjdhet på hemsidan',
+      toggleHint: 'Gäller alla produkter',
+      on: 'På',
+      off: 'Av',
+      offNote: 'Omdömena visas inte på webbplatsen ännu.',
+      starsLabel: 'Betyg',
+      verifiedLabel: 'Verifierat köp',
+      shownLabel: 'Visas på webbplatsen',
+      items: [
+        {
+          id: 'r1',
+          stars: 5,
+          text: 'Snabb leverans och precis som beskrivet. Jag fick svar direkt när jag hade en fråga.',
+          name: 'Anna S.',
+          product: 'Startpaket',
+        },
+        {
+          id: 'r2',
+          stars: 4,
+          text: 'Bra kvalitet och tydliga instruktioner. Hade gärna sett fler färgval, men jag beställer gärna igen.',
+          name: 'Johan L.',
+          product: 'Tillbehör',
+        },
+        {
+          id: 'r3',
+          stars: 3,
+          text: 'Fungerar bra, men leveransen tog ett par dagar längre än jag hade räknat med.',
+          name: 'Sara K.',
+          product: 'Startpaket Plus',
+        },
+      ],
+    },
+    mailing: {
+      title: 'Utskick',
+      recipients: { label: 'Till', value: 'Kunder som har köpt de senaste 6 månaderna' },
+      sender: { label: 'Från', value: 'hej@dittforetag.se' },
+      subject: { label: 'Ämne', value: 'Nyheter i butiken' },
+      sendLabel: 'Skicka',
+      draft: 'Utkast',
+      sent: 'Skickat',
+    },
+  } satisfies CustomersWidgetContent,
 };
 
 /*

@@ -18,15 +18,11 @@ import {
 } from '@heroicons/react/24/outline';
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { InvoiceWidgetsContent } from '@/components/sections/for-dig/invoice-widgets/content';
-import type { AddProductContent } from '@/components/sections/for-dig/product-widgets/content';
-import type { CampaignCodeContent, CreateCampaignContent } from '@/components/sections/for-dig/campaign-widgets/content';
+import type { ProductsWidgetContent } from '@/components/sections/for-dig/interactive/ProductsWidget';
+import type { CampaignsWidgetContent } from '@/components/sections/for-dig/interactive/CampaignsWidget';
+import type { SubscriptionDiscountContent } from '@/components/sections/for-dig/interactive/SubscriptionDiscount';
 import type { SubscriptionWidgetsContent } from '@/components/sections/for-dig/subscription-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
-
-export type OfferListContent = {
-  title: string;
-  rows: { id: string; name: string; kind: string; price: number }[];
-};
 
 export type PhotoCardContent = {
   label: string;
@@ -68,6 +64,10 @@ export const foretagImages = {
  * 1 – Produkter och tjänster. Belägg: produktsidan och typerna product,
  * service och subscription är core (models/Product.js:279,
  * config/packageTiers.js:198-200). Bokningsbara tider är growth och visas inte.
+ * Widgeten (source.database origin/develop e7f702d6): typetiketterna Produkt,
+ * Tjänst och Prenumeration (public/produkter-layout2.html:3214), fälten
+ * Produktnamn, Pris (SEK), Huvudkategori och produktbild (:1378, :1392,
+ * :1521, :4096-4152). Presentkort är growth och visas inte här.
  */
 export const foretagProdukter = {
   id: 'produkter-och-tjanster',
@@ -77,23 +77,27 @@ export const foretagProdukter = {
     'Varor, tjänster eller abonnemang – lägg upp dem med namn, pris, bild och kategori, och se lagersaldot för det du har i lager.',
     'Allt du säljer finns på ett ställe, redo för din webbplats och för dina fakturor.',
   ],
-  offers: {
-    title: 'Det du säljer',
+  widget: {
+    label: 'Exempel: en ny produkt läggs till i listan över det du säljer',
+    listTitle: 'Det du säljer',
+    addLabel: 'Lägg till ny produkt',
     rows: [
-      { id: 'o1', name: 'Startpaket', kind: 'Vara', price: 1200 },
+      { id: 'o1', name: 'Startpaket', kind: 'Produkt', price: 1200 },
       { id: 'o2', name: 'Tjänst per timme', kind: 'Tjänst', price: 950 },
-      { id: 'o3', name: 'Månadsabonnemang', kind: 'Abonnemang', price: 299 },
-      { id: 'o4', name: 'Tillbehör', kind: 'Vara', price: 149 },
+      { id: 'o3', name: 'Månadsabonnemang', kind: 'Prenumeration', price: 299 },
+      { id: 'o4', name: 'Tillbehör', kind: 'Produkt', price: 149 },
     ],
-  } satisfies OfferListContent,
-  addProduct: {
-    title: 'Lägg till ny produkt',
-    name: { label: 'Produktnamn', value: 'Tjänst per timme' },
-    price: { label: 'Pris', amount: 950 },
-    category: { label: 'Kategori', value: 'Tjänster' },
-    upload: { label: 'Produktbild', hint: 'Dra hit en bild' },
-    submitLabel: 'Spara produkt',
-  } satisfies AddProductContent,
+    newRow: { id: 'o0', name: 'Startpaket Plus', kind: 'Produkt', price: 1490 },
+    dialog: {
+      title: 'Lägg till ny produkt',
+      name: { label: 'Produktnamn', value: 'Startpaket Plus' },
+      price: { label: 'Pris (SEK)', amount: 1490 },
+      category: { label: 'Kategori', value: 'Paket' },
+      type: { label: 'Typ', value: 'Produkt' },
+      image: { label: 'Produktbild', fileName: 'produktbild.jpg' },
+      submitLabel: 'Spara produkt',
+    },
+  } satisfies ProductsWidgetContent,
 };
 
 /*
@@ -179,6 +183,14 @@ export const foretagBetalningslank = {
  * (routes/campaignRoutes.js:2213), rabattkoder med procent eller belopp,
  * högsta antal användningar och slutdatum (routes/campaignRoutes.js:776-795),
  * koden anges i kassan (services/storefrontCheckoutService.js:2335-2338).
+ * Widgeten (source.database origin/develop e7f702d6): modalen har flikarna
+ * Kampanj och Kampanjkod (public/kampanjer-layout2.html:341-342). Kampanjen har
+ * Kampanjnamn, Rabatttyp (Procentuell rabatt / Fast rabatt (kr) / 2 för 1),
+ * Rabattvärde, Start- och Slutdatum, Max antal användningar och Produkter
+ * (:355-465), och knappen Skapa kampanj (:477). Kampanjen gäller valda
+ * produkter, inte kategorier. En kod gäller hela varukorgen
+ * (routes/campaignRoutes.js:806-886) och listas med Aktiv och antal
+ * användningar (public/js/campaigns.js:1598-1633).
  */
 export const foretagKampanjer = {
   id: 'kampanjer',
@@ -188,27 +200,29 @@ export const foretagKampanjer = {
     'Sätt kampanjpriser under en period, eller skapa en rabattkod med procent eller ett fast belopp.',
     'Du bestämmer hur länge koden gäller och hur många gånger den får användas – kunden anger den i kassan.',
   ],
-  discountRate: 0.1,
-  create: {
-    buttonLabel: 'Skapa kampanj',
-    title: 'Ny kampanj',
-    name: { label: 'Kampanjnamn', value: 'Välkomstrabatt' },
-    products: { label: 'Gäller', selectedLabel: 'Alla produkter' },
-    discountType: {
-      label: 'Rabattyp',
-      options: { percent: 'Procent', amount: 'Fast belopp' },
-      defaultValue: 'percent',
+  widget: {
+    label: 'Exempel: en ny kampanj läggs till bland de aktiva kampanjerna',
+    listTitle: 'Aktiva kampanjer',
+    createLabel: 'Skapa kampanj',
+    rows: [
+      { id: 'k1', name: 'Välkomstrabatt', kind: 'Kampanjkod', code: 'VALKOMMEN10', discount: '−10 %', detail: 'Hela varukorgen · 12 av 100 användningar', status: 'Aktiv' },
+      { id: 'k2', name: 'Paketpris', kind: 'Kampanj', discount: '−150 kr', detail: '2 produkter · till 2026-12-31', status: 'Aktiv' },
+      { id: 'k3', name: 'Två för en', kind: 'Kampanj', discount: '2 för 1', detail: '1 produkt · till 2026-11-30', status: 'Aktiv' },
+      { id: 'k4', name: 'Stamkund', kind: 'Kampanjkod', code: 'TACK100', discount: '−100 kr', detail: 'Hela varukorgen · 8 av 50 användningar', status: 'Aktiv' },
+    ],
+    newRow: { id: 'k0', name: 'Höstkampanj', kind: 'Kampanj', discount: '−20 %', detail: '3 produkter · 1–30 nov 2026', status: 'Aktiv' },
+    dialog: {
+      title: 'Ny kampanj',
+      tabs: { campaign: 'Kampanj', code: 'Kampanjkod' },
+      name: { label: 'Kampanjnamn', value: 'Höstkampanj' },
+      products: { label: 'Produkter', value: '3 valda' },
+      discountType: { label: 'Rabatttyp', value: 'Procentuell rabatt' },
+      value: { label: 'Rabattvärde (%)', value: '20' },
+      period: { label: 'Start- och slutdatum', value: '1–30 nov 2026' },
+      maxUses: { label: 'Max antal användningar', value: 'Obegränsat' },
+      submitLabel: 'Skapa kampanj',
     },
-    value: { label: 'Värde', percent: 0.1, amount: 100 },
-    period: { label: 'Giltighetsperiod', from: '2026-11-01', to: '2026-11-30' },
-    submitLabel: 'Starta kampanj',
-  } satisfies CreateCampaignContent,
-  code: {
-    title: 'Rabattkod',
-    code: { label: 'Kod', value: 'VALKOMMEN10' },
-    discount: { label: 'Rabatt' },
-    usage: { label: 'Får användas', value: '100 gånger' },
-  } satisfies CampaignCodeContent,
+  } satisfies CampaignsWidgetContent,
 };
 
 /*
@@ -216,6 +230,14 @@ export const foretagKampanjer = {
  * dag, vecka, månad och år (models/Product.js:279-295), paus och uppsägning
  * från kundprofilen (config/permissions.js:97). Betalsätt kort; autogiro
  * nämns inte.
+ * Kampanj på en prenumeration (source.database origin/develop b25b58c1): fliken
+ * Kunders prenumerationer (public/prenumerationer-layout2.html:1109), knappen
+ * Lägg till kampanj med hjälptexten Rabatt på prenumerationen per prenumeration
+ * (public/js/subscription-actions-panel.js:210-235), formuläret med Typ av rabatt,
+ * Värde, Giltighet och Antal månader och knappen Lägg till (:306-333), raden visar
+ * "Kampanj: 10 % i 2 månader" (public/js/kundprenumerationer.js:70-81, 122-127),
+ * rabatten läggs på den enskilda prenumerationen (routes/adminTenantCustomerActions.js:912-976).
+ * Formuläret har inget namnfält, och det finns ingen kampanj för alla prenumerationer.
  */
 export const foretagPrenumerationer = {
   id: 'prenumerationer',
@@ -224,6 +246,7 @@ export const foretagPrenumerationer = {
   body: [
     'Låt kunden betala automatiskt med kort varje vecka, månad eller år.',
     'Du ser vilka som är aktiva, och kan pausa eller avsluta ett abonnemang när kunden vill.',
+    'Vill du ge en kund rabatt lägger du en kampanj på just den prenumerationen – en period, ett antal månader eller tills vidare.',
   ],
   widgets: {
     ...money,
@@ -260,6 +283,31 @@ export const foretagPrenumerationer = {
       submitLabel: 'Skapa prenumeration',
     },
   } satisfies SubscriptionWidgetsContent,
+  discount: {
+    label: 'Exempel: en kampanj läggs på en kunds prenumeration',
+    title: 'Kunders prenumerationer',
+    rows: [
+      { id: 's1', customer: 'Kund AB', plan: 'Utökad', amount: 399, perLabel: '/ månad', next: 'Nästa period 2026-11-27', status: 'Aktiv' },
+      { id: 's2', customer: 'Exempel Nord AB', plan: 'Grund', amount: 199, perLabel: '/ månad', next: 'Nästa period 2026-11-25', status: 'Aktiv' },
+      { id: 's3', customer: 'Exempel Väst AB', plan: 'Allt i ett', amount: 699, perLabel: '/ månad', next: 'Nästa period 2026-11-28', status: 'Aktiv' },
+    ],
+    targetId: 's1',
+    addLabel: 'Lägg till kampanj',
+    addHelp: 'Rabatt på prenumerationen',
+    removeLabel: 'Ta bort kampanj',
+    removeHelp: 'Rabatten upphör direkt',
+    dialog: {
+      title: 'Lägg till kampanj',
+      message: 'Rabatten gäller prenumerationens kommande fakturor.',
+      appliesTo: { label: 'Prenumeration' },
+      type: { label: 'Typ av rabatt', value: 'Procent av priset' },
+      value: { label: 'Värde', value: '10' },
+      duration: { label: 'Giltighet', value: 'Ett antal månader' },
+      months: { label: 'Antal månader', value: '2' },
+      submitLabel: 'Lägg till',
+    },
+    appliedText: 'Kampanj: 10 % i 2 månader',
+  } satisfies SubscriptionDiscountContent,
 };
 
 /*

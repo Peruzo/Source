@@ -153,7 +153,7 @@ export const privatEtableradeMer = {
   eyebrow: 'ALLT FRÅN VÄXANDE',
   title: 'Och allt du redan växer med',
   items: [
-    { icon: CreditCardIcon, title: 'Kassan i ditt utseende', body: 'Din logotyp och dina färger i kassan, med Klarna och Swish.' },
+    { icon: CreditCardIcon, title: 'Kassan i ditt utseende', body: 'Din logotyp och din accentfärg i kassan, där kunden betalar med kort.' },
     { icon: GiftIcon, title: 'Presentkort', body: 'Sälj presentkort som dina kunder kan ge bort.' },
     { icon: TruckIcon, title: 'Frakt och returer', body: 'Boka frakt med PostNord och ta emot returer där ordern finns.' },
     { icon: StarIcon, title: 'Kundomdömen', body: 'Samla omdömen och visa dem på din webbplats.' },

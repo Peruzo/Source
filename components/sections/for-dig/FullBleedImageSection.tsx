@@ -17,8 +17,8 @@ type FullBleedImageSectionProps = {
    * `children` instead – sections 3, 5 and 7 carry their UI widgets that way.
    */
   image?: SectionImage;
-  /** `tall` fills the viewport, `regular` is a calmer band. */
-  height?: 'regular' | 'tall';
+  /** `tall` fills the viewport, `regular` is a calmer band, `screen` is exactly one screen with the content centred. */
+  height?: 'regular' | 'tall' | 'screen';
   /** Extra content under the body – CTA buttons, TODO-markers, UI cards. */
   children?: ReactNode;
 };
@@ -26,6 +26,7 @@ type FullBleedImageSectionProps = {
 const heights: Record<NonNullable<FullBleedImageSectionProps['height']>, string> = {
   regular: 'min-h-[70svh] py-28 md:py-36',
   tall: 'min-h-[92svh] py-32 md:py-44',
+  screen: 'flex min-h-[100svh] flex-col justify-center py-24 md:py-28',
 };
 
 /**
@@ -77,7 +78,12 @@ export function FullBleedImageSection({
         </>
       ) : null}
 
-      <div className="relative mx-auto flex max-w-[1440px] flex-col items-center px-6 text-center md:px-10 lg:px-20">
+      {/* `screen` makes the section a flex column, where `mx-auto` alone would shrink this box to its content. */}
+      <div
+        className={`relative mx-auto flex max-w-[1440px] flex-col items-center px-6 text-center md:px-10 lg:px-20${
+          height === 'screen' ? ' w-full' : ''
+        }`}
+      >
         {eyebrow ? (
           <motion.p {...reveal(0)} className="text-overline mb-6 text-teal">
             {eyebrow}

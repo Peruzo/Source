@@ -137,7 +137,7 @@ export function PrivatForDigSections() {
           // TODO: verifiera att vi inte tar transaktionsavgift
         ]}
       >
-        {/* Bara kortbetalning: andra betalsätt via Klarna ingår i Growth. */}
+        {/* Bara kortbetalning: butikens kassa tar enbart kort. */}
         <PaymentCards
           checkout={{
             ...paymentCardsDefaults.checkout,

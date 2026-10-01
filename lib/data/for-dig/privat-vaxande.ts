@@ -19,8 +19,8 @@ import {
 } from '@heroicons/react/24/outline';
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
+import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
 import type {
-  BrandedCheckoutContent,
   GiftCardContent,
   ReviewCardContent,
   StatusCardContent,
@@ -90,30 +90,34 @@ export const privatVaxandeFrakt = {
 
 /*
  * 2 – Kassan i ditt utseende. Belägg: checkout med logotyp och färg (config/packageTiers.js:80,
- * routes/checkoutSettingsRoutes.js:229-309), Klarna med Swish (routes/klarnaRoutes.js:1-4,
- * server.js:3231-3242), presentkort (config/packageTiers.js:110, routes/giftCardRoutes.js:418,
- * 751, 1010).
+ * routes/checkoutSettingsRoutes.js:229-309), presentkort (config/packageTiers.js:110,
+ * routes/giftCardRoutes.js:418, 751, 1010). Samma widget och belägg som Företag Växa
+ * (lib/data/for-dig/foretag-vaxa.ts, vaxaKassa): kort som enda betalsätt, rabattkod i
+ * kassan, presentkortet löses in före kassan. Klarna och Swish nämns inte.
  */
 export const privatVaxandeKassa = {
   id: 'kassan',
   eyebrow: 'KASSAN',
   title: 'Kassan i ditt utseende',
   body: [
-    'Din logotyp och dina färger följer med ända till betalningen, så känner kunden igen din butik.',
-    'Slå på Klarna för fler sätt att betala, bland annat Swish, och sälj presentkort som dina kunder kan ge bort.',
+    'Din logotyp och din accentfärg följer med ända till betalningen, så känner kunden igen din butik.',
+    'Kunden betalar med kort och kan ange en rabattkod i kassan. Sälj presentkort som dina kunder kan ge bort.',
   ],
   checkout: {
-    label: 'Exempel: kassan med din logotyp och färg',
-    logoSlot: 'Din logotyp',
-    orderLine: 'Din beställning',
-    amount: 690,
-    methods: [
-      { id: 'kort', label: 'Kort' },
-      { id: 'klarna', label: 'Klarna' },
-      { id: 'swish', label: 'Swish', note: 'via Klarna' },
+    label: 'Exempel: kassan med din logotyp och färg, där en rabattkod läggs till',
+    shopName: 'Ditt varumärke',
+    summaryTitle: 'Din beställning',
+    lines: [
+      { id: 'c1', name: 'Startpaket', quantity: 1, unitPrice: 590 },
+      { id: 'c2', name: 'Tillbehör', quantity: 1, unitPrice: 100 },
     ],
+    subtotalLabel: 'Delsumma',
+    code: { label: 'Rabattkod', placeholder: 'Lägg till rabattkod', value: 'VALKOMMEN10', rate: 0.1, applyLabel: 'Lägg till', appliedLabel: 'Rabatt' },
+    totalLabel: 'Att betala',
+    payment: { title: 'Betalning', method: 'Kort', cardNumber: '1234 1234 1234 1234', expiry: 'MM / ÅÅ', cvc: 'CVC' },
     payLabel: 'Betala',
-  } satisfies BrandedCheckoutContent,
+    secureNote: 'Säker kortbetalning',
+  } satisfies CheckoutWidgetContent,
   giftCard: {
     title: 'Presentkort',
     code: { label: 'Kod', value: 'GAVA-3K8P' },

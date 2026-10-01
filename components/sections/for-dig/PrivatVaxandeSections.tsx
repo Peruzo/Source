@@ -20,7 +20,8 @@ import {
 import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
-import { BrandedCheckout, GiftCard, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
+import { CheckoutWidget } from './interactive/CheckoutWidget';
+import { GiftCard, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
 
 /**
  * Everything under the hero on /privat-vaxande (Privat Växande). The hero in
@@ -70,8 +71,8 @@ export function PrivatVaxandeSections() {
         background="white"
         media={
           <div className="flex flex-col justify-center gap-4 bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-20 lg:pl-8 lg:pr-8 lg:pt-12 xl:pr-12">
-            <div className="w-full max-w-[22rem] self-center">
-              <BrandedCheckout content={k.checkout} {...privatVaxandeMoney} />
+            <div className="w-full max-w-[40rem] self-center">
+              <CheckoutWidget content={k.checkout} {...privatVaxandeMoney} />
             </div>
             <div className="w-full max-w-[20rem] self-end">
               <GiftCard content={k.giftCard} />

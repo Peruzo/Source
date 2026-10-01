@@ -237,7 +237,7 @@ export const etableradeMer = {
     { icon: DocumentCheckIcon, title: 'Bokföring med Fortnox', body: 'Det ni säljer och får betalt för hamnar i bokföringen som verifikat.' },
     { icon: TruckIcon, title: 'Frakt och returer', body: 'Boka frakt med PostNord och ta emot returer där ordern finns.' },
     { icon: DocumentTextIcon, title: 'Offerter', body: 'Gör om en offert till en faktura eller en betalningslänk.' },
-    { icon: CreditCardIcon, title: 'Kassan i ert utseende', body: 'Egen logotyp och färg i kassan, med Klarna och Swish.' },
+    { icon: CreditCardIcon, title: 'Kassan i ert utseende', body: 'Egen logotyp och accentfärg i kassan, där kunden betalar med kort.' },
   ] satisfies FeatureItem[],
 };
 

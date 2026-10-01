@@ -116,9 +116,10 @@ export function SubscriptionTiers({
   includes = true,
   className = 'grid-cols-3',
   tiles = false,
+  large = false,
   currency,
   locale,
-}: { content: TiersContent; includes?: boolean; className?: string; tiles?: boolean } & MoneyFormat) {
+}: { content: TiersContent; includes?: boolean; className?: string; tiles?: boolean; large?: boolean } & MoneyFormat) {
   const top = Math.max(...content.tiers.map((tier) => tier.subscribers));
   const count = new Intl.NumberFormat(locale);
 
@@ -130,7 +131,7 @@ export function SubscriptionTiers({
           <li
             key={tier.id}
             className={`relative flex min-w-0 flex-col border bg-white text-left text-black ${
-              tiles ? `p-5 ${RADIUS.card}` : `p-2.5 ${RADIUS.field}`
+              tiles ? `${large ? 'p-6 md:p-7' : 'p-5'} ${RADIUS.card}` : `p-2.5 ${RADIUS.field}`
             } ${
               popular ? 'border-teal-dark ring-1 ring-teal-dark' : 'border-gray-200'
             }`}
@@ -143,20 +144,21 @@ export function SubscriptionTiers({
                 {content.popularLabel}
               </span>
             ) : null}
-            <p className="text-ui-body font-semibold leading-tight">{tier.name}</p>
-            <p className="mt-0.5 whitespace-nowrap tabular-nums">
-              <span className="text-ui-body">{formatMoney(tier.price, currency, locale)}</span>{' '}
-              <span className="text-ui-label text-gray-600">{content.perMonth}</span>
+            {/* `large`: the same card at a larger scale (13 px and up), for a full-screen section. */}
+            <p className={large ? 'text-[1.125rem] font-semibold leading-tight' : 'text-ui-body font-semibold leading-tight'}>{tier.name}</p>
+            <p className={`${large ? 'mt-2' : 'mt-0.5'} whitespace-nowrap tabular-nums`}>
+              <span className={large ? 'text-[1.625rem] font-semibold tracking-[-0.02em]' : 'text-ui-body'}>{formatMoney(tier.price, currency, locale)}</span>{' '}
+              <span className={large ? 'text-[0.8125rem] font-medium text-gray-600' : 'text-ui-label text-gray-600'}>{content.perMonth}</span>
             </p>
             {includes ? (
-              <ul className="text-ui-label mt-1.5 space-y-0.5 text-gray-600">
+              <ul className={`${large ? 'mt-4 space-y-1 text-[0.9375rem] font-medium' : 'text-ui-label mt-1.5 space-y-0.5'} text-gray-600`}>
                 {tier.includes.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
               </ul>
             ) : null}
-            <p className="text-ui-label mt-auto pt-2 text-gray-600">
-              <span className="text-ui-body block tabular-nums text-black">{count.format(tier.subscribers)}</span>
+            <p className={`${large ? 'mt-auto pt-5 text-[0.8125rem] font-medium' : 'text-ui-label mt-auto pt-2'} text-gray-600`}>
+              <span className={`${large ? 'text-[1.125rem] font-semibold' : 'text-ui-body'} block tabular-nums text-black`}>{count.format(tier.subscribers)}</span>
               {content.subscribersLabel}
             </p>
           </li>
