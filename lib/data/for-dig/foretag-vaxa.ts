@@ -24,6 +24,7 @@ import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/t
 import type { OfferWidgetContent } from '@/components/sections/for-dig/interactive/OfferWidget';
 import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
 import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
+import type { CustomersWidgetContent } from '@/components/sections/for-dig/interactive/CustomersWidget';
 
 /** One status row: a title and a short line under it. */
 export type StatusRowContent = { title: string; note: string };
@@ -39,13 +40,6 @@ export type StatusCardContent = {
 export type GiftCardContent = {
   title: string;
   code: { label: string; value: string };
-};
-
-export type EmailRowContent = {
-  title: string;
-  sender: string;
-  subject: string;
-  status: string;
 };
 
 export type ReviewCardContent = {
@@ -378,7 +372,15 @@ export const vaxaInsikter = {
  * avsändardomän (config/packageTiers.js:97), kundomdömen med publicering på
  * webbplatsen (routes/productReviewRoutes.js:36), nyheter i butiken
  * (config/packageTiers.js:69, server.js:3491). Köp- och återköpsbekräftelse
- * är på väg och nämns inte. Omdömet visar betyg och status, inget påhittat citat.
+ * är på väg och nämns inte.
+ * Widgeten (source.database origin/develop e7f702d6): produktomdömen med betyg
+ * 1–5, kommentar, visningsnamn som "Anna S." och verifierat köp
+ * (models/ProductReview.js:47-71), reglaget "Kundnöjdhet på hemsidan" som gäller
+ * alla produkter (public/produkter-layout2.html:904-911, models/TenantConfig.js:305-306),
+ * omdömena följer med produktsidorna (routes/storefrontRoutes.js:384-416, 795-840).
+ * Utskick går till befintliga kunder, med urvalet köpt inom N månader
+ * (services/campaignSendService.js:65-95). Portalen har inget registreringsformulär
+ * för nyhetsbrev, så widgeten visar ett utskick i stället. Omdömena är exempeltext.
  */
 export const vaxaKunder = {
   id: 'hall-kunderna-nara',
@@ -388,19 +390,52 @@ export const vaxaKunder = {
     'Skicka nyhetsbrev från din egen avsändaradress och publicera nyheter direkt i butiken.',
     'Samla kundernas omdömen och visa dem på din webbplats.',
   ],
-  email: {
-    title: 'Utskick',
-    sender: 'hej@dittforetag.se',
-    subject: 'Nyheter i butiken',
-    status: 'Skickat',
-  } satisfies EmailRowContent,
-  review: {
-    title: 'Nytt omdöme',
-    stars: 5,
-    outOf: 5,
-    starsLabel: 'Betyg i exemplet',
-    status: 'Visas på webbplatsen',
-  } satisfies ReviewCardContent,
+  widget: {
+    label: 'Exempel: omdömen visas på webbplatsen och ett utskick skickas till kunderna',
+    reviews: {
+      title: 'Kundomdömen',
+      toggleLabel: 'Kundnöjdhet på hemsidan',
+      toggleHint: 'Gäller alla produkter',
+      on: 'På',
+      off: 'Av',
+      offNote: 'Omdömena visas inte på webbplatsen ännu.',
+      starsLabel: 'Betyg',
+      verifiedLabel: 'Verifierat köp',
+      shownLabel: 'Visas på webbplatsen',
+      items: [
+        {
+          id: 'r1',
+          stars: 5,
+          text: 'Snabb leverans och precis som beskrivet. Jag fick svar direkt när jag hade en fråga.',
+          name: 'Anna S.',
+          product: 'Startpaket',
+        },
+        {
+          id: 'r2',
+          stars: 4,
+          text: 'Bra kvalitet och tydliga instruktioner. Hade gärna sett fler färgval, men jag beställer gärna igen.',
+          name: 'Johan L.',
+          product: 'Tillbehör',
+        },
+        {
+          id: 'r3',
+          stars: 3,
+          text: 'Fungerar bra, men leveransen tog ett par dagar längre än jag hade räknat med.',
+          name: 'Sara K.',
+          product: 'Startpaket Plus',
+        },
+      ],
+    },
+    mailing: {
+      title: 'Utskick',
+      recipients: { label: 'Till', value: 'Kunder som har köpt de senaste 6 månaderna' },
+      sender: { label: 'Från', value: 'hej@dittforetag.se' },
+      subject: { label: 'Ämne', value: 'Nyheter i butiken' },
+      sendLabel: 'Skicka',
+      draft: 'Utkast',
+      sent: 'Skickat',
+    },
+  } satisfies CustomersWidgetContent,
 };
 
 /*

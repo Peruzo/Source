@@ -2,11 +2,10 @@
 
 import { useId } from 'react';
 import type { ComponentType } from 'react';
-import { EnvelopeIcon, GiftIcon } from '@heroicons/react/24/outline';
+import { GiftIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/20/solid';
 import { CARD_EDGE, RADIUS } from '../payment-cards/primitives';
 import type {
-  EmailRowContent,
   GiftCardContent,
   ReviewCardContent,
   StatusCardContent,
@@ -101,31 +100,6 @@ export function GiftCard({ content }: { content: GiftCardContent }) {
         <p className="text-ui-label text-gray-600">
           {content.code.label} <span className="text-ui-body font-mono tracking-wide text-black">{content.code.value}</span>
         </p>
-      </div>
-    </div>
-  );
-}
-
-/** One sent newsletter: sender address, subject and status. */
-export function EmailRow({ content }: { content: EmailRowContent }) {
-  const titleId = useId();
-
-  return (
-    <div role="group" aria-labelledby={titleId} className={`w-full bg-white p-4 text-left text-black ${CARD_EDGE} ${RADIUS.card}`}>
-      <h3 id={titleId} className="text-ui-title">
-        {content.title}
-      </h3>
-      <div className="mt-3 flex items-center gap-3">
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center bg-gray-100 text-black ${RADIUS.control}`}>
-          <EnvelopeIcon className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="text-ui-body block break-words">{content.subject}</span>
-          <span className="text-ui-label block break-all text-gray-600">{content.sender}</span>
-        </span>
-        <span className={`text-ui-label shrink-0 whitespace-nowrap bg-status-paid-bg px-2 py-0.5 text-status-paid ${RADIUS.control}`}>
-          {content.status}
-        </span>
       </div>
     </div>
   );
