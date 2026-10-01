@@ -49,7 +49,7 @@ const services: Service[] = [
       'Kampanjer för Google, Meta & TikTok',
       'AI-drivna rekommendationer',
       'Statistik & konverteringsanalys',
-      'Realtidsinsikter & rapporter',
+      'Insikter och rapporter',
     ],
     imagePlaceholder: 'Analytics Dashboard',
     imageSrc: '/marketingone.png',

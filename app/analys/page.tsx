@@ -29,8 +29,8 @@ export default function AnalysisPage() {
 
               <p className="mt-6 max-w-[480px] text-[16px] leading-relaxed text-white/80 md:text-[18px]">
                 Få full insikt i dina kunders beteende genom geografisk spårning och
-                analys av ordrar i realtid. Använd datan för att optimera marknadsföring,
-                lager och tillväxtstrategier.
+                orderanalys som uppdateras när en order betalas. Använd datan för att
+                optimera marknadsföring, lager och tillväxtstrategier.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3 md:gap-4">
