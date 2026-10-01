@@ -99,14 +99,15 @@ export function ForetagStartSections() {
         }
       />
 
-      {/* 5 – Prenumerationer. Card as payment method. */}
+      {/* 5 – Prenumerationer. Card as payment method. One full screen, with the levels at the larger scale. */}
       <FullBleedImageSection
         id={foretagPrenumerationer.id}
         eyebrow={foretagPrenumerationer.eyebrow}
         title={foretagPrenumerationer.title}
         body={foretagPrenumerationer.body}
+        height="screen"
       >
-        <SubscriptionWidgets {...foretagPrenumerationer.widgets} />
+        <SubscriptionWidgets {...foretagPrenumerationer.widgets} large discount={foretagPrenumerationer.discount} />
       </FullBleedImageSection>
 
       {/* 6 – Myndighetsdatum. Photo with the card on the pile of papers. */}

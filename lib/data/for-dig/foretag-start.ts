@@ -20,6 +20,7 @@ import type { GettingStartedStep } from '@/components/sections/for-dig/GettingSt
 import type { InvoiceWidgetsContent } from '@/components/sections/for-dig/invoice-widgets/content';
 import type { ProductsWidgetContent } from '@/components/sections/for-dig/interactive/ProductsWidget';
 import type { CampaignsWidgetContent } from '@/components/sections/for-dig/interactive/CampaignsWidget';
+import type { SubscriptionDiscountContent } from '@/components/sections/for-dig/interactive/SubscriptionDiscount';
 import type { SubscriptionWidgetsContent } from '@/components/sections/for-dig/subscription-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
 
@@ -229,6 +230,14 @@ export const foretagKampanjer = {
  * dag, vecka, månad och år (models/Product.js:279-295), paus och uppsägning
  * från kundprofilen (config/permissions.js:97). Betalsätt kort; autogiro
  * nämns inte.
+ * Kampanj på en prenumeration (source.database origin/develop b25b58c1): fliken
+ * Kunders prenumerationer (public/prenumerationer-layout2.html:1109), knappen
+ * Lägg till kampanj med hjälptexten Rabatt på prenumerationen per prenumeration
+ * (public/js/subscription-actions-panel.js:210-235), formuläret med Typ av rabatt,
+ * Värde, Giltighet och Antal månader och knappen Lägg till (:306-333), raden visar
+ * "Kampanj: 10 % i 2 månader" (public/js/kundprenumerationer.js:70-81, 122-127),
+ * rabatten läggs på den enskilda prenumerationen (routes/adminTenantCustomerActions.js:912-976).
+ * Formuläret har inget namnfält, och det finns ingen kampanj för alla prenumerationer.
  */
 export const foretagPrenumerationer = {
   id: 'prenumerationer',
@@ -237,6 +246,7 @@ export const foretagPrenumerationer = {
   body: [
     'Låt kunden betala automatiskt med kort varje vecka, månad eller år.',
     'Du ser vilka som är aktiva, och kan pausa eller avsluta ett abonnemang när kunden vill.',
+    'Vill du ge en kund rabatt lägger du en kampanj på just den prenumerationen – en period, ett antal månader eller tills vidare.',
   ],
   widgets: {
     ...money,
@@ -273,6 +283,31 @@ export const foretagPrenumerationer = {
       submitLabel: 'Skapa prenumeration',
     },
   } satisfies SubscriptionWidgetsContent,
+  discount: {
+    label: 'Exempel: en kampanj läggs på en kunds prenumeration',
+    title: 'Kunders prenumerationer',
+    rows: [
+      { id: 's1', customer: 'Kund AB', plan: 'Utökad', amount: 399, perLabel: '/ månad', next: 'Nästa period 2026-11-27', status: 'Aktiv' },
+      { id: 's2', customer: 'Exempel Nord AB', plan: 'Grund', amount: 199, perLabel: '/ månad', next: 'Nästa period 2026-11-25', status: 'Aktiv' },
+      { id: 's3', customer: 'Exempel Väst AB', plan: 'Allt i ett', amount: 699, perLabel: '/ månad', next: 'Nästa period 2026-11-28', status: 'Aktiv' },
+    ],
+    targetId: 's1',
+    addLabel: 'Lägg till kampanj',
+    addHelp: 'Rabatt på prenumerationen',
+    removeLabel: 'Ta bort kampanj',
+    removeHelp: 'Rabatten upphör direkt',
+    dialog: {
+      title: 'Lägg till kampanj',
+      message: 'Rabatten gäller prenumerationens kommande fakturor.',
+      appliesTo: { label: 'Prenumeration' },
+      type: { label: 'Typ av rabatt', value: 'Procent av priset' },
+      value: { label: 'Värde', value: '10' },
+      duration: { label: 'Giltighet', value: 'Ett antal månader' },
+      months: { label: 'Antal månader', value: '2' },
+      submitLabel: 'Lägg till',
+    },
+    appliedText: 'Kampanj: 10 % i 2 månader',
+  } satisfies SubscriptionDiscountContent,
 };
 
 /*
