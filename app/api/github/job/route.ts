@@ -217,7 +217,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Rensa känslig data från response (token ska aldrig exponeras)
-    const { githubToken: _githubToken, ...safeJob } = job;
+    // getGitHubJob tar redan bort tokenfältet ur äldre jobbfiler; plockas bort här också som skydd.
+    const { githubToken: _legacyToken, ...safeJob } = job as typeof job & { githubToken?: unknown };
 
     return NextResponse.json({
       job: safeJob,
