@@ -46,7 +46,7 @@ export default function PortfolioPage() {
               <span className="underline-draw inline-block">stolta</span> över
             </h1>
             <p className="text-body-large text-gray-300 mt-8 md:mt-10">
-              Från e-handel till SaaS. Alla branscher. En plattform.
+              Hemsidor för alla typer av företag, kopplade till samma kundportal.
             </p>
           </FadeIn>
         </Container>
@@ -125,16 +125,28 @@ export default function PortfolioPage() {
           <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: 'E-handel',
-                desc: 'Kompletta onlinebutiker med betalningar, inventory och kundhantering.',
+                title: 'Ny hemsida',
+                desc: 'Vi bygger din hemsida och kopplar den till kundportalen från start.',
               },
               {
-                title: 'SaaS Platforms',
-                desc: 'Prenumerationstjänster med användardashboards och analytics.',
+                title: 'Din befintliga hemsida',
+                desc: 'Har du redan en hemsida integrerar vi den mot kundportalen, så att produkter, kassa och kunder hämtas därifrån.',
               },
               {
-                title: 'Business Websites',
-                desc: 'Professionella hemsidor för lokala företag med bokningssystem.',
+                title: 'Butik och lager',
+                desc: 'Produkter med varianter och bilder, lagersaldo och förslag på inköp.',
+              },
+              {
+                title: 'Kassa och betalningar',
+                desc: 'Kunden betalar med kort och pengarna går till ditt eget Stripe-konto. Du kan också ta betalt med betalningslänk, faktura och prenumeration.',
+              },
+              {
+                title: 'Bokning',
+                desc: 'Tjänster, personal och resurser som kunden bokar online. Ingår i Growth och Enterprise.',
+              },
+              {
+                title: 'Kontaktformulär',
+                desc: 'Meddelanden från hemsidans formulär landar i kundportalen. Ingår i Growth och Enterprise.',
               },
             ].map((capability) => (
               <div
@@ -164,18 +176,17 @@ export default function PortfolioPage() {
             <p className="text-overline text-teal-dark mb-4">SÅ ARBETAR VI</p>
             <h2 className="text-section-title text-black mb-6">Vår process</h2>
             <p className="text-body-large text-gray-600">
-              Från första samtalet till löpande tillväxt – fem steg vi kör
-              igenom tillsammans.
+              Från valt paket till en hemsida som är kopplad till kundportalen –
+              fyra steg vi tar tillsammans.
             </p>
           </FadeIn>
 
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-5 md:gap-4">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-4 md:gap-6">
             {[
-              { num: '1', title: 'Discovery', desc: 'Vi förstår din verksamhet och dina mål' },
-              { num: '2', title: 'Design', desc: 'AI-driven design anpassad för din bransch' },
-              { num: '3', title: 'Utveckling', desc: 'Agil utveckling med löpande feedback' },
-              { num: '4', title: 'Lansering', desc: 'Smidig lansering med full support' },
-              { num: '5', title: 'Tillväxt', desc: 'Kontinuerlig optimering och utveckling' },
+              { num: '1', title: 'Välj paket', desc: 'Du väljer paket och skapar ett konto' },
+              { num: '2', title: 'Onboarding', desc: 'Vi går igenom din verksamhet tillsammans och du kopplar ditt Stripe-konto' },
+              { num: '3', title: 'Hemsida', desc: 'Vi bygger din hemsida eller integrerar den du redan har mot kundportalen' },
+              { num: '4', title: 'Igång', desc: 'Du säljer, tar betalt och sköter dina kunder i kundportalen' },
             ].map((step) => (
               <div key={step.num} className="text-center">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-dark text-xl font-bold text-white">
@@ -188,7 +199,7 @@ export default function PortfolioPage() {
           </div>
 
           <p className="mt-12 text-center text-gray-700">
-            Typisk tidslinje: <span className="font-semibold">4-8 veckor</span>
+            Hemsida eller integration klar: <span className="font-semibold">inom 24 timmar</span> efter onboardingen
           </p>
         </Container>
       </section>
