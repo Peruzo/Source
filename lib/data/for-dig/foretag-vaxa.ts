@@ -21,6 +21,7 @@ import {
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { ServiceBookingContent } from '@/components/sections/for-dig/product-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
+import type { OfferWidgetContent } from '@/components/sections/for-dig/interactive/OfferWidget';
 
 /** One status row: a title and a short line under it. */
 export type StatusRowContent = { title: string; note: string };
@@ -31,19 +32,6 @@ export type StatusCardContent = {
   value: string;
   pill?: string;
   row: StatusRowContent;
-};
-
-export type OfferViewContent = {
-  label: string;
-  sender: string;
-  status: string;
-  documentTitle: string;
-  number: { label: string; value: string };
-  recipient: { label: string; name: string };
-  lines: { id: string; description: string; amount: number }[];
-  totalLabel: string;
-  primaryAction: string;
-  secondaryAction: string;
 };
 
 /** The follow-up step a lead is in, drawn as a status pill. */
@@ -175,6 +163,14 @@ export const vaxaFrakt = {
  * 2 – Offerter. Belägg: skapa, PDF, skicka, gör om till faktura och
  * betalningslänk (routes/offerRoutes.js:181, 280, 305, 478, 647), sidan är
  * spärrad till paketet (config/packageTiers.js:114, server.js:3388).
+ * Widgeten (source.database origin/develop e7f702d6): PDF:ens rubrik, nummer,
+ * datum och Giltig till (services/pdfTemplates.js:350-354), Från och Till med
+ * org.nr och adress (:233-256), kolumnerna Beskrivning, Antal, À-pris, Moms och
+ * Belopp (:368-369), Delsumma, Moms och Att betala (:228-230, 375-377).
+ * Åtgärderna per status (public/offert-layout2.html:701-724): Redigera och Ta
+ * bort för utkast, Skicka, PDF och Duplicera, Accepterad/Avböjd sätts av dig
+ * på en skickad offert, Skapa faktura och Skapa betallänk på en accepterad.
+ * Ingen godkännandesida för kunden och ingen e-signering.
  */
 export const vaxaOfferter = {
   id: 'offerter',
@@ -185,20 +181,45 @@ export const vaxaOfferter = {
     'När kunden säger ja gör du om offerten till en faktura eller en betalningslänk, utan att skriva in något igen.',
   ],
   offer: {
-    label: 'Exempel: en skickad offert',
-    sender: 'Ditt företag AB',
-    status: 'Skickad',
+    label: 'Exempel: en offert som skickas, accepteras och kan göras om till faktura eller betallänk',
     documentTitle: 'Offert',
-    number: { label: 'Nr', value: '2026-031' },
-    recipient: { label: 'Till', name: 'Kund AB' },
+    sender: 'Ditt företag AB',
+    number: { label: 'Offertnummer', value: '2026-031' },
+    date: { label: 'Datum', value: '2026-11-02' },
+    validUntil: { label: 'Giltig till', value: '2026-12-02' },
+    from: {
+      label: 'Från',
+      name: 'Ditt företag AB',
+      lines: ['Exempelgatan 1, 123 45 Småstad', 'Org.nr 559000-0000', 'Momsnr SE559000000001'],
+    },
+    to: {
+      label: 'Till',
+      name: 'Kund AB',
+      lines: ['Kundvägen 2, 234 56 Exempelstad', 'Org.nr 556000-0000'],
+    },
+    columns: { description: 'Beskrivning', quantity: 'Antal', unitPrice: 'À-pris', vat: 'Moms', amount: 'Belopp' },
     lines: [
-      { id: 'l1', description: 'Uppdrag enligt överenskommelse', amount: 18000 },
-      { id: 'l2', description: 'Uppföljning', amount: 4500 },
+      { id: 'l1', description: 'Uppdrag enligt överenskommelse', quantity: 1, unitPrice: 18000, vatRate: 0.25 },
+      { id: 'l2', description: 'Uppföljningsmöte', quantity: 2, unitPrice: 2250, vatRate: 0.25 },
+      { id: 'l3', description: 'Material', quantity: 3, unitPrice: 400, vatRate: 0.25 },
     ],
-    totalLabel: 'Totalt inkl. moms',
-    primaryAction: 'Gör om till faktura',
-    secondaryAction: 'Betalningslänk',
-  } satisfies OfferViewContent,
+    subtotalLabel: 'Delsumma',
+    vatLabel: 'Moms',
+    totalLabel: 'Att betala',
+    statusLabel: 'Status',
+    statuses: { draft: 'Utkast', sent: 'Skickad', accepted: 'Accepterad' },
+    markAs: { accepted: 'Accepterad', declined: 'Avböjd' },
+    actionsLabel: 'Åtgärder för offerten',
+    actions: {
+      edit: 'Redigera',
+      pdf: 'Ladda ner PDF',
+      send: 'Skicka till kund',
+      duplicate: 'Duplicera',
+      delete: 'Ta bort',
+      invoice: 'Skapa faktura',
+      paymentLink: 'Skapa betallänk',
+    },
+  } satisfies OfferWidgetContent,
 };
 
 /*

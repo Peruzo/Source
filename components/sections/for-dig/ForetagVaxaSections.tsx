@@ -24,7 +24,8 @@ import { ClippedImageSection } from './ClippedImageSection';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { ServiceBooking } from './ProductWidgets';
-import { BrandedCheckout, EmailRow, GiftCard, LeadList, OfferView, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
+import { BrandedCheckout, EmailRow, GiftCard, LeadList, ReviewCard, StatusCard, StatusRow } from './foretag-vaxa/widgets';
+import { OfferWidget } from './interactive/OfferWidget';
 
 const STEP_ICONS = [CheckCircleIcon, TruckIcon, ArrowUturnLeftIcon];
 
@@ -77,8 +78,8 @@ export function ForetagVaxaSections() {
         background="beige"
         media={
           <div className="flex flex-col items-center justify-center bg-surface-stone p-5 md:p-8 lg:h-full lg:pb-12 lg:pl-8 lg:pr-8 lg:pt-20 xl:pl-12">
-            <div className="w-full max-w-[26rem]">
-              <OfferView content={vaxaOfferter.offer} {...vaxaMoney} />
+            <div className="w-full max-w-[40rem]">
+              <OfferWidget content={vaxaOfferter.offer} {...vaxaMoney} />
             </div>
           </div>
         }

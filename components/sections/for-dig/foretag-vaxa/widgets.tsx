@@ -4,14 +4,13 @@ import { useId } from 'react';
 import type { ComponentType } from 'react';
 import { EnvelopeIcon, GiftIcon } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/20/solid';
-import { CARD_EDGE, CardShell, FauxButton, RADIUS, formatMoney } from '../payment-cards/primitives';
+import { CARD_EDGE, CardShell, RADIUS, formatMoney } from '../payment-cards/primitives';
 import type {
   BrandedCheckoutContent,
   EmailRowContent,
   GiftCardContent,
   LeadListContent,
   LeadStage,
-  OfferViewContent,
   ReviewCardContent,
   StatusCardContent,
   StatusRowContent,
@@ -91,61 +90,6 @@ export function StatusCard({ content, icon: Icon, tone }: { content: StatusCardC
         </span>
       </div>
     </div>
-  );
-}
-
-/**
- * A sent quote as a document: sender and status, two lines, the total, and the
- * two ways forward – invoice or payment link. Paper look like InvoicePreview
- * (field radius). Illustration only: the buttons are look-alikes.
- */
-export function OfferView({ content, currency, locale }: { content: OfferViewContent } & MoneyFormat) {
-  const money = (amount: number) => formatMoney(amount, currency, locale);
-  const total = content.lines.reduce((sum, line) => sum + line.amount, 0);
-
-  return (
-    <article
-      aria-label={content.label}
-      className={`@container flex w-full flex-col bg-white px-5 py-5 text-left text-black shadow-[0_24px_48px_-16px_rgba(0,0,0,0.35)] ring-1 ring-gray-200 ${RADIUS.field}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-ui-body min-w-0 font-semibold">{content.sender}</p>
-        <span className={`text-ui-label shrink-0 whitespace-nowrap border border-gray-300 px-2 py-0.5 text-gray-700 ${RADIUS.control}`}>
-          {content.status}
-        </span>
-      </div>
-
-      <div className="mt-4 flex items-baseline justify-between gap-3 border-t border-gray-200 pt-3">
-        <h3 className="text-ui-title">{content.documentTitle}</h3>
-        <p className="text-ui-label tabular-nums text-gray-600">
-          {content.number.label} {content.number.value}
-        </p>
-      </div>
-      <p className="text-ui-label mt-2 text-gray-600">
-        {content.recipient.label} <span className="text-ui-body text-black">{content.recipient.name}</span>
-      </p>
-
-      <ul className="mt-3 divide-y divide-gray-200 border-y border-gray-200">
-        {content.lines.map((line) => (
-          <li key={line.id} className="flex items-baseline justify-between gap-3 py-2.5">
-            <span className="text-ui-body min-w-0 break-words">{line.description}</span>
-            <span className="text-ui-body whitespace-nowrap tabular-nums">{money(line.amount)}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="text-ui-body mt-3 flex justify-between gap-3 font-semibold">
-        <span>{content.totalLabel}</span>
-        <span className="whitespace-nowrap tabular-nums">{money(total)}</span>
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <span className={`text-ui-label inline-flex items-center whitespace-nowrap bg-teal-dark px-3.5 py-1.5 text-white ${RADIUS.control}`}>
-          {content.primaryAction}
-        </span>
-        <FauxButton variant="quiet">{content.secondaryAction}</FauxButton>
-      </div>
-    </article>
   );
 }
 

@@ -95,8 +95,8 @@ export function ReplayButton({ onClick, label = 'Spela igen' }: { onClick: () =>
 
 /**
  * Button look-alike inside the illustration (a span: a focusable button that does
- * nothing would be a dead tab stop). `pressed` sinks it for a moment, the way a
- * click looks.
+ * nothing would be a dead tab stop – its text is still read). `pressed` sinks it
+ * for a moment, the way a click looks.
  */
 export function UiButton({
   children,
@@ -122,7 +122,6 @@ export function UiButton({
 
   return (
     <span
-      aria-hidden="true"
       className={`${T.label} ${block ? 'flex w-full justify-center' : 'inline-flex'} items-center gap-1.5 whitespace-nowrap px-3.5 py-2 transition-[transform,box-shadow] duration-150 ${EASE} ${RADIUS.control} ${tones[tone]} ${
         pressed ? 'scale-95 shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] ring-4 ring-teal-dark/20' : ''
       } ${className}`}
