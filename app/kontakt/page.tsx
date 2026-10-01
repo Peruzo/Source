@@ -159,47 +159,8 @@ export default function ContactPage() {
         </Container>
       </section>
 
-      {/* Press & Partners (Fortnox) */}
-      <section className="py-16 md:py-24 bg-[#F4E8D8]">
-        <Container>
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-black mb-12">
-              För press och samarbeten
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div>
-                <h3 className="text-lg font-semibold text-black mb-2">Presskontakt</h3>
-                <p className="text-gray-700 mb-2">
-                  Mejla{' '}
-                  <a href="mailto:support@sourcesolutions.se" className="text-teal font-medium hover:text-teal-hover">
-                    support@sourcesolutions.se
-                  </a>
-                </p>
-                <Link href="/om-oss" className="text-teal font-semibold hover:text-teal-hover inline-flex items-center group">
-                  Läs mer om oss
-                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-black mb-2">Partnerskap</h3>
-                <p className="text-gray-700 mb-2">
-                  Mejla{' '}
-                  <a href="mailto:support@sourcesolutions.se" className="text-teal font-medium hover:text-teal-hover">
-                    support@sourcesolutions.se
-                  </a>
-                </p>
-                <Link href="/tjanster" className="text-teal font-semibold hover:text-teal-hover inline-flex items-center group">
-                  Se våra tjänster
-                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* FAQ Accordion (Revolut) */}
-      <section className="py-16 md:py-24 bg-white">
+      {/* FAQ Accordion (Revolut). No top padding: the white contact form section above already ends with its own. */}
+      <section className="pb-16 md:pb-24 bg-white">
         <Container size="md">
           <div className="max-w-3xl mx-auto">
             <p className="text-sm font-medium tracking-wider uppercase text-gray-500 mb-2">
