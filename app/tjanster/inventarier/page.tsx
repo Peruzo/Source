@@ -5,7 +5,7 @@ import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { CubeIcon, BanknotesIcon, TruckIcon } from '@heroicons/react/24/solid';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
 import { ClippedImageSection } from '@/components/sections/for-dig/ClippedImageSection';
 import { FeatureCarousel } from '@/components/sections/tjanster/FeatureCarousel';
@@ -16,6 +16,7 @@ import { StickySteps } from '@/components/sections/tjanster/StickySteps';
 import { RestockSuggestion, ScanCard, StockCounter } from '@/components/sections/tjanster/widgets/InventoryWidgets';
 import {
   inventarierFeatures,
+  inventarierHeroVideo as heroVideo,
   inventarierImages,
   inventarierImport,
   inventarierRestock,
@@ -47,15 +48,32 @@ const steps = [
   },
 ];
 
+// Hero clip: fades out on all four sides into the section, which has the clip's own edge colour
+// (lib/data/tjanster/inventarier.ts), so no edge of the frame shows. Wider fades at the left, where
+// the wall is darker, and at the bottom, where the dark pedestal leaves the frame.
+const heroMask =
+  'linear-gradient(to right, transparent 0%, #000 22%, #000 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 12%, #000 78%, transparent 100%)';
+const heroMaskStyle: CSSProperties = {
+  maskImage: heroMask,
+  WebkitMaskImage: heroMask,
+  maskComposite: 'intersect',
+  WebkitMaskComposite: 'source-in',
+};
+
 export default function InventarierPage() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const reduceMotion = usePrefersReducedMotion();
+  const [posterSrc, setPosterSrc] = useState<string | undefined>(undefined);
 
+  // Plays when the hero is in view and again each time it comes back; rests on the last frame.
+  // Under reduced motion the <video> is not rendered and the last frame is shown as a still.
   useEffect(() => {
     const section = sectionRef.current;
     const video = videoRef.current;
 
-    if (!section || !video) return;
+    if (!section || !video || reduceMotion) return;
+    setPosterSrc(window.matchMedia('(max-width: 767px)').matches ? heroVideo.poster.smallSrc : heroVideo.poster.src);
     let hasPlayed = false;
 
     const handleEnded = () => {
@@ -92,46 +110,69 @@ export default function InventarierPage() {
       video.removeEventListener('ended', handleEnded);
       video.pause();
     };
-  }, []);
+  }, [reduceMotion]);
 
   return (
     <>
+      {/* Hero – like the /tjanster/kampanjer hero: the section in the clip's edge colour, dark text,
+          the whole 16:9 clip with a soft mask. From lg the clip sits to the right and runs to the
+          edge of the screen; below lg it sits whole under the text. */}
       <section
         ref={sectionRef}
-        className="relative min-h-[100svh] overflow-hidden bg-black text-white"
+        className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden pt-24 pb-12 text-gray-900 lg:py-0"
+        style={{ backgroundColor: heroVideo.edge }}
       >
-        <video
-          ref={videoRef}
-          src="/inventarier.mp4"
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-
-        {/* Subtle overlay to keep centered copy readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/60" />
-
-        <Container className="relative z-10 flex min-h-[100svh] flex-col items-center justify-start px-6 pt-[140px] text-center">
-          <div className="w-full max-w-[700px] space-y-6">
-            <p className="text-xs uppercase tracking-[0.4em] text-white/60">
+        <Container className="w-full">
+          <div className="max-w-[480px] space-y-6 lg:max-w-[min(480px,36vw)]">
+            <p className="text-xs uppercase tracking-[0.4em] text-gray-700">
               TJÄNSTER
             </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-[#111111]">
               Inventarier
             </h1>
 
-            <h2 className="text-xl md:text-2xl font-medium text-white/85 mt-4">
+            <h2 className="text-xl md:text-2xl font-medium text-gray-900 mt-4">
               Full kontroll över dina inventarier i realtid
             </h2>
 
-            <p className="text-base md:text-lg text-white/75 leading-relaxed">
+            <p className="text-base md:text-lg text-gray-800 leading-relaxed">
               Alla förändringar uppdateras automatiskt – vid köp, returer,
               reklamationer och lagerförändringar. Du har alltid korrekt data utan
               manuellt arbete.
             </p>
           </div>
         </Container>
+
+        <div
+          className="relative mt-10 aspect-video w-full lg:absolute lg:right-0 lg:top-1/2 lg:mt-0 lg:w-[60vw] lg:-translate-y-1/2"
+          style={heroMaskStyle}
+        >
+          {reduceMotion ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={heroVideo.end.src}
+              srcSet={heroVideo.end.srcSet}
+              sizes="(min-width: 1024px) 60vw, 100vw"
+              alt={heroVideo.label}
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              muted
+              playsInline
+              preload="metadata"
+              poster={posterSrc}
+              aria-label={heroVideo.label}
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              {heroVideo.sources.map((source) => (
+                <source key={source.src} src={source.src} type={source.type} media={source.media} />
+              ))}
+            </video>
+          )}
+        </div>
       </section>
 
       <ServicePageLayout>

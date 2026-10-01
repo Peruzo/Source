@@ -17,6 +17,7 @@ import {
   ViewfinderCircleIcon,
 } from '@heroicons/react/24/outline';
 import type { FeatureItem, ServiceCta, ServiceImage } from '@/components/sections/tjanster/types';
+import type { ServiceVideoSource, ServiceVideoStill } from '@/components/sections/tjanster/ServiceVideo';
 import { ean13 } from '@/components/sections/tjanster/widgets/Ean13Barcode';
 
 const IMG = '/tjanster/inventarier/inventarier';
@@ -50,6 +51,31 @@ export const inventarierImages = {
     focus: '8% 60%',
   },
 } satisfies Record<string, ServiceImage>;
+
+/*
+ * Heroklippet: en kopp och ett par hörlurar på en sockel med två glasluckor. Koppen sjunker ner i
+ * sin lucka och en ny mugg sänks ner i dess ställe (bildruta 0–56), sedan samma sak med hörlurarna
+ * (68–120). Ingen text och inga märken i bild. Källan är 1280 × 720 i 24 bilder per sekund och
+ * 5,04 s, så den stora versionen är 1280 och inte uppskalad. 960 för skärmar under 768 px.
+ *
+ * edge är väggens färg i överkantens mitt, uppmätt i bildruta 0, 60 och 120 (#c0c0c2). Överkanten
+ * går från #adadaf till vänster till #d0cfd2 till höger, vänsterkanten #93–#a1, och den mörka
+ * sockeln (#4e–#6b) går ut över underkanten och högerkantens nedre del. Sektionen tar edge som
+ * bakgrund och klippet tonas ut mot alla fyra kanter.
+ */
+const VID = '/tjanster/inventarier/inventarier-video';
+export const inventarierHeroVideo = {
+  edge: '#c0c0c2',
+  label: 'En kopp och ett par hörlurar sjunker ner i var sin lucka i en sockel och ersätts av nya som sänks ner ovanifrån.',
+  sources: [
+    { src: `${VID}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
+    { src: `${VID}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
+    { src: `${VID}-1280.webm`, type: 'video/webm' },
+    { src: `${VID}-1280.mp4`, type: 'video/mp4' },
+  ],
+  poster: { src: `${VID}-poster-1280.webp`, smallSrc: `${VID}-poster-960.webp`, srcSet: `${VID}-poster-960.webp 960w, ${VID}-poster-1280.webp 1280w` },
+  end: { src: `${VID}-slut-1280.webp`, smallSrc: `${VID}-slut-960.webp`, srcSet: `${VID}-slut-960.webp 960w, ${VID}-slut-1280.webp 1280w` },
+} satisfies { edge: string; label: string; sources: ServiceVideoSource[]; poster: ServiceVideoStill; end: ServiceVideoStill };
 
 /*
  * Sticky scroll. Belägg: skanning EAN-13/EAN-8/UPC-A med BarcodeDetector och

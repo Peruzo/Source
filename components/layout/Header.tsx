@@ -20,6 +20,8 @@ export function Header() {
   const headerNoLayer = nofx.header ? { transform: 'none', contain: 'none' } : undefined;
   const isBookingsystemPage = pathname === '/bokningssystem';
   const isKampanjerPage = pathname === '/tjanster/kampanjer';
+  // Light hero (the clip's grey) – white links would not read on it, so the header is solid here too.
+  const isInventarierPage = pathname === '/tjanster/inventarier';
   const isAnalysPage = pathname === '/analys';
 
   useEffect(() => {
@@ -94,7 +96,7 @@ export function Header() {
   }
 
   const showSolidBg =
-    (!isAnalysPage && isScrolled) || isBookingsystemPage || isKampanjerPage;
+    (!isAnalysPage && isScrolled) || isBookingsystemPage || isKampanjerPage || isInventarierPage;
 
   return (
     <header className="header-root" style={headerNoLayer}>
