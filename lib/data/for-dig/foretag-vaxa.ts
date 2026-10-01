@@ -19,12 +19,12 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
-import type { ServiceBookingContent } from '@/components/sections/for-dig/product-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
 import type { OfferWidgetContent } from '@/components/sections/for-dig/interactive/OfferWidget';
 import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
 import type { CheckoutWidgetContent } from '@/components/sections/for-dig/interactive/CheckoutWidget';
 import type { CustomersWidgetContent } from '@/components/sections/for-dig/interactive/CustomersWidget';
+import type { BookingWidgetContent } from '@/components/sections/for-dig/interactive/BookingWidget';
 
 /** One status row: a title and a short line under it. */
 export type StatusRowContent = { title: string; note: string };
@@ -318,31 +318,192 @@ export const vaxaKassa = {
 };
 
 /*
- * 5 – Bokningar. Belägg: bokningssystemet (config/packageTiers.js:112,
- * server.js:3477) med kortbetalning vid bokning. Meddelande och samtal från
- * bokningen är på väg och nämns inte.
+ * 5 – Bokningar. Bokningssystemet ingår för växande företag (server.js:3559-3566,
+ * page:bokning). Belägg i kundportalen (northlab-io/source.database, origin/develop
+ * b25b58c1):
+ *   - stegen Tjänst → Utförare → Tid → Uppgifter och lediga tider med Lediga /
+ *     Få platser kvar (public/booking-layout2.html:5943-5960)
+ *   - tjänst med namn och varaktighet (booking-layout2.html:4507-4541); priset kommer
+ *     från den kopplade produkten (routes/bookingSystem.js:4981-5008)
+ *   - personal med arbetstider, raster och ledighet (models/Provider.js:10-40),
+ *     resurser med kapacitet (models/BookingResource.js)
+ *   - öppettider och stängda datum (booking-layout2.html:5679-5714)
+ *   - bufferttider före, efter och mellan bokningar (booking-layout2.html:5965-6003)
+ *   - betalning: handpenning eller full betalning, kräv betalning innan bekräftelse,
+ *     kort i Stripe Checkout (booking-layout2.html:5779-5866, bookingSystem.js:5018-5044,
+ *     5336-5354)
+ *   - avbokningsregler, bokningsgränser och avgift för utebliven bokning
+ *     (booking-layout2.html:8135-8224)
+ *   - mejl: bokningsbekräftelse med avbokningslänk, avbokning och ombokning
+ *     (public/epost-layout2.html:612-650, services/mailService.js:404-427,
+ *     routes/bookingCancelPublic.js:76-193)
+ *   - utseende och "Tillåt onlinebokningar" (public/js/bokningsdesign.js:85-119,
+ *     models/BookingPresentation.js:38-84, bookingSystem.js:4303-4308)
+ * Påminnelser skickas inte (inget anrop till booking_reminder) och väntelista,
+ * SMS, tillägg, kalendersynk, ombokning av kunden och inbäddningskod finns inte –
+ * de nämns inte.
  */
 export const vaxaBokningar = {
   id: 'bokningar',
   eyebrow: 'BOKNINGAR',
   title: 'Låt kunderna boka själva',
   body: [
-    'Lägg upp det du erbjuder som tider att boka.',
-    'Kunden väljer en tid och betalar med kort direkt i bokningen – utan att någon behöver svara i telefon.',
+    'Kunden väljer tjänst, utförare och tid på din webbplats, fyller i sina uppgifter och betalar handpenning eller hela beloppet med kort. Sedan kommer bekräftelsen med en länk för att avboka.',
+    'Du ställer in tjänster, personal och resurser, öppettider och stängda dagar, bufferttider, betalning och avbokningsregler, och väljer hur bokningen ska se ut.',
   ],
   booking: {
-    name: 'Möte',
-    details: '45 min',
-    price: 650,
-    timesHeading: 'Välj tid',
-    times: [
-      { id: 't0900', label: '09:00' },
-      { id: 't1300', label: '13:00' },
-      { id: 't1530', label: '15:30' },
+    label: 'Exempel: en kund bokar och betalar en tid, och inställningarna bakom bokningen',
+    tabs: { label: 'Visa', customer: 'Kundens vy', settings: 'Din konfiguration' },
+    steps: ['Tjänst', 'Utförare', 'Tid', 'Uppgifter', 'Betalning', 'Bekräftelse'],
+    stepOf: 'Steg {n} av {total}',
+    services: {
+      heading: 'Välj tjänst',
+      minutesLabel: 'min',
+      selectedId: 's2',
+      items: [
+        { id: 's1', name: 'Konsultation', minutes: 30, price: 450 },
+        { id: 's2', name: 'Möte', minutes: 45, price: 650 },
+        { id: 's3', name: 'Genomgång', minutes: 60, price: 850 },
+      ],
+    },
+    staff: { heading: 'Välj utförare', options: ['Valfri', 'Alex', 'Sam'], selected: 'Valfri' },
+    time: {
+      heading: 'Välj tid',
+      month: 'Oktober',
+      weekdays: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
+      offset: 3,
+      // 1 okt är en torsdag. Helger är stängda, den 16:e är ett stängt datum.
+      days: [
+        'few', 'free', 'closed', 'closed',
+        'full', 'few', 'free', 'free', 'free', 'closed', 'closed',
+        'free', 'few', 'full', 'free', 'closed', 'closed', 'closed',
+        'free', 'free', 'few', 'free', 'free', 'closed', 'closed',
+        'free', 'free', 'free', 'free', 'free', 'closed',
+      ],
+      selectedDay: 15,
+      legend: { free: 'Lediga', few: 'Få platser kvar', full: 'Fullbokat', closed: 'Stängt' },
+      slotsHeading: 'Torsdag 15 oktober',
+      slots: ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'],
+      selectedSlot: '13:00',
+    },
+    details: {
+      heading: 'Dina uppgifter',
+      fields: [
+        { label: 'Namn', value: 'Kim Andersson' },
+        { label: 'E-post', value: 'kim@exempel.se' },
+        { label: 'Telefon', value: '070-123 45 67' },
+        { label: 'Meddelande', value: 'Gärna ett kort förmöte.' },
+      ],
+      links: 'Genom att boka godkänner du villkoren och integritetspolicyn.',
+    },
+    payment: {
+      heading: 'Betalning',
+      rows: [
+        { label: 'Tjänst', value: 'Möte, 45 min' },
+        { label: 'Tid', value: 'Tor 15 okt kl. 13:00' },
+        { label: 'Utförare', value: 'Valfri' },
+        { label: 'Pris', value: '650 kr' },
+      ],
+      deposit: { label: 'Handpenning 20 %', amount: 130 },
+      payLabel: 'Betala {amount} med kort',
+    },
+    done: {
+      title: 'Bokningen är bekräftad',
+      summary: 'Möte, torsdag 15 oktober kl. 13:00. Handpenningen är betald.',
+      email: {
+        title: 'Bokningsbekräftelse',
+        from: 'Från: Ditt företag',
+        text: 'Hej Kim! Din bokning av Möte torsdag 15 oktober kl. 13:00 är bekräftad.',
+        cancelLink: 'Avboka bokningen',
+      },
+    },
+    settings: [
+      {
+        id: 'tjanster',
+        title: 'Tjänster',
+        rows: [
+          { label: 'Konsultation', value: '30 min · 450 kr' },
+          { label: 'Möte', value: '45 min · 650 kr' },
+          { label: 'Genomgång', value: '60 min · 850 kr' },
+        ],
+      },
+      {
+        id: 'personal',
+        title: 'Personal och resurser',
+        rows: [
+          { label: 'Alex', value: 'Mån–fre 08–17' },
+          { label: 'Rast', value: '12:00–13:00' },
+          { label: 'Mötesrum', value: 'Resurs, 4 platser' },
+        ],
+      },
+      {
+        id: 'oppettider',
+        title: 'Öppettider och stängda datum',
+        rows: [
+          { label: 'Mån–fre', value: '08:00–17:00' },
+          { label: 'Lör–sön', value: 'Stängt' },
+          { label: 'Stängt datum', value: '16 okt' },
+        ],
+      },
+      {
+        id: 'buffert',
+        title: 'Bufferttider',
+        rows: [
+          { label: 'Före varje bokning', value: '0 min' },
+          { label: 'Efter varje bokning', value: '15 min' },
+          { label: 'Mellan bokningar', value: '0 min' },
+        ],
+      },
+      {
+        id: 'betalning',
+        title: 'Betalning',
+        rows: [
+          { label: 'Betalning för bokningar', value: 'På', on: true },
+          { label: 'Betalningstyp', value: 'Handpenning 20 %' },
+          { label: 'Betalning innan bekräftelse', value: 'Krävs', on: true },
+          { label: 'Betalsätt', value: 'Kort' },
+        ],
+      },
+      {
+        id: 'avbokning',
+        title: 'Avbokningsregler',
+        rows: [
+          { label: 'Kunden kan avboka', value: 'På', on: true },
+          { label: 'Senast', value: '24 h före' },
+          { label: 'Återbetalning', value: '100 %' },
+          { label: 'Avgift vid utebliven bokning', value: '30 %' },
+        ],
+      },
+      {
+        id: 'granser',
+        title: 'Bokningsgränser',
+        rows: [
+          { label: 'Boka högst', value: '90 dagar framåt' },
+          { label: 'Boka senast', value: '2 h före' },
+          { label: 'Aktiva bokningar per kund', value: 'Högst 3' },
+        ],
+      },
+      {
+        id: 'mejl',
+        title: 'Mejl till kunden',
+        rows: [
+          { label: 'Bokningsbekräftelse', value: 'På', on: true },
+          { label: 'Avbokningsbekräftelse', value: 'På', on: true },
+          { label: 'Ombokningsbekräftelse', value: 'På', on: true },
+        ],
+      },
+      {
+        id: 'design',
+        title: 'Utseende på din webbplats',
+        rows: [
+          { label: 'Onlinebokningar', value: 'På', on: true },
+          { label: 'Grundvy', value: 'Kalender' },
+          { label: 'Uppdelning', value: 'Ett steg i taget' },
+          { label: 'Tema', value: 'Ljust' },
+        ],
+      },
     ],
-    defaultTimeId: 't1300',
-    bookLabel: 'Boka och betala',
-  } satisfies ServiceBookingContent,
+  } satisfies BookingWidgetContent,
 };
 
 /*
