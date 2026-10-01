@@ -31,9 +31,8 @@ export type GitHubJob = {
     sizeBytes: number;
     fileName: string;
   };
-  // GitHub token sparas temporärt i jobbet för worker-processering
-  // Token rensas när jobbet är klart eller misslyckat
-  githubToken?: string;
+  // Kundens GitHub-token sparas aldrig i jobbet. Callbacken skickar den bara direkt till
+  // workern, som återkallar den efter nedladdningen.
   // FSM guard: förhindra att github_verified event skickas flera gånger från polling
   adminNotifiedAt?: string;
 };
@@ -56,8 +55,7 @@ export function jobBelongsToOnboarding(job: Pick<GitHubJob, 'onboardingId'>, onb
 /**
  * Skapar ett nytt GitHub import-jobb.
  * Jobbet kommer att processas async för att förhindra OOM.
- * 
- * @param githubToken - GitHub OAuth token (sparas temporärt i jobbet för worker)
+ * Kundens GitHub-token tas inte emot här och skrivs aldrig till lagringen.
  */
 export async function createGitHubJob(params: {
   onboardingId: string;
@@ -68,7 +66,6 @@ export async function createGitHubJob(params: {
   owner?: string;
   repoName?: string;
   repoUrl?: string;
-  githubToken?: string;
 }): Promise<string> {
   if (!BUCKET) {
     throw new Error('GCS_BUCKET_CODE_PACKAGES or GCS_BUCKET_ONBOARDING must be set');
@@ -86,7 +83,6 @@ export async function createGitHubJob(params: {
     owner: params.owner,
     repoName: params.repoName,
     repoUrl: params.repoUrl,
-    githubToken: params.githubToken,
     status: params.status ?? 'queued',
     createdAt: now,
     updatedAt: now,
@@ -108,6 +104,15 @@ export async function createGitHubJob(params: {
 }
 
 /**
+ * Äldre jobbfiler kan innehålla fältet githubToken från före rättningen. Det tas bort vid
+ * läsning så att ingen anropare ser det, och försvinner ur filen vid nästa uppdatering.
+ */
+function withoutLegacyToken(job: GitHubJob & { githubToken?: unknown }): GitHubJob {
+  const { githubToken: _legacyToken, ...rest } = job;
+  return rest;
+}
+
+/**
  * Hämtar ett GitHub-jobb.
  */
 export async function getGitHubJob(jobId: string): Promise<GitHubJob | null> {
@@ -122,7 +127,7 @@ export async function getGitHubJob(jobId: string): Promise<GitHubJob | null> {
     if (!exists) return null;
 
     const [contents] = await file.download();
-    return JSON.parse(contents.toString('utf8')) as GitHubJob;
+    return withoutLegacyToken(JSON.parse(contents.toString('utf8')) as GitHubJob);
   } catch (error) {
     console.error(`[GitHub Jobs] Error reading job ${jobId}:`, error);
     return null;
@@ -148,7 +153,7 @@ export async function processGitHubJob(
 export async function updateJobStatus(
   jobId: string,
   status: GitHubJobStatus,
-  updates?: Partial<Pick<GitHubJob, 'uploadResult' | 'error' | 'startedAt' | 'completedAt' | 'progress' | 'githubToken' | 'adminNotifiedAt'>>
+  updates?: Partial<Pick<GitHubJob, 'uploadResult' | 'error' | 'startedAt' | 'completedAt' | 'progress' | 'adminNotifiedAt'>>
 ): Promise<void> {
   if (!BUCKET) return;
 
