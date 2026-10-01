@@ -165,9 +165,10 @@ export function ScrollControlledVideoSection() {
           className="w-full h-full object-cover pointer-events-none"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-start pt-24 md:pt-32 px-4 pointer-events-none">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-black text-center mb-4">
+          {/* h2: the page's own heading is the h1 (only used on /tjanster). */}
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-black text-center mb-4">
             Ett bokningssystem byggt för alla branscher
-          </h1>
+          </h2>
           <p className="text-lg md:text-xl lg:text-2xl text-black/80 text-center">
             Som anpassar sig efter ditt arbetsflöde.
           </p>
