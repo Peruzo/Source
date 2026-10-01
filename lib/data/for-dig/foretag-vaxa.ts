@@ -22,6 +22,7 @@ import type { GettingStartedStep } from '@/components/sections/for-dig/GettingSt
 import type { ServiceBookingContent } from '@/components/sections/for-dig/product-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
 import type { OfferWidgetContent } from '@/components/sections/for-dig/interactive/OfferWidget';
+import type { LeadsWidgetContent } from '@/components/sections/for-dig/interactive/LeadsWidget';
 
 /** One status row: a title and a short line under it. */
 export type StatusRowContent = { title: string; note: string };
@@ -32,26 +33,6 @@ export type StatusCardContent = {
   value: string;
   pill?: string;
   row: StatusRowContent;
-};
-
-/** The follow-up step a lead is in, drawn as a status pill. */
-export type LeadStage = 'new' | 'contacted' | 'won';
-
-export type LeadListContent = {
-  label: string;
-  title: string;
-  ratingLabel: string;
-  leads: {
-    id: string;
-    company: string;
-    place: string;
-    /** Letter grade as in the portal: A, B, C, D or F. */
-    rating: string;
-    motivation: string;
-    stage: LeadStage;
-    status: string;
-  }[];
-  action: string;
 };
 
 export type BrandedCheckoutContent = {
@@ -234,6 +215,13 @@ export const vaxaOfferter = {
  * export (routes/leadsRoutes.js:598-726). Statusorden och knappen är portalens egna.
  * Nämn inte källornas namn, schemaläggning, ifyllda kontaktuppgifter, tider, antal eller storlek.
  * Exempelföretagen är påhittade och branschneutrala.
+ * Widgeten (source.database origin/develop e7f702d6): statusorden Nytt lead,
+ * Kontaktad, Vunnen och Ingen affär (public/leads-layout2.html:1400-1410), Ort,
+ * betyg A–F och AI-poäng (:2805-2822), Anteckningar (:2791), knappen Analysera &
+ * pitch (:3546-3570). Analysen har avsnitten Bakgrund, Relevans, Säljpitch,
+ * Samtalsöppningar och Troliga invändningar och ett underlagsmärke
+ * (routes/leadsRoutes.js:1252-1262, public/leads-layout2.html:3824-3844).
+ * Analysen har inget avsnitt för nästa steg, så widgeten visar inget sådant.
  */
 export const vaxaLeads = {
   id: 'leads',
@@ -243,41 +231,43 @@ export const vaxaLeads = {
     'Välj vilka kunder du vill nå, efter bransch och ort, så letar Source fram företag som passar från flera källor – med ett betyg och en kort motivering för varje.',
     'Be om en pitchanalys innan du hör av dig och följ varje lead från nytt till vunnen affär. Du kan också importera egna listor och exportera dina leads.',
   ],
-  list: {
-    label: 'Exempel: tre leads med betyg, motivering och status',
-    title: 'Leads',
+  widget: {
+    label: 'Exempel: en lead öppnas och analyseras med Analysera & pitch',
+    listTitle: 'Leads',
     ratingLabel: 'Betyg',
     leads: [
-      {
-        id: 'l1',
-        company: 'Exempel Nord AB',
-        place: 'Umeå',
-        rating: 'A',
-        motivation: 'Samma bransch och ort som i din profil.',
-        stage: 'new',
-        status: 'Nytt lead',
-      },
-      {
-        id: 'l2',
-        company: 'Exempel Väst AB',
-        place: 'Göteborg',
-        rating: 'B',
-        motivation: 'Matchar en av branscherna du har valt.',
-        stage: 'contacted',
-        status: 'Kontaktad',
-      },
-      {
-        id: 'l3',
-        company: 'Exempel Syd AB',
-        place: 'Malmö',
-        rating: 'A',
-        motivation: 'Ligger i en av orterna du har valt.',
-        stage: 'won',
-        status: 'Vunnen',
-      },
+      { id: 'l1', company: 'Exempel Nord AB', place: 'Umeå', rating: 'A', status: 'Nytt lead', tone: 'outline' },
+      { id: 'l2', company: 'Exempel Väst AB', place: 'Göteborg', rating: 'B', status: 'Kontaktad', tone: 'muted' },
+      { id: 'l3', company: 'Exempel Syd AB', place: 'Malmö', rating: 'A', status: 'Vunnen', tone: 'paid' },
+      { id: 'l4', company: 'Exempel Öst AB', place: 'Uppsala', rating: 'C', status: 'Ingen affär', tone: 'outline' },
     ],
-    action: 'Analysera & pitch',
-  } satisfies LeadListContent,
+    open: {
+      company: 'Exempel Nord AB',
+      details: [
+        { label: 'Ort', value: 'Umeå' },
+        { label: 'Betyg', value: 'A' },
+        { label: 'AI-poäng', value: '86/100' },
+        { label: 'Status', value: 'Nytt lead' },
+      ],
+      notesTitle: 'Anteckningar',
+      note: { date: '2026-11-02', text: 'Hittad via din profil. Hör av dig före månadsskiftet.' },
+      action: 'Analysera & pitch',
+      loading: 'Analyserar …',
+      answerTitle: 'Analys (exempel)',
+      evidence: 'Delvis underbyggd',
+      sections: [
+        { title: 'Bakgrund', body: 'Etablerat bolag i Umeå som säljer både på plats och via sin webbplats.' },
+        { title: 'Relevans', body: 'Samma bransch och ort som i din profil, och de växer i din region.' },
+        { title: 'Säljpitch', body: 'Visa hur försäljning, kunder och betalningar samlas på ett ställe, utan fler system att hålla ihop.' },
+        { title: 'Samtalsöppningar', body: 'Hur tar ni i dag emot beställningar som kommer in via webbplatsen?' },
+      ],
+      objection: {
+        title: 'Troliga invändningar',
+        question: 'Vi har redan ett system.',
+        answer: 'Börja med en del, till exempel betalningarna, och flytta resten när det passar.',
+      },
+    },
+  } satisfies LeadsWidgetContent,
 };
 
 /*
