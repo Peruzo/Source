@@ -219,7 +219,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'vilka-fraktleverantorer',
         question: 'Vilka fraktleverantörer kan jag använda?',
-        answer: 'Du kan använda PostNord. I Growth och Enterprise bokar du sändningar och returer med PostNord och följer dem i kundportalen.',
+        answer: 'Du kan använda PostNord. I Growth och Enterprise bokar du sändningar med PostNord och följer dem i kundportalen.',
         category: 'webbutik-produktadministration',
         subcategory: 'Frakt',
       },
@@ -502,7 +502,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'stodjer-ni-postnord-dhl-bring',
         question: 'Vilka fraktbolag stöder ni?',
-        answer: 'PostNord. I Growth och Enterprise bokar du sändningar och returer med PostNord och följer dem i kundportalen.',
+        answer: 'PostNord. I Growth och Enterprise bokar du sändningar med PostNord och följer dem i kundportalen.',
         category: 'integrationer',
         subcategory: 'Logistik',
       },

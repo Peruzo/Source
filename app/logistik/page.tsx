@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LogistikOverviewSection } from '@/components/sections/LogistikOverviewSection';
 import { LogisticsWidgetsSection } from '@/components/sections/LogisticsWidgetsSection';
 import { LogistikSections } from '@/components/sections/tjanster/logistik/LogistikSections';
+import { FLAGGOR } from '@/lib/data/tjanster/logistik';
 
 export default function LogistikPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -157,63 +158,66 @@ export default function LogistikPage() {
       <LogistikOverviewSection />
       <LogisticsWidgetsSection />
 
-      <section className="relative min-h-[100svh] w-full overflow-hidden text-white">
-        <div className="relative h-[100svh] w-full">
-          <video
-            ref={returVideoRef}
-            src="/0330.mp4"
-            muted
-            playsInline
-            preload="auto"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-            aria-label="Demonstration av returhanteringssystem"
-          />
+      {/* Returhantering: bara när returfunktionen är på (FLAGGOR.returer, lib/data/tjanster/logistik.ts). */}
+      {FLAGGOR.returer ? (
+        <section className="relative min-h-[100svh] w-full overflow-hidden text-white">
+          <div className="relative h-[100svh] w-full">
+            <video
+              ref={returVideoRef}
+              src="/0330.mp4"
+              muted
+              playsInline
+              preload="auto"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              aria-label="Demonstration av returhanteringssystem"
+            />
 
-          <div className="pointer-events-none absolute inset-0 z-10 hidden items-center lg:flex">
-            <div className="w-full px-6 md:px-10 lg:px-20">
-              <div className="relative mx-auto grid max-w-[1440px] grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
-                <div className="self-center pr-8 xl:pr-14">
-                  <ul className="space-y-6 text-left md:space-y-7">
-                    {[
-                      'Eget system för att administrativt styra returerna',
-                      'Godkänn, avvisa och återbetala i samma returärende',
-                      'Överblick över varje returärende och dess status',
-                      'Smidigare upplevelse för både kund och support',
-                    ].map((point, index) => (
-                      <li
-                        key={point}
-                        className={`text-[1.34rem] font-semibold leading-[1.3] tracking-[-0.02em] text-[#d8d2c6] transition-all duration-700 ease-out md:text-[1.5rem] md:leading-[1.34] ${
-                          isReturVideoEnded
-                            ? 'translate-y-0 opacity-100 blur-0'
-                            : 'translate-y-3 opacity-0 blur-[2px]'
-                        }`}
-                        style={{ transitionDelay: isReturVideoEnded ? `${index * 130}ms` : '0ms' }}
-                      >
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
+            <div className="pointer-events-none absolute inset-0 z-10 hidden items-center lg:flex">
+              <div className="w-full px-6 md:px-10 lg:px-20">
+                <div className="relative mx-auto grid max-w-[1440px] grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
+                  <div className="self-center pr-8 xl:pr-14">
+                    <ul className="space-y-6 text-left md:space-y-7">
+                      {[
+                        'Eget system för att administrativt styra returerna',
+                        'Godkänn, avvisa och återbetala i samma returärende',
+                        'Överblick över varje returärende och dess status',
+                        'Smidigare upplevelse för både kund och support',
+                      ].map((point, index) => (
+                        <li
+                          key={point}
+                          className={`text-[1.34rem] font-semibold leading-[1.3] tracking-[-0.02em] text-[#d8d2c6] transition-all duration-700 ease-out md:text-[1.5rem] md:leading-[1.34] ${
+                            isReturVideoEnded
+                              ? 'translate-y-0 opacity-100 blur-0'
+                              : 'translate-y-3 opacity-0 blur-[2px]'
+                          }`}
+                          style={{ transitionDelay: isReturVideoEnded ? `${index * 130}ms` : '0ms' }}
+                        >
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="relative z-10 flex h-full w-full justify-center px-6 pb-14 pt-20 md:px-10 md:pb-20 md:pt-24 lg:px-20 lg:pb-24 lg:pt-28">
-            <div className="mx-auto flex w-full max-w-[920px] flex-col items-center text-center">
-              <p className="text-xs font-medium uppercase tracking-[0.34em] text-white [text-shadow:0_3px_18px_rgba(0,0,0,0.40)] md:text-sm">
-                RETURHANTERING
-              </p>
-              <h2 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white [text-shadow:0_8px_30px_rgba(0,0,0,0.44)] sm:text-5xl md:text-6xl">
-                Hantera returer utan onödigt krångel
-              </h2>
-              <p className="mt-6 max-w-[690px] text-base leading-relaxed text-white/95 [text-shadow:0_4px_18px_rgba(0,0,0,0.38)] md:text-lg">
-                Ge kunderna en smidig returupplevelse samtidigt som ditt team får full kontroll över
-                varje steg i flödet — från mottagning till återbetalning.
-              </p>
+            <div className="relative z-10 flex h-full w-full justify-center px-6 pb-14 pt-20 md:px-10 md:pb-20 md:pt-24 lg:px-20 lg:pb-24 lg:pt-28">
+              <div className="mx-auto flex w-full max-w-[920px] flex-col items-center text-center">
+                <p className="text-xs font-medium uppercase tracking-[0.34em] text-white [text-shadow:0_3px_18px_rgba(0,0,0,0.40)] md:text-sm">
+                  RETURHANTERING
+                </p>
+                <h2 className="mt-5 max-w-[15ch] text-4xl font-semibold leading-[1.08] tracking-tight text-white [text-shadow:0_8px_30px_rgba(0,0,0,0.44)] sm:text-5xl md:text-6xl">
+                  Hantera returer utan onödigt krångel
+                </h2>
+                <p className="mt-6 max-w-[690px] text-base leading-relaxed text-white/95 [text-shadow:0_4px_18px_rgba(0,0,0,0.38)] md:text-lg">
+                  Ge kunderna en smidig returupplevelse samtidigt som ditt team får full kontroll över
+                  varje steg i flödet — från mottagning till återbetalning.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
       <LogistikSections />
     </>
   );

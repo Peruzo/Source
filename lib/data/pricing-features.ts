@@ -80,8 +80,6 @@ export const pricingFeatureCategories: PricingFeatureCategory[] = [
       { name: 'Ordrar och plock', from: 'growth' },
       // config/packageTiers.js:75-76, services/shipping/adapters/index.js:6
       { name: 'Frakt med PostNord', detail: 'sändningar och spårning', from: 'growth' },
-      // config/packageTiers.js:74
-      { name: 'Returer', from: 'growth' },
     ],
   },
   {

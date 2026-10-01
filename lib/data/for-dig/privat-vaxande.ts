@@ -68,9 +68,10 @@ export const privatVaxandeImages = {
 } satisfies Record<string, ServiceImage>;
 
 /*
- * 1 – Skicka dina beställningar. Belägg: logistik, paketprofiler och returer
- * (config/packageTiers.js:71-77), bokning, retur och spårning i PostNord-adaptern
- * (services/shipping/adapters/postnord.js:386, 640, 777, 869). Bara PostNord, "boka".
+ * 1 – Skicka dina beställningar. Belägg: logistik och paketprofiler
+ * (config/packageTiers.js:71-77), bokning och spårning i PostNord-adaptern
+ * (services/shipping/adapters/postnord.js:386). Bara PostNord, "boka". Returer kräver
+ * FEATURE_RETURNS, som är av som standard (utils/featureFlags.js:4), och nämns inte.
  */
 // No eyebrow and one paragraph: the teal eyebrow reached only 2.2:1 on the grey street, and the shorter
 // block ends above her hand on the locker door at 1366 × 768 and 1440 × 900.
@@ -78,7 +79,7 @@ export const privatVaxandeFrakt = {
   id: 'skicka',
   title: 'Skicka dina beställningar',
   body: [
-    'Boka frakten med PostNord direkt från ordern, så kan kunden följa paketet på vägen. Kommer något tillbaka registrerar du returen där ordern redan finns.',
+    'Boka frakten med PostNord direkt från ordern, så kan kunden följa paketet på vägen.',
   ],
   card: {
     label: 'Beställning',

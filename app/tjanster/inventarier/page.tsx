@@ -24,6 +24,8 @@ import {
   inventarierSteps,
   inventarierWidgets as w,
 } from '@/lib/data/tjanster/inventarier';
+// The same switch as the returns card on /logistik: FEATURE_RETURNS is off in the portal by default.
+import { FLAGGOR } from '@/lib/data/tjanster/logistik';
 
 const returnIcons = [CubeIcon, TruckIcon, BanknotesIcon];
 
@@ -136,9 +138,8 @@ export default function InventarierPage() {
             </h2>
 
             <p className="text-base md:text-lg text-gray-800 leading-relaxed">
-              Alla förändringar uppdateras automatiskt – vid köp, returer,
-              reklamationer och lagerförändringar. Du har alltid korrekt data utan
-              manuellt arbete.
+              Alla förändringar uppdateras automatiskt – vid köp och
+              lagerförändringar. Du har alltid korrekt data utan manuellt arbete.
             </p>
           </div>
         </Container>
@@ -271,8 +272,8 @@ export default function InventarierPage() {
           textPosition="top-left"
         />
 
-        {/* 8 – Returer: same layout, copy without a stock-update claim */}
-        <ReturnsSection />
+        {/* 8 – Returer: same layout, copy without a stock-update claim. Only when returns are on (FLAGGOR.returer). */}
+        {FLAGGOR.returer ? <ReturnsSection /> : null}
 
         {/* 9 – Import/export, split with the D3 close-up */}
         <ClippedImageSection
@@ -322,7 +323,9 @@ function ReturnsSection() {
         </div>
       </Container>
 
-      <div className="mt-12 md:mt-14 lg:mt-16">
+      {/* overflow-x-clip: the image drifts 10 px sideways (x below) and is full width on phones,
+          so without it the page scrolled sideways by up to 10 px. Clip, not hidden: no scroll box. */}
+      <div className="mt-12 overflow-x-clip md:mt-14 lg:mt-16">
         <motion.div
           className="relative mx-auto w-full max-w-[960px] px-4 md:max-w-[1080px] lg:max-w-[1120px]"
           animate={reduceMotion ? { x: 0 } : { x: [0, 10, 0] }}

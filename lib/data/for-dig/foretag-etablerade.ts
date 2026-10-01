@@ -235,7 +235,7 @@ export const etableradeMer = {
     { icon: SparklesIcon, title: 'AI-insikter', body: 'Insikter om försäljning och kunder som uppdateras oftare.' },
     { icon: DocumentChartBarIcon, title: 'Schemalagda rapporter', body: 'Rapporter om försäljning och kunder som kommer till er automatiskt.' },
     { icon: DocumentCheckIcon, title: 'Bokföring med Fortnox', body: 'Det ni säljer och får betalt för hamnar i bokföringen som verifikat.' },
-    { icon: TruckIcon, title: 'Frakt och returer', body: 'Boka frakt med PostNord och ta emot returer där ordern finns.' },
+    { icon: TruckIcon, title: 'Frakt med PostNord', body: 'Boka frakten från ordern och skicka kunden en länk för att följa paketet.' },
     { icon: DocumentTextIcon, title: 'Offerter', body: 'Gör om en offert till en faktura eller en betalningslänk.' },
     { icon: CreditCardIcon, title: 'Kassan i ert utseende', body: 'Egen logotyp och accentfärg i kassan, där kunden betalar med kort.' },
   ] satisfies FeatureItem[],
