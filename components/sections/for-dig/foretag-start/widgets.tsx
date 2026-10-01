@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDaysIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon } from '@heroicons/react/24/outline';
 import { RADIUS } from '../payment-cards/primitives';
 import type { PhotoCardContent } from '@/lib/data/for-dig/foretag-start';
 
@@ -43,8 +43,4 @@ function PhotoCard({ content, icon: Icon }: { content: PhotoCardContent; icon: t
 
 export function PaymentLinkCard({ content }: { content: PhotoCardContent }) {
   return <PhotoCard content={content} icon={CreditCardIcon} />;
-}
-
-export function DeadlineCard({ content }: { content: PhotoCardContent }) {
-  return <PhotoCard content={content} icon={CalendarDaysIcon} />;
 }

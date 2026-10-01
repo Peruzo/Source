@@ -21,9 +21,10 @@ import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { InvoiceWidgets } from './InvoiceWidgets';
 import { SubscriptionWidgets } from './SubscriptionWidgets';
-import { DeadlineCard, PaymentLinkCard } from './foretag-start/widgets';
+import { PaymentLinkCard } from './foretag-start/widgets';
 import { ProductsWidget } from './interactive/ProductsWidget';
 import { CampaignsWidget } from './interactive/CampaignsWidget';
+import { DeadlinesWidget } from './interactive/DeadlinesWidget';
 
 /**
  * Everything under the hero on /foretag-nya (Företag Start). The hero in
@@ -110,7 +111,7 @@ export function ForetagStartSections() {
         <SubscriptionWidgets {...foretagPrenumerationer.widgets} large discount={foretagPrenumerationer.discount} />
       </FullBleedImageSection>
 
-      {/* 6 – Myndighetsdatum. Photo with the card on the pile of papers. */}
+      {/* 6 – Myndighetsdatum. "Kommande datum" under the text, over the table – the woman and her hands stay clear. */}
       <ServiceFullBleed
         id={foretagMyndighetsdatum.id}
         eyebrow={foretagMyndighetsdatum.eyebrow}
@@ -119,11 +120,10 @@ export function ForetagStartSections() {
         image={foretagImages.myndighetsdatum}
         tone="light"
         textPosition="top-left"
-        card={{
-          label: 'Exempel: nästa påminnelse i kalendern',
-          content: <DeadlineCard content={foretagMyndighetsdatum.card} />,
-          anchor: { x: 45, y: 70 },
-          anchorPortrait: { x: 55, y: 82 },
+        panel={{
+          label: foretagMyndighetsdatum.deadlines.label,
+          content: <DeadlinesWidget content={foretagMyndighetsdatum.deadlines} />,
+          place: 'text',
         }}
       />
 

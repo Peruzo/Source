@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { useReveal } from '@/components/sections/for-dig/useReveal';
 import { ServicePicture } from './ServicePicture';
-import type { ServiceCta, ServiceFullBleedCard, ServiceImage } from './types';
+import type { ServiceCta, ServiceFullBleedCard, ServiceFullBleedPanel, ServiceImage } from './types';
 
 type ServiceFullBleedProps = {
   id?: string;
@@ -46,6 +46,13 @@ type ServiceFullBleedProps = {
    * no movement). Without it the section renders exactly as before.
    */
   card?: ServiceFullBleedCard;
+  /**
+   * Optional larger widget (see ServiceFullBleedPanel): over the photo from
+   * `lg`, under it below `lg`. Not inside the parallax layer and without a
+   * reveal of its own – the widget plays its own sequence. Without it the
+   * section renders exactly as before.
+   */
+  panel?: ServiceFullBleedPanel;
 };
 
 /*
@@ -75,6 +82,7 @@ export function ServiceFullBleed({
   scrim = 'side',
   priority = false,
   card,
+  panel,
 }: ServiceFullBleedProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { reveal, shouldReduceMotion } = useReveal();
@@ -133,6 +141,12 @@ export function ServiceFullBleed({
             {cta.label}
           </AnimatedButton>
         </motion.div>
+      ) : null}
+      {/* Panel in the text column from lg (below lg it sits under the photo, see the end). */}
+      {panel && panel.place === 'text' ? (
+        <div role="group" aria-label={panel.label} className="mt-8 hidden max-w-[26rem] lg:block">
+          {panel.content}
+        </div>
       ) : null}
     </div>
   );
@@ -247,7 +261,9 @@ export function ServiceFullBleed({
 
       {/* One text block: above the photo on the section colour below lg, over the photo from lg. */}
       <div
-        className={`relative z-10 order-first px-6 pb-10 md:px-10 lg:mx-auto lg:flex lg:min-h-[100svh] lg:max-w-[1440px] lg:px-20 lg:pb-0 ${
+        className={`relative z-10 order-first px-6 pb-10 md:px-10 lg:mx-auto lg:flex lg:min-h-[100svh] lg:max-w-[1440px] lg:px-20 ${
+          panel?.place === 'text' ? 'lg:pb-16' : 'lg:pb-0'
+        } ${
           priority ? 'pt-28' : 'pt-20'
         } ${textPosition === 'center-left' ? 'lg:items-center lg:pt-0' : 'lg:items-start lg:pt-[clamp(8rem,20vh,12rem)]'}${
           textPosition === 'top-right' ? ' lg:justify-end' : ''
@@ -255,6 +271,32 @@ export function ServiceFullBleed({
       >
         {content}
       </div>
+
+      {/* Panel: under the photo below lg; from lg at its measured place over the photo, or in the text column (above). */}
+      {panel ? (
+        <div
+          role="group"
+          aria-label={panel.label}
+          style={
+            panel.position
+              ? ({
+                  '--panel-l': panel.position.left,
+                  '--panel-r': panel.position.right,
+                  '--panel-t': panel.position.top,
+                  '--panel-b': panel.position.bottom,
+                  '--panel-w': panel.position.width,
+                } as CSSProperties)
+              : undefined
+          }
+          className={`relative z-10 order-last px-6 pb-12 pt-8 md:px-10 ${
+            panel.place === 'text'
+              ? 'lg:hidden'
+              : 'lg:absolute lg:bottom-[var(--panel-b,auto)] lg:left-[var(--panel-l,auto)] lg:right-[var(--panel-r,auto)] lg:top-[var(--panel-t,auto)] lg:w-[var(--panel-w)] lg:p-0'
+          }`}
+        >
+          <div className="mx-auto w-full max-w-[34rem] lg:max-w-none">{panel.content}</div>
+        </div>
+      ) : null}
     </section>
   );
 }

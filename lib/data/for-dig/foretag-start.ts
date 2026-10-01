@@ -20,6 +20,7 @@ import type { GettingStartedStep } from '@/components/sections/for-dig/GettingSt
 import type { InvoiceWidgetsContent } from '@/components/sections/for-dig/invoice-widgets/content';
 import type { ProductsWidgetContent } from '@/components/sections/for-dig/interactive/ProductsWidget';
 import type { CampaignsWidgetContent } from '@/components/sections/for-dig/interactive/CampaignsWidget';
+import type { DeadlinesWidgetContent } from '@/components/sections/for-dig/interactive/DeadlinesWidget';
 import type { SubscriptionDiscountContent } from '@/components/sections/for-dig/interactive/SubscriptionDiscount';
 import type { SubscriptionWidgetsContent } from '@/components/sections/for-dig/subscription-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
@@ -316,6 +317,15 @@ export const foretagPrenumerationer = {
  * arbetsgivardeklaration den 12:e, årsredovisning för AB och BRF
  * (services/taxDeadlineService.js:60-118), egna datum (upp till 50). Skriv
  * påminnelser, inte garanterat rätt datum (taxDeadlineService.js:113).
+ * Widgeten (source.database origin/develop 86e59e2c): kortet "Viktiga datum" med
+ * "Kommande deadlines", knappen "Hantera", datum och "N dagar" som blir rött under
+ * sju dagar (public/layout2/index.html:731-732, 859-890), "Lägg till eget datum"
+ * (index.html:1074-1092), titlarna "Arbetsgivardeklaration <månad>", "Momsdeklaration
+ * Q<n>" och "Årsredovisning till Bolagsverket" (services/taxDeadlineService.js:60-107),
+ * egna datum som återkommer varje år (models/TenantFiscalSettings.js:18-21),
+ * påminnelse via mejl 7 dagar och 1 dag före (cron/taxDeadlineCron.js:41-93) och
+ * datumen i kalendern (taxDeadlineService.js:221-251). Preliminärskatt finns inte
+ * i portalen och visas inte. Datumen är exempel.
  */
 export const foretagMyndighetsdatum = {
   id: 'myndighetsdatum',
@@ -325,12 +335,24 @@ export const foretagMyndighetsdatum = {
     'Fyll i bolagsform och momsperiod en gång, så får du påminnelser om moms, arbetsgivardeklaration och – för aktiebolag – årsredovisning i din kalender.',
     'Lägg till egna datum och flytta eller dölj dem som inte gäller dig.',
   ],
-  card: {
-    label: 'Nästa datum',
-    value: 'Den 12:e',
-    pill: 'Påminnelse',
-    row: { title: 'Arbetsgivardeklaration', note: 'Varje månad' },
-  } satisfies PhotoCardContent,
+  deadlines: {
+    label: 'Exempel: kommande myndighetsdatum med påminnelse, och ett eget datum som läggs till',
+    title: 'Viktiga datum',
+    subtitle: 'Kommande deadlines',
+    manageLabel: 'Hantera',
+    daysLabel: '{n} dagar',
+    dayLabel: '{n} dag',
+    nextLabel: 'Nästa',
+    deadlines: [
+      { id: 'agi', title: 'Arbetsgivardeklaration oktober', date: '12 okt', daysLeft: 5 },
+      { id: 'moms', title: 'Momsdeklaration Q3', date: '12 nov', daysLeft: 36 },
+      { id: 'ar', title: 'Årsredovisning till Bolagsverket', date: '30 nov', daysLeft: 54 },
+    ],
+    reminder: 'påminnelse via mejl 7 dagar och 1 dag före',
+    addLabel: 'Lägg till eget datum',
+    custom: { id: 'eget', title: 'Förnya företagsförsäkringen', date: '15 dec', daysLeft: 69, pill: 'Eget datum, varje år' },
+    calendarNote: 'Datumen finns också i kalendern',
+  } satisfies DeadlinesWidgetContent,
 };
 
 /* 7 – Mer som ingår. Allt core, se planens punkt 2. */
