@@ -19,7 +19,7 @@ import {
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { InvoiceWidgetsContent } from '@/components/sections/for-dig/invoice-widgets/content';
 import type { ProductsWidgetContent } from '@/components/sections/for-dig/interactive/ProductsWidget';
-import type { CampaignCodeContent, CreateCampaignContent } from '@/components/sections/for-dig/campaign-widgets/content';
+import type { CampaignsWidgetContent } from '@/components/sections/for-dig/interactive/CampaignsWidget';
 import type { SubscriptionWidgetsContent } from '@/components/sections/for-dig/subscription-widgets/content';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
 
@@ -182,6 +182,14 @@ export const foretagBetalningslank = {
  * (routes/campaignRoutes.js:2213), rabattkoder med procent eller belopp,
  * högsta antal användningar och slutdatum (routes/campaignRoutes.js:776-795),
  * koden anges i kassan (services/storefrontCheckoutService.js:2335-2338).
+ * Widgeten (source.database origin/develop e7f702d6): modalen har flikarna
+ * Kampanj och Kampanjkod (public/kampanjer-layout2.html:341-342). Kampanjen har
+ * Kampanjnamn, Rabatttyp (Procentuell rabatt / Fast rabatt (kr) / 2 för 1),
+ * Rabattvärde, Start- och Slutdatum, Max antal användningar och Produkter
+ * (:355-465), och knappen Skapa kampanj (:477). Kampanjen gäller valda
+ * produkter, inte kategorier. En kod gäller hela varukorgen
+ * (routes/campaignRoutes.js:806-886) och listas med Aktiv och antal
+ * användningar (public/js/campaigns.js:1598-1633).
  */
 export const foretagKampanjer = {
   id: 'kampanjer',
@@ -191,27 +199,29 @@ export const foretagKampanjer = {
     'Sätt kampanjpriser under en period, eller skapa en rabattkod med procent eller ett fast belopp.',
     'Du bestämmer hur länge koden gäller och hur många gånger den får användas – kunden anger den i kassan.',
   ],
-  discountRate: 0.1,
-  create: {
-    buttonLabel: 'Skapa kampanj',
-    title: 'Ny kampanj',
-    name: { label: 'Kampanjnamn', value: 'Välkomstrabatt' },
-    products: { label: 'Gäller', selectedLabel: 'Alla produkter' },
-    discountType: {
-      label: 'Rabattyp',
-      options: { percent: 'Procent', amount: 'Fast belopp' },
-      defaultValue: 'percent',
+  widget: {
+    label: 'Exempel: en ny kampanj läggs till bland de aktiva kampanjerna',
+    listTitle: 'Aktiva kampanjer',
+    createLabel: 'Skapa kampanj',
+    rows: [
+      { id: 'k1', name: 'Välkomstrabatt', kind: 'Kampanjkod', code: 'VALKOMMEN10', discount: '−10 %', detail: 'Hela varukorgen · 12 av 100 användningar', status: 'Aktiv' },
+      { id: 'k2', name: 'Paketpris', kind: 'Kampanj', discount: '−150 kr', detail: '2 produkter · till 2026-12-31', status: 'Aktiv' },
+      { id: 'k3', name: 'Två för en', kind: 'Kampanj', discount: '2 för 1', detail: '1 produkt · till 2026-11-30', status: 'Aktiv' },
+      { id: 'k4', name: 'Stamkund', kind: 'Kampanjkod', code: 'TACK100', discount: '−100 kr', detail: 'Hela varukorgen · 8 av 50 användningar', status: 'Aktiv' },
+    ],
+    newRow: { id: 'k0', name: 'Höstkampanj', kind: 'Kampanj', discount: '−20 %', detail: '3 produkter · 1–30 nov 2026', status: 'Aktiv' },
+    dialog: {
+      title: 'Ny kampanj',
+      tabs: { campaign: 'Kampanj', code: 'Kampanjkod' },
+      name: { label: 'Kampanjnamn', value: 'Höstkampanj' },
+      products: { label: 'Produkter', value: '3 valda' },
+      discountType: { label: 'Rabatttyp', value: 'Procentuell rabatt' },
+      value: { label: 'Rabattvärde (%)', value: '20' },
+      period: { label: 'Start- och slutdatum', value: '1–30 nov 2026' },
+      maxUses: { label: 'Max antal användningar', value: 'Obegränsat' },
+      submitLabel: 'Skapa kampanj',
     },
-    value: { label: 'Värde', percent: 0.1, amount: 100 },
-    period: { label: 'Giltighetsperiod', from: '2026-11-01', to: '2026-11-30' },
-    submitLabel: 'Starta kampanj',
-  } satisfies CreateCampaignContent,
-  code: {
-    title: 'Rabattkod',
-    code: { label: 'Kod', value: 'VALKOMMEN10' },
-    discount: { label: 'Rabatt' },
-    usage: { label: 'Får användas', value: '100 gånger' },
-  } satisfies CampaignCodeContent,
+  } satisfies CampaignsWidgetContent,
 };
 
 /*
