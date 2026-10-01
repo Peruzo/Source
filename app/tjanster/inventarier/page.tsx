@@ -24,6 +24,8 @@ import {
   inventarierSteps,
   inventarierWidgets as w,
 } from '@/lib/data/tjanster/inventarier';
+// The same switch as the returns card on /logistik: FEATURE_RETURNS is off in the portal by default.
+import { FLAGGOR } from '@/lib/data/tjanster/logistik';
 
 const returnIcons = [CubeIcon, TruckIcon, BanknotesIcon];
 
@@ -270,8 +272,8 @@ export default function InventarierPage() {
           textPosition="top-left"
         />
 
-        {/* 8 – Returer: same layout, copy without a stock-update claim */}
-        <ReturnsSection />
+        {/* 8 – Returer: same layout, copy without a stock-update claim. Only when returns are on (FLAGGOR.returer). */}
+        {FLAGGOR.returer ? <ReturnsSection /> : null}
 
         {/* 9 – Import/export, split with the D3 close-up */}
         <ClippedImageSection
