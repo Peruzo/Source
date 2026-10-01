@@ -135,8 +135,8 @@ export default function BokforingPage() {
             </h1>
             <p className="mt-6 text-base leading-relaxed md:text-lg">
               Ett modernt bokföringsverktyg byggt för e-handel.
-              Automatisera din bokföring med realtidsdata och en direkt integration
-              till Fortnox - så att du får full kontroll utan manuellt arbete.
+              Automatisera din bokföring med underlag från varje utbetalning och en
+              direkt integration till Fortnox - så att du får full kontroll utan manuellt arbete.
             </p>
           </div>
         </div>

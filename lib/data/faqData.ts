@@ -191,7 +191,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-fungerar-lagerhantering',
         question: 'Hur fungerar lagerhantering?',
-        answer: 'Vårt system hjälper dig att spåra lagerstatus i realtid. Du får varningar när lagret är lågt och kan enkelt uppdatera kvantiteter.',
+        answer: 'För produkter med lagerspårning dras saldot automatiskt när en order betalas. Du får varningar när lagret är lågt och kan enkelt uppdatera kvantiteter.',
         category: 'webbutik-produktadministration',
         subcategory: 'Produkter',
       },
@@ -358,14 +358,14 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-skapar-jag-kampanj',
         question: 'Hur skapar jag en kampanj?',
-        answer: 'Du kan skapa kampanjer direkt från din kundportal. Välj mål, budget, målgrupp och spåra resultat i realtid.',
+        answer: 'Du kan skapa kampanjer direkt från din kundportal. Välj mål, budget och målgrupp och följ sedan resultaten där.',
         category: 'marknadsforing',
         subcategory: 'Kampanjer',
       },
       {
         id: 'kan-jag-se-resultat-realtid',
-        question: 'Kan jag se resultat i realtid?',
-        answer: 'Ja, du kan se kampanjresultat i realtid i din kundportal. Se klick, konverteringar, kostnad per klick och mer.',
+        question: 'Var ser jag kampanjernas resultat?',
+        answer: 'I din kundportal. När du har kopplat Google Ads, Meta eller TikTok hämtar Source resultaten från annonskontot, och du ser klick, konverteringar, kostnad per klick och mer.',
         category: 'marknadsforing',
         subcategory: 'Kampanjer',
       },
@@ -429,8 +429,8 @@ export const faqCategories: FAQCategory[] = [
     questions: [
       {
         id: 'hur-fungerar-realtidsstatistik',
-        question: 'Hur fungerar realtidsstatistiken?',
-        answer: 'Din kundportal visar statistik i realtid. Se besökare, sessioner, konverteringar och mer medan de händer.',
+        question: 'Hur fungerar statistiken?',
+        answer: 'Statistiken bygger på besöken på din webbplats. Sidvisningar registreras löpande medan besökarna är där, och i din kundportal ser du bland annat besökare, sidvisningar och hur många som har varit aktiva de senaste 15 minuterna.',
         category: 'statistik-analys',
         subcategory: 'Dashboard & rapporter',
       },

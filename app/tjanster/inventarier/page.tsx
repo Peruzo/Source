@@ -134,7 +134,7 @@ export default function InventarierPage() {
             </h1>
 
             <h2 className="text-xl md:text-2xl font-medium text-gray-900 mt-4">
-              Full kontroll över dina inventarier i realtid
+              Full kontroll över dina inventarier
             </h2>
 
             <p className="text-base md:text-lg text-gray-800 leading-relaxed">
@@ -177,7 +177,7 @@ export default function InventarierPage() {
       </section>
 
       <ServicePageLayout>
-        {/* 3 – Håll koll i realtid (unchanged) */}
+        {/* 3 – Håll koll på ditt lager */}
         <section className="flex min-h-[100svh] items-center bg-[#eceef2] py-20 md:py-24 lg:py-28">
           <Container size="xl" className="max-w-[1520px]">
             <div className="grid grid-cols-1 items-center gap-12 md:gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24 xl:gap-28">
@@ -186,7 +186,7 @@ export default function InventarierPage() {
                   INVENTARIER
                 </p>
                 <h2 className="text-[2.1rem] font-semibold leading-[1.08] tracking-tight text-[#111111] sm:text-5xl lg:text-[3.15rem]">
-                  Håll koll i realtid på ditt lager
+                  Håll koll på ditt lager
                 </h2>
                 <p className="max-w-[58ch] text-base leading-relaxed text-gray-700 md:text-lg">
                   Se lagersaldo, produktvarianter och viktiga uppdateringar på alla dina enheter — i en
@@ -198,7 +198,7 @@ export default function InventarierPage() {
                 <div className="relative mx-auto w-full max-w-[980px] overflow-hidden rounded-[30px] border border-black/5 shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
                   <Image
                     src="/inventirynewone.png"
-                    alt="Inventarier i realtid"
+                    alt="Lagersaldo per variant i Source på en dator, en surfplatta och en mobil."
                     width={2200}
                     height={1500}
                     className="h-auto w-full object-cover object-right"
