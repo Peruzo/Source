@@ -270,7 +270,7 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="max-w-xl text-base md:text-lg text-white/85 mb-4 md:mb-6"
         >
-          AI som analyserar din verksamhet och ger konkreta råd — inte bara rapporter.
+          Butik, betalningar, bokföring, frakt och kunder – samlat på ett ställe.
         </motion.p>
 
         <motion.div

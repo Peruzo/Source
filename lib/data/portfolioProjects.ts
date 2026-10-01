@@ -8,6 +8,9 @@ export const portfolioKindLabels: Record<PortfolioKind, string> = {
   concept: 'Koncept',
 };
 
+/** Read by screen readers after an external project link's own text. */
+export const newTabNotice = '(öppnas i ny flik)';
+
 export interface PortfolioProject {
   slug: string;
   title: string;
@@ -53,7 +56,7 @@ export const portfolioProjects: PortfolioProject[] = [
     metric: 'Restaurang & bordsbokning',
     logo: '/peran-logo.webp',
     siteImage: '/peran-site.webp',
-    href: 'https://peran.onrender.com/',
+    href: 'https://per-an-809785351172.europe-north1.run.app',
     external: true,
     ctaLabel: 'Se demo',
   },
@@ -66,7 +69,7 @@ export const portfolioProjects: PortfolioProject[] = [
     metric: 'E-handel & varumärke',
     logo: '/glow-logo.webp',
     siteImage: '/glow-site.webp',
-    href: 'https://glow-test.onrender.com/',
+    href: 'https://glow-web-809785351172.europe-north1.run.app',
     external: true,
     ctaLabel: 'Se demo',
   },
@@ -79,7 +82,7 @@ export const portfolioProjects: PortfolioProject[] = [
     metric: 'Wellness & digital närvaro',
     logo: '/minti-logo.webp',
     siteImage: '/minti-site.webp',
-    href: 'https://minti.onrender.com/',
+    href: 'https://minti-809785351172.europe-north1.run.app',
     external: true,
     ctaLabel: 'Se demo',
   },
