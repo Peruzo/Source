@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { PaymentCarousel } from '@/components/sections/PaymentCarousel';
-import { PaymentLinkFeatureSection } from '@/components/sections/PaymentLinkFeatureSection';
-import { HostingDnsShowcase } from '@/components/sections/HostingDnsShowcase';
+import { BetalningarSections } from '@/components/sections/tjanster/betalningar/BetalningarSections';
+import { betalningarHero } from '@/lib/data/tjanster/betalningar';
 import { useEffect, useRef } from 'react';
 
-export default function PaymentsHostingPage() {
+export default function PaymentsPage() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -83,36 +82,34 @@ export default function PaymentsHostingPage() {
       <Container className="relative z-10 flex items-center md:min-h-[100svh]">
         <div className="grid w-full grid-cols-1 items-center gap-14 lg:grid-cols-2 lg:gap-20">
           <FadeIn className="max-w-xl space-y-8 pt-8 pb-16 md:py-24 lg:py-0">
+            {/* Copy rättad enligt betalningar-hosting-plan.md 6.1 (lib/data/tjanster/betalningar.ts),
+                layout, classes and video unchanged. */}
             <p className="text-xs uppercase tracking-[0.4em] text-white/60">
-              BETALNINGAR &amp; HOSTING
+              {betalningarHero.overline}
             </p>
 
             <div className="space-y-5">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
-                Vi ser till att dina betalningar genomförs
+                {betalningarHero.title}
               </h1>
               <p className="text-lg md:text-xl text-white/75 leading-relaxed">
-                Prenumerationer, engångsbetalningar och alla sätt du vill ta betalt – vi
-                ser till att pengarna landar där de ska.
+                {betalningarHero.lead}
               </p>
             </div>
 
             <p className="text-base md:text-lg text-white/70 leading-relaxed">
-              Hantera hela ditt betalflöde på ett ställe. Från checkout till återkommande
-              debiteringar och automatiserade processer. Kombinera detta med stabil och
-              snabb hosting som säkerställer att dina system alltid är tillgängliga,
-              säkra och optimerade för tillväxt.
+              {betalningarHero.body}
             </p>
 
             <div className="flex flex-col items-start gap-4 sm:flex-row">
-              <AnimatedButton href="/kontakt" variant="primary" size="lg">
-                Kom igång
+              <AnimatedButton href={betalningarHero.primary.href} variant="primary" size="lg">
+                {betalningarHero.primary.label}
               </AnimatedButton>
               <Link
-                href="/tjanster"
+                href={betalningarHero.back.href}
                 className="inline-flex items-center text-base font-semibold text-white/70 transition-colors hover:text-white"
               >
-                Tillbaka till tjänster
+                {betalningarHero.back.label}
                 <span className="ml-2 text-lg">→</span>
               </Link>
             </div>
@@ -122,9 +119,7 @@ export default function PaymentsHostingPage() {
         </div>
       </Container>
     </section>
-    <PaymentCarousel />
-    <PaymentLinkFeatureSection />
-    <HostingDnsShowcase />
+    <BetalningarSections />
     </>
   );
 }

@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: true,
   },
+  // The payments page moved when hosting was taken off it. permanent: true answers 308.
+  async redirects() {
+    return [
+      { source: '/tjanster/betalningar-hosting', destination: '/tjanster/betalningar', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

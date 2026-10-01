@@ -54,7 +54,7 @@ const faqs = [
   {
     question: 'Vilka betalmetoder stödjer ni?',
     answer:
-      'Kortbetalningar, Apple Pay, Google Pay, Klarna, faktura, Swish, prenumerationer och fler betalalternativ baserat på Stripes utbud.',
+      'Kassan tar betalt med kort via Stripe, och pengarna går till ditt eget Stripe-konto. Du kan också ta betalt med betalningslänk, faktura och prenumeration.',
   },
 ];
 
