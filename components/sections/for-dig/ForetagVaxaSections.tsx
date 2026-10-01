@@ -1,6 +1,6 @@
 'use client';
 
-import { DocumentChartBarIcon, DocumentCheckIcon, EnvelopeIcon, ShoppingBagIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { DocumentCheckIcon, EnvelopeIcon, ShoppingBagIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { FeatureCarousel } from '@/components/sections/tjanster/FeatureCarousel';
 import { ServiceFullBleed } from '@/components/sections/tjanster/ServiceFullBleed';
@@ -29,6 +29,7 @@ import { LeadsWidget } from './interactive/LeadsWidget';
 import { CheckoutWidget } from './interactive/CheckoutWidget';
 import { CustomersWidget } from './interactive/CustomersWidget';
 import { BookingWidget } from './interactive/BookingWidget';
+import { InsightsWidget } from './interactive/InsightsWidget';
 import { ShippingStepCard } from './interactive/ShippingStepCard';
 
 const STEP_ICONS = [ShoppingBagIcon, TruckIcon, EnvelopeIcon];
@@ -148,7 +149,7 @@ export function ForetagVaxaSections() {
         </div>
       </FullBleedImageSection>
 
-      {/* 6 – Insikter och rapporter. Text on the white wall, card by the tablet, clear of her face. */}
+      {/* 6 – Insikter och rapporter. Text on the white wall, the widget on the window to her right, clear of her face and hand. */}
       <ServiceFullBleed
         id={vaxaInsikter.id}
         eyebrow={vaxaInsikter.eyebrow}
@@ -157,11 +158,10 @@ export function ForetagVaxaSections() {
         image={vaxaImages.insikter}
         tone="dark"
         textPosition="top-left"
-        card={{
-          label: 'Exempel: en schemalagd rapport',
-          content: <StatusCard content={vaxaInsikter.card} icon={DocumentChartBarIcon} tone="solid" />,
-          anchor: { x: 17, y: 74 },
-          anchorPortrait: { x: 44, y: 17 },
+        panel={{
+          label: vaxaInsikter.widget.label,
+          content: <InsightsWidget content={vaxaInsikter.widget} />,
+          position: { right: '3vw', top: 'max(5.5rem, 12%)', width: 'min(28rem, 34vw)' },
         }}
       />
 
