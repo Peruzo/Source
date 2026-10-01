@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
   try {
     const memoryBefore = process.memoryUsage();
 
-    // NIVÅ 2: Skapa jobb och spara token (ingen repo-download här)
+    // NIVÅ 2: Skapa jobb (ingen repo-download här). Token skrivs aldrig till jobbet.
     // Jobbet kommer att processas av worker-endpoint utanför request-livscykeln
     // KRITISK: Jobbet skapas endast efter github_repo_verified event är sparat
     const jobId = await createGitHubJob({
@@ -272,13 +272,12 @@ export async function GET(request: NextRequest) {
       owner,
       repoName,
       repoUrl,
-      githubToken: token, // Spara token temporärt i jobbet
     });
 
 
     // Trigga extern GitHub-worker (non-blocking)
     // Worker hanterar all ZIP-hantering utanför public website
-    // KRITISK FIX: Skicka OAuth-token transient till worker (används för privata repo)
+    // Token skickas bara transient till workern (privata repon), som återkallar den efter nedladdningen.
     triggerExternalGitHubWorker(jobId, activeOnboardingId, repo, { githubAccessToken: token }).catch(async (error) => {
       console.error(`[GitHub Callback] Failed to trigger external worker for ${jobId}:`, error);
       // Markera jobbet som failed om worker inte kan triggas
