@@ -11,7 +11,7 @@ import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { portfolioKindLabels, type PortfolioProject } from '@/lib/data/portfolioProjects';
+import { newTabNotice, portfolioKindLabels, type PortfolioProject } from '@/lib/data/portfolioProjects';
 
 const AUTOPLAY_INTERVAL = 5000;
 const RESUME_AFTER_INTERACTION = 5000;
@@ -683,6 +683,7 @@ function PortfolioCard({
         className={className}
       >
         {card}
+        <span className="sr-only"> {newTabNotice}</span>
       </a>
     );
   }

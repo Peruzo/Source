@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import {
+  newTabNotice,
   portfolioKindLabels,
   type PortfolioProject,
 } from '@/lib/data/portfolioProjects';
@@ -42,6 +43,7 @@ function ProjectLink({
         className={className}
       >
         {children}
+        <span className="sr-only"> {newTabNotice}</span>
       </a>
     );
   }

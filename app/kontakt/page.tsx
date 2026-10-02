@@ -11,7 +11,7 @@ const faqs = [
   {
     question: 'Hur lång tid tar det?',
     answer:
-      'Typisk tidslinje är 4-8 veckor från start till lansering, beroende på komplexitet.',
+      'Efter onboardingen har du din nya hemsida, eller din befintliga hemsida integrerad mot kundportalen, inom 24 timmar.',
   },
   {
     question: 'Vad kostar det?',
@@ -19,12 +19,12 @@ const faqs = [
   },
   {
     question: 'Kan jag se exempel?',
-    answer: 'Absolut! Vi har flera mockups i vår portfolio.',
+    answer: 'Ja. I vår portfolio finns demosajter som du kan öppna och klicka runt i.',
   },
   {
     question: 'Jobbar ni med min bransch?',
     answer:
-      'Vi jobbar med alla branscher. Vår AI anpassar lösningen efter din specifika verksamhet.',
+      'Ja. Source är byggt för alla typer av företag, och paketen bestämmer vilka delar du har tillgång till.',
   },
   {
     question: 'Hur fungerar supporten?',
@@ -159,47 +159,8 @@ export default function ContactPage() {
         </Container>
       </section>
 
-      {/* Press & Partners (Fortnox) */}
-      <section className="py-16 md:py-24 bg-[#F4E8D8]">
-        <Container>
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-black mb-12">
-              För press och samarbeten
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div>
-                <h3 className="text-lg font-semibold text-black mb-2">Presskontakt</h3>
-                <p className="text-gray-700 mb-2">
-                  Mejla{' '}
-                  <a href="mailto:support@sourcesolutions.se" className="text-teal font-medium hover:text-teal-hover">
-                    support@sourcesolutions.se
-                  </a>
-                </p>
-                <Link href="/om-oss" className="text-teal font-semibold hover:text-teal-hover inline-flex items-center group">
-                  Läs mer om oss
-                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-black mb-2">Partnerskap</h3>
-                <p className="text-gray-700 mb-2">
-                  Mejla{' '}
-                  <a href="mailto:support@sourcesolutions.se" className="text-teal font-medium hover:text-teal-hover">
-                    support@sourcesolutions.se
-                  </a>
-                </p>
-                <Link href="/tjanster" className="text-teal font-semibold hover:text-teal-hover inline-flex items-center group">
-                  Se våra tjänster
-                  <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* FAQ Accordion (Revolut) */}
-      <section className="py-16 md:py-24 bg-white">
+      {/* FAQ Accordion (Revolut). No top padding: the white contact form section above already ends with its own. */}
+      <section className="pb-16 md:pb-24 bg-white">
         <Container size="md">
           <div className="max-w-3xl mx-auto">
             <p className="text-sm font-medium tracking-wider uppercase text-gray-500 mb-2">

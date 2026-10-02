@@ -3,6 +3,7 @@
 import { useId, useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
 import { useReveal } from '@/components/sections/for-dig/useReveal';
+import { usePinnedScrollHint } from '@/components/ui/ScrollHint';
 import { ServicePicture } from './ServicePicture';
 import type { ServiceImage, ServiceStep } from './types';
 
@@ -53,6 +54,7 @@ export function StickySteps({ id, eyebrow, title, intro, image, steps, theme = '
   });
 
   const pinned = !shouldReduceMotion;
+  usePinnedScrollHint(trackRef, pinned);
 
   const header = (headingIdForThis?: string) => (
     <div className="max-w-[34rem]">

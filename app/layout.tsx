@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { AIAssistantProvider } from "@/components/ui/AIAssistantProvider";
+import { ScrollHint } from "@/components/ui/ScrollHint";
 import { HydrationErrorBoundary } from "@/components/HydrationErrorBoundary";
 
 // Self-hosted Inter (rsms/inter 4.1, OFL – see app/fonts/Inter-OFL.txt), so the
@@ -58,6 +59,7 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer serverYear={serverYear} />
           <AIAssistantProvider />
+          <ScrollHint />
         </HydrationErrorBoundary>
       </body>
     </html>

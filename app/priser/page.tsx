@@ -34,7 +34,7 @@ const pricingPlans = [
     badge: 'Mest valda',
     description: 'Komplett lösning för att växa din verksamhet online',
     features: ['Allt i Core, plus:', ...featuresAddedIn('growth').map((f) => f.name)],
-    cta: 'Boka demo',
+    cta: 'Kom igång',
     href: '/onboarding/login',
     featured: true,
   },
@@ -44,7 +44,7 @@ const pricingPlans = [
     price: '3499',
     description: 'För företag som behöver avancerade lösningar',
     features: ['Allt i Growth, plus:', ...featuresAddedIn('enterprise').map((f) => f.name)],
-    cta: 'Kontakta oss',
+    cta: 'Kom igång',
     href: '/onboarding/login',
     featured: false,
   },
@@ -57,14 +57,19 @@ const faqs = [
       'Ja. Hör av dig till oss så byter vi paket åt dig.',
   },
   {
+    question: 'Vad händer när jag har valt paket?',
+    answer:
+      'Du skapar ett konto och går vidare till onboardingen. Där går vi igenom din verksamhet, du kopplar ditt Stripe-konto och vi bygger din hemsida eller integrerar den du har mot kundportalen inom 24 timmar.',
+  },
+  {
     question: 'Vad händer om jag säger upp?',
     answer:
-      'Ingen bindningstid. Säg upp när som helst med en månads uppsägningstid. Du behåller full åtkomst under uppsägningstiden.',
+      'Du kan avsluta när som helst. Hör av dig till oss så hjälper vi dig att exportera eller radera dina uppgifter.',
   },
   {
     question: 'Finns det bindningstid?',
     answer:
-      'Nej. Alla planer är månad till månad. Vi tror på att förtjäna din verksamhet varje månad.',
+      'Nej. Alla paket betalas per månad och du kan avsluta när som helst.',
   },
   {
     question: 'Vad ingår i AI-insikter?',
@@ -289,42 +294,6 @@ export default function PricingPage() {
 
       <PricingFeatureOverview />
 
-      {/* Add-ons */}
-      <section className="py-20 md:py-32 bg-white">
-        <Container size="md">
-          <FadeIn>
-            <h2 className="text-section-subtitle text-black text-center mb-4">
-              Tilläggstjänster
-            </h2>
-            <p className="text-body text-gray-600 text-center mb-12">
-              Utöka din plan med dessa tillägg
-            </p>
-          </FadeIn>
-
-          <div className="space-y-4">
-            {[
-              { name: 'Flerspråkigt (i18n)', price: '+500 kr/språk/mån' },
-              { name: 'Google/Meta Ads Management', price: '+1 500 kr/mån' },
-              { name: 'Advanced SEO', price: '+1 000 kr/mån' },
-              { name: 'Newsletter-integration', price: '+500 kr/mån' },
-              { name: 'Custom integration', price: 'Offert efter kravanalys' },
-            ].map((addon, i) => (
-              <motion.div
-                key={addon.name}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05, duration: 0.4 }}
-                className="flex justify-between items-center py-5 px-6 rounded-xl bg-gray-50 hover:bg-teal-darker/5 border border-gray-200 hover:border-teal-dark/30 transition-all duration-300"
-              >
-                <span className="font-medium text-black">{addon.name}</span>
-                <span className="text-teal-dark font-semibold">{addon.price}</span>
-              </motion.div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
       {/* What's NOT Included */}
       <section className="py-20 md:py-32 bg-beige-light">
         <Container size="md">
@@ -333,7 +302,7 @@ export default function PricingPage() {
               Vad ingår INTE
             </h2>
             <p className="text-body-large text-gray-700 text-center mb-12">
-              Vi är transparenta om vad du behöver betala extra för:
+              Det här ingår inte i något paket i dag:
             </p>
           </FadeIn>
 
@@ -341,18 +310,40 @@ export default function PricingPage() {
             {[
               {
                 title: 'Domännamn',
-                description: 'Du äger din domän',
-                cost: '~100-200 kr/år',
+                description: 'Domänen köper och äger du själv.',
               },
               {
                 title: 'Transaktionsavgifter',
-                description: 'Stripe: 1,4% + 1,8 kr',
+                description: 'Stripe tar ut sina egna avgifter per betalning.',
                 cost: 'Går direkt till Stripe',
               },
               {
                 title: 'Innehållsproduktion',
-                description: 'Texter, foton, videos',
-                cost: 'Vi kan rekommendera leverantörer',
+                description: 'Texter, foton och filmer till hemsidan tar du fram själv.',
+              },
+              {
+                title: 'Andra betalsätt än kort i kassan',
+                description: 'Kassan tar betalt med kort. Swish, Klarna och PayPal finns inte i kassan.',
+              },
+              {
+                title: 'Andra fraktbolag än PostNord',
+                description: 'Frakten i Source fungerar med PostNord.',
+              },
+              {
+                title: 'Returer',
+                description: 'Returhantering i kundportalen är inte påslagen.',
+              },
+              {
+                title: 'Flera språk',
+                description: 'Kundportalen och hemsidorna vi bygger finns på svenska.',
+              },
+              {
+                title: 'SEO-verktyg',
+                description: 'Det finns inga SEO-verktyg i kundportalen.',
+              },
+              {
+                title: 'Kassasystem för fysisk butik',
+                description: 'Source har ingen kassa för betalning på plats.',
               },
             ].map((item, i) => (
               <motion.div
@@ -364,15 +355,15 @@ export default function PricingPage() {
                 className="glass-light rounded-2xl p-6 border border-gray-200"
               >
                 <h3 className="font-bold text-black mb-2 text-lg">{item.title}</h3>
-                <p className="text-gray-700 mb-2">{item.description}</p>
-                <p className="text-teal-dark font-medium text-sm">{item.cost}</p>
+                <p className="text-gray-700">{item.description}</p>
+                {item.cost ? <p className="text-teal-dark font-medium text-sm mt-2">{item.cost}</p> : null}
               </motion.div>
             ))}
           </div>
 
           <FadeIn delay={0.4} className="text-center mt-12">
             <p className="text-xl font-semibold text-black">
-              Allt annat ingår i ditt paket.
+              Vad som ingår i varje paket ser du i översikten ovan.
             </p>
           </FadeIn>
         </Container>

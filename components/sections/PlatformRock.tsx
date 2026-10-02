@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import { usePinnedScrollHint } from '@/components/ui/ScrollHint';
 import Image from 'next/image';
 import RockHotspots from './RockHotspots';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
@@ -114,6 +115,7 @@ export default function PlatformRock() {
   const [done, setDone] = useState(false);
   const doneRef = useRef(false);
   const heightBeforeUnpin = useRef(0);
+  usePinnedScrollHint(sectionRef, !isStatic && !done);
 
   useMotionValueEvent(scrollYProgress, 'change', (p) => {
     // After the unpin the target is 100vh tall and the raw progress is meaningless; ignore it.

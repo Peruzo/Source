@@ -47,7 +47,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-snabbt-kommer-jag-igang',
         question: 'Hur snabbt kommer jag igång?',
-        answer: 'De flesta kommer igång samma dag. En ny hemsida kan lanseras inom några dagar beroende på omfattning.',
+        answer: 'Efter onboardingen har du din nya hemsida, eller din befintliga hemsida integrerad mot kundportalen, inom 24 timmar.',
         category: 'kom-igang',
         subcategory: 'Grundläggande frågor',
       },
@@ -82,7 +82,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-avslutar-jag',
         question: 'Hur avslutar jag min tjänst?',
-        answer: 'Ingen bindningstid. Säg upp när som helst med en månads uppsägningstid. Du behåller full åtkomst under uppsägningstiden. Kontakta oss så hjälper vi dig att exportera eller radera dina uppgifter.',
+        answer: 'Ingen bindningstid. Du kan avsluta när som helst. Kontakta oss så hjälper vi dig att exportera eller radera dina uppgifter.',
         category: 'kom-igang',
         subcategory: 'Konton & abonnemang',
       },
@@ -119,7 +119,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'kan-ni-skapa-fran-nuvarande',
         question: 'Kan ni skapa en hemsida från min nuvarande webbplats?',
-        answer: 'Ja. Vi kan migrera produkter, innehåll och struktur från din nuvarande plattform till Source utan att du tappar något.',
+        answer: 'Har du redan en hemsida integrerar vi den mot kundportalen i stället för att bygga en ny. Produkter, kassa och kunder hämtas då från kundportalen.',
         category: 'hemsidor-webbutveckling',
         subcategory: 'Design & funktioner',
       },
@@ -147,14 +147,14 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'stodjer-flera-sprak',
         question: 'Stödjer hemsidorna flera språk?',
-        answer: 'Ja, vi kan konfigurera din hemsida för att stödja flera språk. Detta gör det möjligt för dina kunder att välja sitt föredragna språk.',
+        answer: 'Inte i dag. Flerspråkiga hemsidor ingår inte i något paket.',
         category: 'hemsidor-webbutveckling',
         subcategory: 'Innehåll & språk',
       },
       {
         id: 'kan-ni-hantera-seo',
         question: 'Kan ni hantera SEO och metadata?',
-        answer: 'Ja, vi hjälper dig med SEO-optimering och metadata för att förbättra din sökrankning och synlighet online.',
+        answer: 'Det finns inga SEO-verktyg i kundportalen, och SEO ingår inte som en egen tjänst i paketen.',
         category: 'hemsidor-webbutveckling',
         subcategory: 'Innehåll & språk',
       },
@@ -184,7 +184,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'kan-jag-lagga-till-digitala',
         question: 'Kan jag lägga till digitala produkter?',
-        answer: 'Ja, vi stödjer digitala produkter. Du kan sälja nedladdningsbara filer, kurser, e-böcker och mer.',
+        answer: 'Inte som nedladdningsbara filer. Du kan sälja varor, tjänster, presentkort och prenumerationer.',
         category: 'webbutik-produktadministration',
         subcategory: 'Produkter',
       },
@@ -205,14 +205,14 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-hanterar-jag-leveranser',
         question: 'Hur hanterar jag leveranser och orderstatus?',
-        answer: 'Du kan uppdatera orderstatus och lägga till spårningsnummer direkt från din kundportal. Kunder får automatiskt uppdateringar via e-post.',
+        answer: 'I Growth och Enterprise bokar du sändningar med PostNord och följer dem i kundportalen.',
         category: 'webbutik-produktadministration',
         subcategory: 'Ordrar',
       },
       {
         id: 'automatiska-ordermejl',
         question: 'Kan kund få automatiska ordermejl?',
-        answer: 'Ja, kunder får automatiskt e-postbekräftelser när de lägger en beställning, när ordern skickas och när den levereras.',
+        answer: 'Ja. Kunden får en orderbekräftelse via mejl när beställningen är lagd.',
         category: 'webbutik-produktadministration',
         subcategory: 'Ordrar',
       },
@@ -226,14 +226,14 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'egna-fraktpriser',
         question: 'Kan jag lägga till egna fraktpriser?',
-        answer: 'Ja, du kan konfigurera egna fraktpriser baserat på vikt, värde, destination eller fasta priser. Systemet är flexibelt och anpassningsbart.',
+        answer: 'Ja. Du sätter egna priser på PostNords leveranssätt och kan ge fri frakt över ett visst belopp.',
         category: 'webbutik-produktadministration',
         subcategory: 'Frakt',
       },
       {
         id: 'vikt-baserad-frakt',
         question: 'Har ni stöd för vikt-baserad frakt?',
-        answer: 'Ja, du kan konfigurera fraktpriser baserat på produktens vikt. Systemet beräknar automatiskt rätt fraktkostnad baserat på totalvikten.',
+        answer: 'Inte i dag. Fraktpriset sätts per leveranssätt, inte efter vikt.',
         category: 'webbutik-produktadministration',
         subcategory: 'Frakt',
       },
@@ -270,7 +270,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-skickar-jag-betalningslankar',
         question: 'Hur skickar jag betalningslänkar?',
-        answer: 'Du kan skapa och skicka betalningslänkar direkt från din kundportal. Kunden får en länk via e-post eller SMS och kan betala direkt.',
+        answer: 'Du skapar en betalningslänk i kundportalen och delar den med kunden, som betalar med kort.',
         category: 'kundportal',
         subcategory: 'Fakturor & betalningslänkar',
       },
@@ -293,7 +293,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-kopplar-jag-stripe',
         question: 'Hur kopplar jag Stripe till Source?',
-        answer: 'Vi guidar dig genom processen att koppla ditt Stripe-konto till Source. Det är en enkel process som tar bara några minuter.',
+        answer: 'Du kopplar ditt Stripe-konto i onboardingen, och vi guidar dig genom stegen.',
         category: 'betalningar-ekonomi',
         subcategory: 'Stripe & betalmetoder',
       },
@@ -321,7 +321,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-funkar-automatiserad-bokforing',
         question: 'Hur funkar automatiserad bokföring?',
-        answer: 'Alla transaktioner synkroniseras automatiskt med din bokföring. Du kan koppla Fortnox eller andra bokföringssystem för automatisk import.',
+        answer: 'I Growth och Enterprise bokförs dina betalningar som verifikat i kundportalen, och du kan skicka dem till Fortnox. Fakturor kan också skapas via Spiris.',
         category: 'betalningar-ekonomi',
         subcategory: 'Bokföring',
       },
@@ -358,7 +358,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-skapar-jag-kampanj',
         question: 'Hur skapar jag en kampanj?',
-        answer: 'Du kan skapa kampanjer direkt från din kundportal. Välj mål, budget och målgrupp och följ sedan resultaten där.',
+        answer: 'I kundportalen skapar du kampanjer med rabattkoder som kunden använder i kassan. Annonser i Google, Meta och TikTok ingår i Enterprise, där vi sköter dem åt dig.',
         category: 'marknadsforing',
         subcategory: 'Kampanjer',
       },
@@ -407,7 +407,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'hur-kopplar-jag-sociala-kanaler',
         question: 'Hur kopplar jag mina sociala kanaler?',
-        answer: 'Du kan koppla dina sociala medier-konton direkt från din kundportal. Vi guidar dig genom processen.',
+        answer: 'Annonskonton i Google, Meta och TikTok kopplas i Enterprise, där vi sköter annonserna åt dig.',
         category: 'marknadsforing',
         subcategory: 'Sociala medier & annonsering',
       },
@@ -488,14 +488,14 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'har-ni-stod-for-bokforing',
         question: 'Har ni stöd för bokföringsintegrationer?',
-        answer: 'Ja, vi stödjer integrationer med flera bokföringssystem för automatisk synkronisering av transaktioner och data.',
+        answer: 'Ja, i Growth och Enterprise: Fortnox för bokföringen och Spiris för fakturor.',
         category: 'integrationer',
         subcategory: 'Ekonomi & system',
       },
       {
         id: 'finns-det-api-atkomst',
         question: 'Finns det API-åtkomst?',
-        answer: 'Ja, vi erbjuder API-åtkomst för att integrera Source med dina egna system och automatisera arbetsflöden.',
+        answer: 'I Enterprise skapar du egna API-nycklar under Statistik.',
         category: 'integrationer',
         subcategory: 'Ekonomi & system',
       },
@@ -525,7 +525,7 @@ export const faqCategories: FAQCategory[] = [
       {
         id: 'vad-gor-ai-assistenten',
         question: 'Vad gör Source AI-assistenten?',
-        answer: 'Source AI-assistenten hjälper dig med allt från att analysera data och generera rapporter till att skapa innehåll och optimera dina kampanjer.',
+        answer: 'I kundportalen finns AI-support som svarar på frågor om hur portalen fungerar. I Growth och Enterprise får du också AI-insikter och en chatt där du kan fråga om din egen data.',
         category: 'ai-automatisering',
         subcategory: 'AI-agenter',
       },
@@ -542,13 +542,6 @@ export const faqCategories: FAQCategory[] = [
         answer: 'Vi erbjuder olika automatiseringar som kan hantera uppgifter automatiskt, som att skicka e-post, uppdatera lagerstatus, generera rapporter och mer.',
         category: 'ai-automatisering',
         subcategory: 'AI-agenter',
-      },
-      {
-        id: 'kan-ai-skapa-hemsideselement',
-        question: 'Kan AI skapa hemsideselement åt mig?',
-        answer: 'Ja, vår AI kan hjälpa dig att skapa hemsideselement, förslag på design och innehåll baserat på dina behov och varumärke.',
-        category: 'ai-automatisering',
-        subcategory: 'AI-produktion',
       },
       {
         id: 'kan-ai-skriva-texter',
@@ -656,13 +649,6 @@ export const faqCategories: FAQCategory[] = [
         id: 'hjalper-ni-att-peka-om-dns',
         question: 'Hjälper ni att peka om DNS?',
         answer: 'Ja, vi guidar dig genom processen att peka om din DNS eller kan hjälpa dig att göra det åt dig om du behöver.',
-        category: 'installningar-konto',
-        subcategory: 'Domäner',
-      },
-      {
-        id: 'kan-jag-ha-flera-domäner',
-        question: 'Kan jag ha flera domäner?',
-        answer: 'Ja, du kan koppla flera domäner till ditt konto. Alla domäner kan peka till samma webbplats eller olika webbplatser.',
         category: 'installningar-konto',
         subcategory: 'Domäner',
       },

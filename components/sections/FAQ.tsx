@@ -9,12 +9,12 @@ const faqs = [
   {
     question: 'Vad är Source?',
     answer:
-      'Source är en komplett plattform för hemsidor, e-handel och kundhantering. Allt du behöver för drift, betalningar, marknadsföring och statistik finns samlat på ett ställe.',
+      'En plattform där butik, betalningar, fakturor, kunder, frakt och bokföring samlas i en kundportal. Vilka delar som ingår beror på paketet.',
   },
   {
     question: 'Hur fungerar plattformen?',
     answer:
-      'Du loggar in i vår kundportal där du hanterar produkter, kunder, beställningar, betalningar och marknadsföring. Vi sköter tekniken i bakgrunden så du slipper.',
+      'Du loggar in i kundportalen och sköter produkter, kunder, betalningar, fakturor och kampanjer där. Din hemsida hämtar produkterna och tar betalt via kundportalen.',
   },
   {
     question: 'Vem kan använda Source?',
@@ -22,14 +22,19 @@ const faqs = [
       'Alla företag som behöver en hemsida, webshop eller en modern kundportal — från små lokala verksamheter till växande e-handelsbolag.',
   },
   {
-    question: 'Behöver jag en egen hemsida?',
+    question: 'Hur går onboardingen till?',
     answer:
-      'Nej. Vi bygger hemsidan åt dig och kopplar den direkt till din kundportal. Har du redan en hemsida kan vi antingen förbättra den eller migrera den.',
+      'Du väljer paket och skapar ett konto. Sedan går vi igenom din verksamhet tillsammans och du kopplar ditt Stripe-konto. Därefter bygger vi din hemsida eller integrerar den du redan har mot kundportalen.',
   },
   {
     question: 'Hur snabbt kommer jag igång?',
     answer:
-      'De flesta kommer igång samma dag. En ny hemsida kan lanseras inom några dagar beroende på omfattning.',
+      'Efter onboardingen har du din nya hemsida, eller din befintliga hemsida integrerad mot kundportalen, inom 24 timmar.',
+  },
+  {
+    question: 'Kan jag behålla min hemsida?',
+    answer:
+      'Ja. Har du redan en hemsida integrerar vi den mot kundportalen. Har du ingen bygger vi en åt dig.',
   },
   {
     question: 'Behövs teknisk kunskap?',
@@ -37,19 +42,14 @@ const faqs = [
       'Nej. Plattformen är byggd för att vara enkel. Du får ett färdigt system där du bara sköter innehåll och val — vi tar hand om allt tekniskt.',
   },
   {
-    question: 'Bygger ni hemsidor åt mig?',
+    question: 'Vad ingår i paketen?',
     answer:
-      'Ja. Vi designar och utvecklar hela din hemsida baserat på dina behov, och kopplar den direkt till din e-handel och kundportal.',
-  },
-  {
-    question: 'Kan ni flytta min nuvarande webbshop?',
-    answer:
-      'Ja. Vi kan migrera produkter, innehåll och struktur från din nuvarande plattform till Source utan att du tappar något.',
+      'Alla paket har produkter och lager, kortbetalningar, betalningslänk, fakturor, prenumerationer, kampanjkoder, kundregister och support. Growth lägger bland annat till frakt med PostNord, bokföring, bokningar och AI-insikter. Enterprise lägger till statistik, kampanjstudio och annonser som vi sköter åt dig. Hela listan finns på prissidan.',
   },
   {
     question: 'Hur funkar betalningar via Stripe?',
     answer:
-      'Stripe sköter alla kortbetalningar, utbetalningar och kvitton. Du får dem automatiskt kopplade till din statistik, ekonomi och kunddata i Source.',
+      'Du kopplar ditt eget Stripe-konto i onboardingen. Kortbetalningarna går direkt till det kontot, och i kundportalen ser du dem och kan betala tillbaka.',
   },
   {
     question: 'Vilka betalmetoder stödjer ni?',
