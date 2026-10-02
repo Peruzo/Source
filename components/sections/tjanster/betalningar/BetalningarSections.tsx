@@ -2,29 +2,23 @@
 
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { ClippedImageSection } from '@/components/sections/for-dig/ClippedImageSection';
-import { CheckoutCard } from '@/components/sections/for-dig/payment-cards/cards';
-import { CreateInvoiceDialog, InvoicePreview } from '@/components/sections/for-dig/invoice-widgets/widgets';
+import { SettingsCard } from '../widgets/BookingDemos';
 import { FeatureCarousel } from '../FeatureCarousel';
 import { ScrollScene } from '../ScrollScene';
 import { ServiceFullBleed } from '../ServiceFullBleed';
 import { ServicePageLayout } from '../ServicePageLayout';
 import { StickySteps } from '../StickySteps';
 import { PackageList } from '../widgets/AiAssistantDemos';
-import { InvoicePaidCard, PaymentLinkDemo, PaymentsRefundDemo, SubscriptionDemo } from '../widgets/PaymentDemos';
+import { InvoicePaidCard, PaymentReceivedCard, PaymentsRefundDemo, SubscriptionDemo } from '../widgets/PaymentDemos';
 import {
-  PAYMENT_CURRENCY,
-  PAYMENT_LOCALE,
   betalningarAvslut,
   betalningarFakturor,
   betalningarImages,
   betalningarKort,
-  betalningarLank,
   betalningarMer,
   betalningarOversikt,
   betalningarPrenumeration,
 } from '@/lib/data/tjanster/betalningar';
-
-const money = { currency: PAYMENT_CURRENCY, locale: PAYMENT_LOCALE };
 
 /** The package line under a section's text. */
 function PackageNote({ text }: { text: string }) {
@@ -36,24 +30,23 @@ function PackageNote({ text }: { text: string }) {
  * lib/data/tjanster/betalningar.ts, with the evidence for each claim. The package is
  * stated in every section.
  *
- * The two photo sections (1 and 3) are prepared but not rendered until their photo is in
- * betalningarImages – see the comment there. Until then the page goes straight from the
- * hero to the payment link.
+ * The two photo sections (1 and 3) render only when their photo is in betalningarImages –
+ * see the comment there. Today both have one.
  */
 export function BetalningarSections() {
   const kortImage = betalningarImages.kort;
   const fakturorImage = betalningarImages.fakturor;
   const f = betalningarFakturor;
   const invoiceSteps = [
-    { ...f.steps[0], visual: () => <CreateInvoiceDialog content={f.create} fields="full" {...money} /> },
-    { ...f.steps[1], visual: () => <InvoicePreview content={f.preview} {...money} /> },
+    { ...f.steps[0], visual: () => <SettingsCard content={f.create} /> },
+    { ...f.steps[1], visual: () => <SettingsCard content={f.sent} /> },
     { ...f.steps[2], visual: ({ active }: { active: boolean }) => <InvoicePaidCard content={f.paid} active={active} /> },
   ];
 
   return (
     <ServicePageLayout>
-      {/* Fotosektion 1 – Kortbetalningar till ditt eget konto (bild 1). Kortet landar intill
-          telefonen, i vänstra delen av bilden. Renderas först när bilden finns. */}
+      {/* Fotosektion 1 – Kortbetalningar till ditt eget konto: kvinnan på bryggan. Texten uppe
+          till vänster, kortet på bryggan under texten, fritt från ansikte och händer. */}
       {kortImage ? (
         <ServiceFullBleed
           id={betalningarKort.id}
@@ -62,14 +55,10 @@ export function BetalningarSections() {
           body={betalningarKort.body}
           image={kortImage}
           tone="light"
-          textPosition="top-right"
+          textPosition="top-left"
           card={{
             label: betalningarKort.card.label,
-            content: (
-              <div className="w-[min(20rem,80vw)]">
-                <CheckoutCard content={betalningarKort.card} {...money} />
-              </div>
-            ),
+            content: <PaymentReceivedCard content={betalningarKort.card} />,
             anchor: betalningarKort.cardAnchor,
             anchorPortrait: betalningarKort.cardAnchorPortrait,
             anchorTo: 'image',
@@ -77,20 +66,8 @@ export function BetalningarSections() {
         />
       ) : null}
 
-      {/* 2 – Betalningslänk. Scroll-driven demo, no photo. */}
-      <ScrollScene
-        id={betalningarLank.id}
-        eyebrow={betalningarLank.eyebrow}
-        title={betalningarLank.title}
-        body={betalningarLank.body}
-        label={betalningarLank.label}
-        aside={<PackageNote text={betalningarLank.packageNote} />}
-      >
-        {(progress) => <PaymentLinkDemo progress={progress} content={betalningarLank.demo} />}
-      </ScrollScene>
-
-      {/* Fotosektion 2 – Fakturor (bild 2 som bakgrund). Stegkorten landar på bänken intill
-          datorn, i nedre delen av bilden. Renderas först när bilden finns. */}
+      {/* Fotosektion 2 – Fakturor: mannen vid datorn på stugverandan. Kompakta stegkort nere till
+          vänster, över ryggen och filten, fritt från ansikte och händer. */}
       {fakturorImage ? (
         <StickySteps id={f.id} eyebrow={f.eyebrow} title={f.title} intro={f.intro} image={fakturorImage} steps={invoiceSteps} />
       ) : null}

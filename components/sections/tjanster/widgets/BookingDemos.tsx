@@ -199,6 +199,47 @@ export function SettingsCard({ content }: { content: SettingsCardContent }) {
   );
 }
 
+export type BookingTimeCardContent = {
+  /** Accessible name for the floating card (ServiceFullBleedCard.label). */
+  label: string;
+  title: string;
+  details: string;
+  times: string[];
+  selected: string;
+};
+
+/**
+ * The floating card in the Tjänster och tider photo section: one service and three free
+ * times, one of them chosen. Compact on purpose – on a phone the card spans the photo, so it
+ * has to fit in the band under the hands.
+ */
+export function BookingTimeCard({ content }: { content: BookingTimeCardContent }) {
+  const titleId = useId();
+  const c = content;
+  return (
+    <div role="group" aria-labelledby={titleId} className={`w-full bg-white p-4 text-left text-black ${CARD_EDGE} ${RADIUS.card}`}>
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 id={titleId} className="text-ui-title">
+          {c.title}
+        </h3>
+        <span className="text-ui-label text-gray-600">{c.details}</span>
+      </div>
+      <ul className="mt-3 grid grid-cols-3 gap-2" aria-label={`${c.title}, lediga tider`}>
+        {c.times.map((t) => (
+          <li
+            key={t}
+            className={`text-ui-body border py-1 text-center tabular-nums ${RADIUS.control} ${
+              t === c.selected ? 'border-teal-dark bg-teal-dark font-semibold text-white' : 'border-gray-300 text-black'
+            }`}
+          >
+            {t}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export type BookingEmailCardContent = { title: string; from: string; text: string; cancelLink: string; policy: string };
 
 /** The booking confirmation e-mail with its cancel link and the cancellation rule under it. */

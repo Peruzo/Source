@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Container } from '@/components/ui/Container';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { FadeIn } from '@/components/animations/FadeIn';
+import { PaymentCarousel } from '@/components/sections/PaymentCarousel';
+import { PaymentLinkFeatureSection } from '@/components/sections/PaymentLinkFeatureSection';
 import { BetalningarSections } from '@/components/sections/tjanster/betalningar/BetalningarSections';
 import { betalningarHero } from '@/lib/data/tjanster/betalningar';
 import { useEffect, useRef } from 'react';
@@ -119,6 +121,11 @@ export default function PaymentsPage() {
         </div>
       </Container>
     </section>
+    {/* Sektionerna från origin/develop 557069b, återställda exakt och i samma ordning. Domän- och
+        hostingsektionen (HostingDnsShowcase) kommer inte tillbaka (beslut). Våra nya sektioner
+        ligger efter dem, med paketlistan sist. */}
+    <PaymentCarousel />
+    <PaymentLinkFeatureSection />
     <BetalningarSections />
     </>
   );
