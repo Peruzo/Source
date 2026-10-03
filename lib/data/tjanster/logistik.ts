@@ -187,39 +187,66 @@ export const logistikFlode = {
 } satisfies LogisticsFlowContent;
 
 /*
- * S3 som video i helskärm (rubrik, överrad och brödtext ovan är oförändrade och ligger som HTML
- * ovanpå videons övre 22 %, som är ett lugnt fält utan UI). Renderad i ~/remotion-source,
- * kompositionen LogistikKassa4K: 3840 × 2160, 30 bilder per sekund, 26 s, loopar. Kodad med
- * Homebrews ffmpeg från en ProRes-master. Allt UI ligger inom x 380–3460, så inget viktigt beskärs
- * med object-fit: cover på 16:10 och 3:2.
+ * S3 som kort loopande video, 11 s (rubrik, överrad och brödtext ovan är oförändrade). Renderad i
+ * ~/remotion-source i två former med samma flöde:
+ *   LogistikKort – 3840 × 2160, 30 bilder per sekund, i helskärm från lg. Övre 22 % är ett lugnt fält
+ *     utan UI för sektionens HTML-text, och allt UI ligger inom x 380–3460, så inget viktigt beskärs med
+ *     object-fit: cover på 16:10 och 3:2.
+ *   LogistikKortMobil – 1080 × 1920 (9:16) under lg, en kolumn med större text: minsta text motsvarar
+ *     cirka 14 px på en 390 px bred skärm.
+ * Förlustfria PNG-masters, kodade med Homebrews ffmpeg med uttrycklig BT.709-konvertering och
+ * inställningar för skarp UI-text.
  *
  * Innehåll och belägg:
- *   kassan – en neutral hostad kortkassa utan varumärken: e-post, leveransadress, leveranssätten
- *     med portalens standardpriser (storefrontCheckoutService.js 390–396; deliveryPricing.js 20–26),
- *     bara kortbetalning (storefrontCheckoutService.js 2575; payment_method_types ['card']).
- *     Leveranstiderna är exempeltexter; i portalen kommer de från PostNord (friendlyDeliveryInfo,
- *     services/deliveryOptionsService.js 287–288, 500–501; storefrontRoutes.js 1740). I portalen
- *     väljs leveranssättet i butikens leveranssteg och kassan får just det valet – videon visar
- *     båda stegen i samma vy.
- *   notisen och ordern i portalen, Boka hos PostNord med paketprofil, stegen och "Skapa och boka",
- *     fraktsedeln som PDF och mejlet "Din order har skickats" med spårningslänk – som korten ovan.
+ *   kassan, redan ifylld med maskerat kort – en neutral hostad kortkassa utan varumärken: e-post,
+ *     leveransadress, leveranssätten med portalens standardpriser (storefrontCheckoutService.js 390–396;
+ *     deliveryPricing.js 20–26), bara kortbetalning (storefrontCheckoutService.js 2575;
+ *     payment_method_types ['card']). Leveranstiderna är exempeltexter; i portalen kommer de från
+ *     PostNord (friendlyDeliveryInfo, services/deliveryOptionsService.js 287–288, 500–501;
+ *     storefrontRoutes.js 1740). I portalen väljs leveranssättet i butikens leveranssteg och kassan får
+ *     just det valet – videon visar båda stegen i samma vy.
+ *   notisen och ordern i portalen, Boka hos PostNord med paketprofil och "Skapa och boka", fraktsedeln
+ *     som PDF och mejlet "Din order har skickats" med spårningslänk – som korten ovan.
  * Inga statusar efter bokningen. Butik, kund, produkt och nummer är påhittade.
  *
- * Källorna väljs i ordning: 960 på telefon, 3840 bara på skärmar som är minst 2560 px breda med hög
- * pixeltäthet (bara MP4), annars 1920 – WebM före MP4.
+ * Källorna väljs i ordning: under lg mobilfilerna (1080 × 1920 vid pixeltäthet minst 2, annars
+ * 720 × 1280); 3840 på skärmar som är minst 1280 px breda med pixeltäthet minst 2 eller minst 2560 px
+ * breda (bara MP4); annars 1920. WebM före MP4 där båda finns. Poster och stillbild för reducerad
+ * rörelse följer samma uppdelning.
  */
-const FLODE = '/tjanster/logistik/logistik-kassaflode';
+const FLODE = '/tjanster/logistik/logistik-kort';
+const MOBIL = '/tjanster/logistik/logistik-kort-mobil';
+const PHONE_HI = '(max-width: 1023px) and (min-resolution: 2dppx)';
+const PHONE = '(max-width: 1023px)';
+const WIDE_HI = '(min-width: 1280px) and (min-resolution: 2dppx), (min-width: 2560px)';
 export const logistikFlodeVideo = {
   sources: [
-    { src: `${FLODE}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
-    { src: `${FLODE}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
-    { src: `${FLODE}-3840.mp4`, type: 'video/mp4', media: '(min-width: 2560px) and (min-resolution: 2dppx)' },
+    { src: `${MOBIL}-1080.webm`, type: 'video/webm', media: PHONE_HI },
+    { src: `${MOBIL}-1080.mp4`, type: 'video/mp4', media: PHONE_HI },
+    { src: `${MOBIL}-720.webm`, type: 'video/webm', media: PHONE },
+    { src: `${MOBIL}-720.mp4`, type: 'video/mp4', media: PHONE },
+    { src: `${FLODE}-3840.mp4`, type: 'video/mp4', media: WIDE_HI },
     { src: `${FLODE}-1920.webm`, type: 'video/webm' },
     { src: `${FLODE}-1920.mp4`, type: 'video/mp4' },
   ],
-  poster: { src: `${FLODE}-poster-1920.webp`, smallSrc: `${FLODE}-poster-960.webp`, srcSet: `${FLODE}-poster-960.webp 960w, ${FLODE}-poster-1920.webp 1920w` },
-  end: { src: `${FLODE}-slut-1920.webp`, smallSrc: `${FLODE}-slut-960.webp`, srcSet: `${FLODE}-slut-960.webp 960w, ${FLODE}-slut-1920.webp 1920w` },
-} satisfies { sources: ServiceVideoSource[]; poster: ServiceVideoStill; end: ServiceVideoStill };
+  posters: [
+    { media: PHONE_HI, src: `${MOBIL}-poster-1080.webp` },
+    { media: PHONE, src: `${MOBIL}-poster-720.webp` },
+    { media: WIDE_HI, src: `${FLODE}-poster-3840.webp` },
+  ],
+  endSources: [
+    { media: PHONE, srcSet: `${MOBIL}-slut-720.webp 1x, ${MOBIL}-slut-1080.webp 2x` },
+    { media: '(min-width: 1024px)', srcSet: `${FLODE}-slut-1920.webp 1x, ${FLODE}-slut-3840.webp 2x` },
+  ],
+  poster: { src: `${FLODE}-poster-1920.webp`, smallSrc: `${MOBIL}-poster-720.webp`, srcSet: `${FLODE}-poster-1920.webp 1920w, ${FLODE}-poster-3840.webp 3840w` },
+  end: { src: `${FLODE}-slut-1920.webp`, smallSrc: `${MOBIL}-slut-720.webp`, srcSet: `${FLODE}-slut-1920.webp 1920w, ${FLODE}-slut-3840.webp 3840w` },
+} satisfies {
+  sources: ServiceVideoSource[];
+  posters: { media: string; src: string }[];
+  endSources: { media: string; srcSet: string }[];
+  poster: ServiceVideoStill;
+  end: ServiceVideoStill;
+};
 
 /*
  * Retursektionen under flödesvideon – renderas med FLAGGOR.returerSektion (på). Den äldre
