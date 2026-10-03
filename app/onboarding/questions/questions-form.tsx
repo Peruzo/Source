@@ -140,6 +140,10 @@ export function QuestionsForm() {
       if (!result.success) { setError('Kunde inte spara onboarding-steg.'); setSubmitting(false); return; }
       if (result.nextStep === 'code') {
         router.push('/onboarding/code');
+      } else if (formData.hasExistingSite === 'Nej') {
+        // Nej-grenen: "Gör min hemsida" först (app/onboarding/hemsida). Därifrån går kunden
+        // vidare till samma Stripe-steg som nedan.
+        router.push('/onboarding/hemsida');
       } else {
         const planId = typeof window !== 'undefined' ? getStoredPlanId() : null;
         router.push(getStripeOnboardingUrl(planId));
