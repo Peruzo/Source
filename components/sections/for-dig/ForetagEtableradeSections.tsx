@@ -14,10 +14,12 @@ import {
   etableradeStatistik,
   etableradeStudio,
   etableradeSupportInkorg,
+  etableradeSupportVideo,
 } from '@/lib/data/for-dig/foretag-etablerade';
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { StudioScreenSection } from './foretag-etablerade/StudioScreenSection';
+import { SupportVideoSection } from './foretag-etablerade/SupportVideoSection';
 import { ChatCard, StatsAreasWidget, StudioScreen } from './foretag-etablerade/widgets';
 import { StatusCard } from './foretag-vaxa/widgets';
 
@@ -69,22 +71,16 @@ export function ForetagEtableradeSections() {
         <StudioScreen content={st.screen} />
       </StudioScreenSection>
 
-      {/* 3 – Support-inkorg. White text over the concrete with the full dark layer; card by her phone. */}
-      <ServiceFullBleed
+      {/* 3 – Support-inkorg. The looping ball-and-rails video in the section's own dark green; card on
+          the empty background under the rails from lg, under the video below lg. */}
+      <SupportVideoSection
         id={si.id}
         eyebrow={si.eyebrow}
         title={si.title}
         body={si.body}
-        image={etableradeImages.support}
-        tone="light"
-        scrim="full"
-        textPosition="top-left"
-        card={{
-          label: 'Exempel: ett besvarat ärende i support-inkorgen',
-          content: <StatusCard content={si.card} icon={InboxStackIcon} tone="solid" />,
-          anchor: { x: 40, y: 78 },
-          anchorPortrait: { x: 50, y: 24 },
-        }}
+        video={etableradeSupportVideo}
+        cardLabel="Exempel: ett besvarat ärende i support-inkorgen"
+        card={<StatusCard content={si.card} icon={InboxStackIcon} tone="solid" />}
       />
 
       {/* 4 – Hjälp när det gäller. Plain black band with the chat. */}

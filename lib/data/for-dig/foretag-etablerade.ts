@@ -23,6 +23,7 @@ import {
 import type { GettingStartedStep } from '@/components/sections/for-dig/GettingStartedSection';
 import type { SectionImage } from '@/components/sections/for-dig/types';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
+import type { ServiceVideoSource, ServiceVideoStill } from '@/components/sections/tjanster/ServiceVideo';
 import type { StatusCardContent } from '@/lib/data/for-dig/foretag-vaxa';
 
 /** Ett område i statistikwidgeten: nyckeltal, en liten graf och vid behov en kort lista. */
@@ -373,6 +374,36 @@ export const etableradeSupportInkorg = {
     row: { title: 'Svar skickat', note: 'Från support@dittforetag.se' },
   } satisfies StatusCardContent,
 };
+
+/*
+ * 3 – Support-inkorgen som video i stället för fotot (beslut 2026-10-03). 4K-mastern
+ * (_research/originals/support-video/support-master.mp4, 3840 × 2160, 24 fps) visar en blank kula
+ * som rullar på två skenor mot en mörkgrön studiobakgrund, utan text och märken. Loopen är bildruta
+ * 0–119 (5,0 s); de sista 11 bildrutorna tonas mot bildruta 0 så att staven inte hoppar.
+ * Kulans och skenornas bana ligger inom 27–69 % av höjden; ytan under, 72–100 %, är tom
+ * bakgrund (#142d22), och där ligger kortet från lg. Kantfärgerna är uppmätta i bildruta 0:
+ * överkanten #1d2f24, nederkanten #112a20.
+ *
+ * Källorna väljs i ordning: 960 på telefon, 3840 bara på skärmar som är minst 2560 px breda med
+ * hög pixeltäthet (det finns bara som MP4), annars 1920 – WebM före MP4.
+ */
+const SUPPORT_VID = '/for-dig/foretag-etablerade/support-video';
+export const etableradeSupportVideo = {
+  label: 'En blank metallkula rullar fram och tillbaka på två skenor mot en mörkgrön bakgrund.',
+  edgeTop: '#1d2f24',
+  edgeBottom: '#112a20',
+  /** Kortet från lg, i procent av videorutan: på den tomma bakgrunden under skenorna, till höger. */
+  cardAnchor: { x: 74, y: 85 },
+  sources: [
+    { src: `${SUPPORT_VID}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
+    { src: `${SUPPORT_VID}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
+    { src: `${SUPPORT_VID}-3840.mp4`, type: 'video/mp4', media: '(min-width: 2560px) and (min-resolution: 2dppx)' },
+    { src: `${SUPPORT_VID}-1920.webm`, type: 'video/webm' },
+    { src: `${SUPPORT_VID}-1920.mp4`, type: 'video/mp4' },
+  ],
+  poster: { src: `${SUPPORT_VID}-poster-1920.webp`, smallSrc: `${SUPPORT_VID}-poster-960.webp`, srcSet: `${SUPPORT_VID}-poster-960.webp 960w, ${SUPPORT_VID}-poster-1920.webp 1920w` },
+  end: { src: `${SUPPORT_VID}-slut-1920.webp`, smallSrc: `${SUPPORT_VID}-slut-960.webp`, srcSet: `${SUPPORT_VID}-slut-960.webp 960w, ${SUPPORT_VID}-slut-1920.webp 1920w` },
+} satisfies { label: string; edgeTop: string; edgeBottom: string; cardAnchor: { x: number; y: number }; sources: ServiceVideoSource[]; poster: ServiceVideoStill; end: ServiceVideoStill };
 
 /*
  * 4 – Hjälp när det gäller. Belägg: AI-supporten i portalen, eskalering till livechatt
