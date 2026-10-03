@@ -4,9 +4,10 @@ type OnboardingLayoutProps = {
   children: React.ReactNode;
   currentStep?: number;   // 0-indexed position i progress (om undefined → inga dots)
   totalSteps?: number;    // totalt antal dots (om undefined → inga dots)
+  wide?: boolean;         // bredare innehållskolumn (förhandsvisning av sajt); standard max-w-lg
 };
 
-export function OnboardingLayout({ children, currentStep, totalSteps }: OnboardingLayoutProps) {
+export function OnboardingLayout({ children, currentStep, totalSteps, wide = false }: OnboardingLayoutProps) {
   const showDots = currentStep !== undefined && totalSteps !== undefined;
 
   return (
@@ -20,7 +21,7 @@ export function OnboardingLayout({ children, currentStep, totalSteps }: Onboardi
       />
 
       {/* Innehåll */}
-      <div className="relative z-10 w-full max-w-lg px-6 flex flex-col items-center">
+      <div className={`relative z-10 w-full ${wide ? 'max-w-6xl py-10' : 'max-w-lg'} px-6 flex flex-col items-center`}>
 
         {/* Logo + Progress dots */}
         <div className="flex flex-col items-center mb-12 gap-4">
