@@ -24,6 +24,10 @@ import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } fro
  *   passes one, otherwise the section has to continue below the bottom of the
  *   screen.
  *
+ * And one that is not scroll-driven: `useIdleScrollHint` (the hero). The hint
+ * shows there only once the visitor has not scrolled for IDLE_DELAY_MS since the
+ * section mounted, goes at the first scroll and does not come back for that visit.
+ *
  * Whether a section is scroll-driven is decided by the section itself, never here:
  * - `enabled` is the section's own flag (`!shouldReduceMotion` in ScrollScene,
  *   StickySteps and the flow sections, `!isStatic && !done` in PlatformRock).
@@ -43,13 +47,17 @@ import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } fro
 const FADE_AT = 0.85;
 /** Length of the fade-out in ms (none under reduced motion). */
 const FADE_OUT_MS = 200;
+/** useIdleScrollHint: how long the visitor has to leave the page unscrolled, from mount. */
+const IDLE_DELAY_MS = 5000;
 
 export type ScrollHintMode = 'pinned' | 'flow';
 
 type TrackEntry = {
-  mode: ScrollHintMode;
+  mode: ScrollHintMode | 'idle';
   /** The section's own scroll progress, 0 → 1. A MotionValue fits, or any object with get(). */
   progress?: { get(): number };
+  /** 'idle' only: the delay has passed without a scroll. */
+  ready?: boolean;
 };
 
 const tracks = new Map<Element, TrackEntry>();
@@ -79,9 +87,11 @@ function insideTrack(el: Element, entry: TrackEntry, viewportHeight: number) {
     // and the visitor has not yet scrolled through FADE_AT of it.
     return rect.top <= 1 && rect.bottom > viewportHeight + 1 && pinnedProgress(rect, viewportHeight) < FADE_AT;
   }
-  // 'flow': the section covers the middle of the screen and has animation left.
+  // 'flow' and 'idle': the section covers the middle of the screen, and has animation left
+  // ('flow') or the idle delay has passed ('idle').
   const middle = viewportHeight / 2;
   if (rect.top > middle || rect.bottom < middle) return false;
+  if (entry.mode === 'idle') return entry.ready === true;
   if (entry.progress) return entry.progress.get() < FADE_AT;
   return rect.bottom > viewportHeight + 1;
 }
@@ -153,6 +163,45 @@ export function useScrollHint(ref: RefObject<Element | null>, { enabled, mode = 
 /** Registers a pinned section's tall track while `pinned` is true. */
 export function usePinnedScrollHint(trackRef: RefObject<Element | null>, pinned: boolean) {
   useScrollHint(trackRef, { enabled: pinned, mode: 'pinned' });
+}
+
+/**
+ * For a section that is not scroll-driven but opens the page (the hero): the hint
+ * shows once the visitor has not scrolled for IDLE_DELAY_MS since mount, while the
+ * section covers the middle of the screen. The first scroll removes it for the
+ * rest of the visit – it is not shown here again, even back at the top. The width
+ * rule is the same as for the other modes: a display:none element never shows it.
+ */
+export function useIdleScrollHint(ref: RefObject<Element | null>, enabled: boolean) {
+  const spentRef = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled || !el || spentRef.current) return;
+
+    const entry: TrackEntry = { mode: 'idle', ready: false };
+    const unregister = registerTrack(el, entry);
+    const timer = window.setTimeout(() => {
+      entry.ready = true;
+      update();
+    }, IDLE_DELAY_MS);
+    let done = false;
+
+    const stop = () => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
+      window.removeEventListener('scroll', onFirstScroll);
+      unregister();
+    };
+    const onFirstScroll = () => {
+      spentRef.current = true;
+      stop();
+    };
+    window.addEventListener('scroll', onFirstScroll, { passive: true });
+
+    return stop;
+  }, [ref, enabled]);
 }
 
 function subscribe(listener: () => void) {

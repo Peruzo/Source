@@ -1,9 +1,18 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
-import { useScrollHint } from '@/components/ui/ScrollHint';
+import { motion, useTransform } from 'framer-motion';
+import { useAutoplayProgress } from '@/lib/hooks/useAutoplayProgress';
+
+/** One play of the line, in seconds. */
+const PLAY_DURATION = 4;
+const PLAY_EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
+/**
+ * The underscores run on progress × UNDERSCORE_SPAN, so the last one (at 0.95, out at
+ * +0.1) has finished when the line is fully drawn: the end state is the full line
+ * with every underscore back at zero.
+ */
+const UNDERSCORE_SPAN = 1.1;
 
 interface TimelineNode {
   id: string;
@@ -35,30 +44,22 @@ export function ScrollTimeline({
   serviceSections = []
 }: ScrollTimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  // The line overlay is `hidden md:block`, so registering it gives the hint the same breakpoint.
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = usePrefersReducedMotion();
-  
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
+
+  // Plays by itself when the section comes into view, pauses when it leaves and plays
+  // again from the start on the next return. Reduced motion: the end state at once.
+  const progress = useAutoplayProgress(sectionRef, {
+    duration: PLAY_DURATION,
+    ease: PLAY_EASE,
+    reenter: 'restart',
+    rootMargin: '0px 0px -15% 0px',
   });
+  const underscoreProgress = useTransform(progress, (p) => p * UNDERSCORE_SPAN);
 
-  useScrollHint(overlayRef, { enabled: !shouldReduceMotion, mode: 'flow', progress: scrollYProgress });
+  // Line fills from 0 to 100% over one play
+  const lineScale = progress;
 
-  // Line fills from 0 to 100% as section scrolls
-  const lineScale = useTransform(
-    scrollYProgress, 
-    [0, 1], 
-    shouldReduceMotion ? [1, 1] : [0, 1]
-  );
-  
-  // Fade in/out at edges
-  const lineOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.05, 0.95, 1],
-    [0, 1, 1, 0]
-  );
+  // Fades in at the start and stays: the drawn line is the end state
+  const lineOpacity = useTransform(progress, [0, 0.05], [0, 1]);
 
   // Create a lighter variant of the color for gradient
   const colorLighter = color === '#00BFA6' 
@@ -76,45 +77,45 @@ export function ScrollTimeline({
   const section3Pos = serviceSections[3]?.position ?? 0.95;
 
   // Width transforms - extend from 0 to 1 (100% width) when section is in view
-  const underscore0Width = useTransform(scrollYProgress, 
+  const underscore0Width = useTransform(underscoreProgress,
     [section0Pos - 0.1, section0Pos, section0Pos + 0.1],
     [0, 1, 0],
     { clamp: true }
   );
-  const underscore0Opacity = useTransform(scrollYProgress,
+  const underscore0Opacity = useTransform(underscoreProgress,
     [section0Pos - 0.15, section0Pos - 0.05, section0Pos + 0.15],
     [0, 1, 0],
     { clamp: true }
   );
 
-  const underscore1Width = useTransform(scrollYProgress,
+  const underscore1Width = useTransform(underscoreProgress,
     [section1Pos - 0.1, section1Pos, section1Pos + 0.1],
     [0, 1, 0],
     { clamp: true }
   );
-  const underscore1Opacity = useTransform(scrollYProgress,
+  const underscore1Opacity = useTransform(underscoreProgress,
     [section1Pos - 0.15, section1Pos - 0.05, section1Pos + 0.15],
     [0, 1, 0],
     { clamp: true }
   );
 
-  const underscore2Width = useTransform(scrollYProgress,
+  const underscore2Width = useTransform(underscoreProgress,
     [section2Pos - 0.1, section2Pos, section2Pos + 0.1],
     [0, 1, 0],
     { clamp: true }
   );
-  const underscore2Opacity = useTransform(scrollYProgress,
+  const underscore2Opacity = useTransform(underscoreProgress,
     [section2Pos - 0.15, section2Pos - 0.05, section2Pos + 0.15],
     [0, 1, 0],
     { clamp: true }
   );
 
-  const underscore3Width = useTransform(scrollYProgress,
+  const underscore3Width = useTransform(underscoreProgress,
     [section3Pos - 0.1, section3Pos, section3Pos + 0.1],
     [0, 1, 0],
     { clamp: true }
   );
-  const underscore3Opacity = useTransform(scrollYProgress,
+  const underscore3Opacity = useTransform(underscoreProgress,
     [section3Pos - 0.15, section3Pos - 0.05, section3Pos + 0.15],
     [0, 1, 0],
     { clamp: true }
@@ -136,8 +137,8 @@ export function ScrollTimeline({
           {children}
         </div>
 
-        {/* Scroll Timeline Container - Hidden on mobile */}
-        <div ref={overlayRef} className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none z-10">
+        {/* Timeline Container - centred from md; below md it runs down the left gutter, beside the single column */}
+        <div className="absolute left-3 top-0 bottom-0 md:left-1/2 md:-translate-x-1/2 pointer-events-none z-10">
           {/* Base line (unfilled, faded) */}
           <div 
             className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2"
@@ -167,7 +168,7 @@ export function ScrollTimeline({
               style={{
                 top: `${section.position * 100}%`,
                 height: '2px',
-                opacity: shouldReduceMotion ? 1 : opacity,
+                opacity,
               }}
             >
               <motion.div
