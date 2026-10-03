@@ -20,6 +20,9 @@ const slides = [
 ];
 
 const SLIDE_DURATION = 8000;
+/** Uppmätt mot båda bilderna på 375–1440 px: all text i sektionen klarar AA (4,5:1, stor text 3:1). */
+const TEXT_SCRIM =
+  'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.68) 45%, rgba(0,0,0,0.25) 75%, rgba(0,0,0,0) 100%)';
 
 export function DataGrowthSlideshow() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -74,6 +77,9 @@ export function DataGrowthSlideshow() {
         </AnimatePresence>
         {/* Very subtle gradient overlay for readability without darkening too much */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+        {/* Mörkare upptill där texten ligger, så att texten klarar WCAG AA även mot den ljusa
+            himlen i första bilden; nedtill släpps bilden fram som förut. */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: TEXT_SCRIM }} />
       </div>
 
       {/* Content overlay – centered like Revolut hero */}
@@ -103,7 +109,8 @@ export function DataGrowthSlideshow() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Slide indicators – den aktiva fylls och driver bytet */}
+          {/* Slide indicators – den aktiva fylls och driver bytet. Knappen är 44 px hög (tryckytan);
+              den synliga stapeln är 8 px hög i mitten av den. */}
           <div className="flex items-center justify-center gap-3">
             {slides.map((slide, index) => {
               const isActive = index === current;
@@ -112,12 +119,15 @@ export function DataGrowthSlideshow() {
                   key={slide.id}
                   type="button"
                   onClick={() => setCurrent(index)}
-                  className={`relative h-2 flex-1 max-w-[120px] rounded-full overflow-hidden bg-white/10 transition-colors duration-300 ${
-                    isActive ? '' : 'hover:bg-white/20'
-                  }`}
+                  className="group flex h-11 flex-1 max-w-[120px] items-center"
                   aria-label={slide.title}
                   aria-current={isActive ? 'true' : undefined}
                 >
+                  <span
+                    className={`relative block h-2 w-full rounded-full overflow-hidden bg-white/10 transition-colors duration-300 ${
+                      isActive ? '' : 'group-hover:bg-white/20'
+                    }`}
+                  >
                   {isActive &&
                     (reduceMotion ? (
                       <div className="absolute inset-0 bg-teal" />
@@ -141,6 +151,7 @@ export function DataGrowthSlideshow() {
                         }}
                       />
                     ))}
+                  </span>
                 </button>
               );
             })}

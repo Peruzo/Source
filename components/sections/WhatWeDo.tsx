@@ -143,7 +143,9 @@ export function WhatWeDo() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
-              className={`relative min-h-[60vh] lg:min-h-[70vh] lg:py-16 flex items-center bg-gradient-to-br ${service.bgColor}`}
+              // pt-20 below lg: the large number sits 4rem above the heading (-top-16); without the
+              // padding it reached into the row above and was hidden behind that row's image.
+              className={`relative min-h-[60vh] lg:min-h-[70vh] pt-20 lg:py-16 flex items-center bg-gradient-to-br ${service.bgColor}`}
             >
               {/* TEMP: flicker bisect, remove after diagnosis */}
               {!nofx.noise && <div className="absolute inset-0 noise-overlay"></div>}

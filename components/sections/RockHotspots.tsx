@@ -124,7 +124,7 @@ export default function RockHotspots({ progress }: { progress: MotionValue<numbe
               }}
             />
 
-            {/* markör (frostad ruta) */}
+            {/* markör (frostad ruta): knappen är en osynlig tryckyta på 44 × 44 runt den synliga rutan på 42 × 42 */}
             <button
               onClick={toggle}
               aria-label={c.label}
@@ -136,17 +136,27 @@ export default function RockHotspots({ progress }: { progress: MotionValue<numbe
                 opacity: revealed ? 1 : 0,
                 transition: 'opacity 0.4s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1)',
                 transitionDelay: `${i * 0.12}s`,
-                width: 42, height: 42, borderRadius: 8,
-                background: 'rgba(255,255,255,0.5)',
-                border: `1px solid ${open ? 'var(--color-teal,#00BFA6)' : 'rgba(255,255,255,0.82)'}`,
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
-                boxShadow: '0 4px 16px rgba(10,20,18,0.18)',
+                width: 44, height: 44,
+                display: 'grid', placeItems: 'center',
+                background: 'transparent',
+                border: 'none',
                 cursor: 'pointer',
                 padding: 0,
                 pointerEvents: revealed ? 'auto' : 'none',
               }}
-            />
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 42, height: 42, borderRadius: 8,
+                  background: 'rgba(255,255,255,0.5)',
+                  border: `1px solid ${open ? 'var(--color-teal,#00BFA6)' : 'rgba(255,255,255,0.82)'}`,
+                  backdropFilter: 'blur(6px)',
+                  WebkitBackdropFilter: 'blur(6px)',
+                  boxShadow: '0 4px 16px rgba(10,20,18,0.18)',
+                }}
+              />
+            </button>
 
             {/* etikett */}
             <button
@@ -165,7 +175,8 @@ export default function RockHotspots({ progress }: { progress: MotionValue<numbe
                 flexDirection: isRight ? 'row' : 'row-reverse',
                 background: 'transparent',
                 border: 'none',
-                padding: '4px 2px',
+                padding: '0 2px',
+                minHeight: 44, // tryckytan; texten ligger kvar i mitten (alignItems center)
                 cursor: 'pointer',
                 fontSize: 'clamp(18px, 2vw, 24px)',
                 fontWeight: 600,

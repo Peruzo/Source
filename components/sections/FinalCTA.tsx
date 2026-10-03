@@ -38,24 +38,27 @@ export function FinalCTA() {
               className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight"
             >
               Redo att{' '}
-              <motion.span
-                className="text-teal inline-block"
-                animate={{
-                  textShadow: [
-                    '0 0 20px rgba(0, 191, 166, 0.5)',
-                    '0 0 40px rgba(0, 191, 166, 0.7)',
-                    '0 0 20px rgba(0, 191, 166, 0.5)',
-                  ],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                växa
-              </motion.span>
-              ?
+              {/* Ordet och frågetecknet hålls ihop: utan det kan "?" hamna ensamt på en egen rad. */}
+              <span className="whitespace-nowrap">
+                <motion.span
+                  className="text-teal inline-block"
+                  animate={{
+                    textShadow: [
+                      '0 0 20px rgba(0, 191, 166, 0.5)',
+                      '0 0 40px rgba(0, 191, 166, 0.7)',
+                      '0 0 20px rgba(0, 191, 166, 0.5)',
+                    ],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  växa
+                </motion.span>
+                ?
+              </span>
             </motion.h2>
           </div>
 
