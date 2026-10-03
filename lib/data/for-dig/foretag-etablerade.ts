@@ -8,7 +8,9 @@
  * spårningskod; inga annonser som Source sköter; inga roller som paketfunktion.
  * Skriv inga resultat, inga paketnamn, inga priser på Source, inga användarantal
  * och inga siffror i widgetarna – de visar hur gränssnittet ser ut, inte vad en
- * kund uppnår.
+ * kund uppnår. Undantag (beslut 2026-10-03): statistikwidgeten i sektion 1 visar
+ * tydligt märkta exempelsiffror och de statistikområden som finns i portalen, även
+ * trafik – se etableradeStatistik.widget.
  */
 import {
   CreditCardIcon,
@@ -23,6 +25,23 @@ import type { SectionImage } from '@/components/sections/for-dig/types';
 import type { FeatureItem, ServiceImage } from '@/components/sections/tjanster/types';
 import type { StatusCardContent } from '@/lib/data/for-dig/foretag-vaxa';
 
+/** Ett område i statistikwidgeten: nyckeltal, en liten graf och vid behov en kort lista. */
+export type StatsArea = {
+  id: string;
+  /** Fliken, som portalens rubrik för modulen. */
+  tab: string;
+  kpis: { label: string; value: string }[];
+  chart?: { kind: 'line' | 'bars'; title: string; unit?: string; points: { label: string; value: number }[] };
+  list?: { title: string; columns: string[]; rows: string[][] };
+};
+
+export type StatsAreasContent = {
+  label: string;
+  title: string;
+  note: string;
+  areas: StatsArea[];
+};
+
 export type StatsOverviewContent = {
   title: string;
   period: string;
@@ -30,25 +49,17 @@ export type StatsOverviewContent = {
   rows: { id: string; label: string; trend: readonly number[] }[];
 };
 
+/** Kundportalens marknadsföringssida som den visas på surfplattans skärm. */
 export type StudioScreenContent = {
   label: string;
-  section: string;
-  campaign: string;
-  status: string;
-  tabs: readonly string[];
-  activeTab: string;
-  plan: {
+  title: string;
+  subtitle: string;
+  goals: { title: string; chips: readonly string[]; active: string };
+  campaigns: {
     title: string;
-    goal: { label: string; value: string };
-    channels: { id: string; channel: string; idea: string }[];
-    action: string;
-    followUp: string;
+    items: { id: string; name: string; purpose: string; status: string; tone: 'active' | 'planned' | 'done'; period: string }[];
   };
-  images: {
-    title: string;
-    formats: readonly string[];
-    note: string;
-  };
+  images: { title: string; formats: readonly { label: string; ratio: number }[] };
 };
 
 export type ChatCardContent = {
@@ -73,13 +84,14 @@ export const etableradeImages = {
     focus: '50% 50%',
     portraitFocus: '50% 50%',
   },
-  // Händer håller en surfplatta rakt uppifrån mot mörk sten. Visas hel (16:9 och 3:4), så
+  // Händer håller en surfplatta med blank, ljus skärm mot mörk sten (scripts/tjanster-bilder/
+  // foretag-etablerade-marknad.mjs). Visas hel (16:9 och ett kvadratiskt utsnitt under md), så
   // skärmytans procent gäller vid varje bredd – se STUDIO_SCREEN.
   studio: {
-    base: `${IMG}-studio`,
-    alt: 'Två händer håller en surfplatta ovanför en mörk stenskiva, sedd rakt uppifrån.',
+    base: `${IMG}-marknad-studio`,
+    alt: 'Två händer håller en surfplatta ovanför en mörk stenyta, sedd rakt uppifrån.',
     widths: LANDSCAPE,
-    portraitWidths: PORTRAIT,
+    portraitWidths: [480, 720, 920],
     focus: '50% 50%',
     portraitFocus: '50% 50%',
   },
@@ -96,12 +108,15 @@ export const etableradeImages = {
 
 /*
  * Surfplattans skärmyta i procent av fotot, uppmätt på originalet 2048 × 1152
- * (_research/originals/foretag-etablerade/studio-A.png): skärmen innanför den svarta
- * ramen går x 632–1399, y 273–862. Porträttet är x 583–1447 ur samma original.
+ * (_research/originals/design-omg2/ipad-0.png): den blanka skärmen innanför ramen går
+ * x 578–1465, y 207–861 (888 × 655). Mobilutsnittet är kvadratiskt, x 446–1598, eftersom
+ * skärmen inte ryms i ett 3:4-utsnitt i full höjd. Vänster tumme går in över skärmen (upp till
+ * 13 px, rad 563–820), så UI:t maskas med skärmens egen form – se scripts/foretag-etablerade-skarm-mask.mjs.
  */
 export const STUDIO_SCREEN = {
-  landscape: { left: 30.86, top: 23.7, width: 37.45, height: 51.13 },
-  portrait: { left: 5.67, top: 23.7, width: 88.77, height: 51.13 },
+  landscape: { left: 28.22, top: 17.97, width: 43.36, height: 56.86 },
+  portrait: { left: 11.46, top: 17.97, width: 77.08, height: 56.86 },
+  mask: '/for-dig/foretag-etablerade/foretag-etablerade-marknad-skarm-mask.png',
 } as const;
 
 /*
@@ -109,7 +124,8 @@ export const STUDIO_SCREEN = {
  * (config/packageTiers.js:118-119, server.js:3174-3180); ledningsöversikt, konvertering,
  * ordrar och bokningar (routes/statisticsRoutes.js:596, 1081, 1182, 1389); diagram över
  * tid (public/statistik-layout2.html:429, 815, 897); anpassa moduler (rad 1215).
- * Inte: webbtrafik, export, PDF, schemalagda rapporter, detaljvy.
+ * Texten nämner inte webbtrafik, export, PDF, schemalagda rapporter eller detaljvy; widgeten
+ * nedan visar portalens statistikområden, även trafik.
  */
 export const etableradeStatistik = {
   id: 'statistik',
@@ -119,16 +135,168 @@ export const etableradeStatistik = {
     'Följ försäljning, ordrar, bokningar och konvertering samlat, och se hur de utvecklas över tid.',
     'Välj vilka moduler som visas, så ser ledningen det som betyder mest för er.',
   ],
-  card: {
-    title: 'Ledningsöversikt',
-    period: 'Över tid',
-    rows: [
-      { id: 'forsaljning', label: 'Försäljning', trend: [3, 4, 3.6, 5, 4.8, 6, 6.4] },
-      { id: 'ordrar', label: 'Ordrar', trend: [4, 3.8, 4.6, 4.2, 5.2, 5, 5.8] },
-      { id: 'bokningar', label: 'Bokningar', trend: [2.6, 3.4, 3.2, 3.8, 4.4, 4.2, 5] },
-      { id: 'konvertering', label: 'Konvertering', trend: [3.2, 3.4, 3.1, 3.9, 3.7, 4.3, 4.6] },
+  /*
+   * Statistikwidgeten (ersätter den lilla "Ledningsöversikt", beslut 2026-10-03). Bara de områden
+   * och mått som finns i portalens statistik (public/statistik-layout2.html och public/js/
+   * statistics.js, origin/develop i source.database), med exempelsiffror – undantag från
+   * beslutet om inga siffror, bara för den här widgeten. Delvis befintliga områden visar bara
+   * det som finns:
+   *   Trafik & förvärv – sessioner, unika användare (statistics.js 1414–1421), trafik per kanal
+   *     och enhetstyp (statistik-layout2.html 451–511).
+   *   Källa & kampanj – bara tabellen Källa, Medium, Kampanj, Sessioner (515–535); ingen
+   *     konvertering per kampanj i statistiken.
+   *   Beteende & UX – avvisningsfrekvens och snittid per sida i Toppsidor (539–551); inga
+   *     siffror för hela sajten (dolda, routes/statisticsRoutes.js 1022–1034), inga värmekartor.
+   *   Konvertering & intäkter – leadbaserad: totala leads, konverteringsgrad, andel vunna och
+   *     leads per källa (699–753).
+   *   Ordrar & intäkter – intäkter, bekräftade ordrar, snittordervärde, över tid (764–815).
+   *   Bokningar – bokningar, genomförda besök, avbokningar, per dag (829–897).
+   *   Retention & kohorter – återkommande gäster och prenumerationsretention per månad
+   *     (911, statistics.js 2053–2056, 2117–2147); ingen kohortmatris (visas inte i portalen).
+   */
+  widget: {
+    label: 'Exempel: statistiken i kundportalen, ett område i taget',
+    title: 'Statistik',
+    note: 'Exempeldata',
+    areas: [
+      {
+        id: 'trafik',
+        tab: 'Trafik & förvärv',
+        kpis: [
+          { label: 'Sessioner', value: '4 820' },
+          { label: 'Unika användare', value: '3 260' },
+        ],
+        chart: {
+          kind: 'bars',
+          title: 'Trafik per kanal',
+          points: [
+            { label: 'Direkt', value: 1480 },
+            { label: 'Sök', value: 1320 },
+            { label: 'Sociala', value: 890 },
+            { label: 'E-post', value: 610 },
+            { label: 'Hänvisning', value: 520 },
+          ],
+        },
+        list: { title: 'Enhetstyp', columns: ['Enhet', 'Andel'], rows: [['Mobil', '64 %'], ['Dator', '31 %'], ['Surfplatta', '5 %']] },
+      },
+      {
+        id: 'kalla',
+        tab: 'Källa & kampanj',
+        kpis: [],
+        list: {
+          title: 'Källa & kampanj',
+          columns: ['Källa', 'Medium', 'Kampanj', 'Sessioner'],
+          rows: [
+            ['google', 'cpc', 'varens-nyheter', '820'],
+            ['facebook', 'paid', 'varens-nyheter', '540'],
+            ['nyhetsbrev', 'email', 'april', '310'],
+            ['instagram', 'social', '–', '260'],
+          ],
+        },
+      },
+      {
+        id: 'beteende',
+        tab: 'Beteende & UX',
+        kpis: [],
+        list: {
+          title: 'Toppsidor',
+          columns: ['Sida', 'Avvisningsfrekvens', 'Snittid'],
+          rows: [
+            ['/', '38 %', '1:42'],
+            ['/produkter', '31 %', '2:10'],
+            ['/om-oss', '44 %', '0:58'],
+            ['/kontakt', '41 %', '1:05'],
+          ],
+        },
+      },
+      {
+        id: 'konvertering',
+        tab: 'Konvertering & intäkter',
+        kpis: [
+          { label: 'Totala leads', value: '128' },
+          { label: 'Konverteringsgrad', value: '18 %' },
+          { label: 'Andel vunna', value: '24 %' },
+        ],
+        chart: {
+          kind: 'bars',
+          title: 'Leads per källa',
+          points: [
+            { label: 'Formulär', value: 52 },
+            { label: 'E-post', value: 31 },
+            { label: 'Telefon', value: 24 },
+            { label: 'Sociala', value: 21 },
+          ],
+        },
+      },
+      {
+        id: 'ordrar',
+        tab: 'Ordrar & intäkter',
+        kpis: [
+          { label: 'Intäkter', value: '184 300 kr' },
+          { label: 'Bekräftade ordrar', value: '412' },
+          { label: 'Snittordervärde', value: '447 kr' },
+        ],
+        chart: {
+          kind: 'line',
+          title: 'Intäkter över tid',
+          points: [
+            { label: 'v 9', value: 19800 },
+            { label: 'v 10', value: 21400 },
+            { label: 'v 11', value: 20100 },
+            { label: 'v 12', value: 23600 },
+            { label: 'v 13', value: 22900 },
+            { label: 'v 14', value: 25200 },
+            { label: 'v 15', value: 24700 },
+            { label: 'v 16', value: 26600 },
+          ],
+        },
+      },
+      {
+        id: 'bokningar',
+        tab: 'Bokningar',
+        kpis: [
+          { label: 'Bokningar', value: '236' },
+          { label: 'Genomförda besök', value: '214' },
+          { label: 'Avbokningar', value: '12' },
+        ],
+        chart: {
+          kind: 'bars',
+          title: 'Bokningar per dag',
+          points: [
+            { label: 'Mån', value: 38 },
+            { label: 'Tis', value: 42 },
+            { label: 'Ons', value: 35 },
+            { label: 'Tor', value: 46 },
+            { label: 'Fre', value: 40 },
+            { label: 'Lör', value: 24 },
+            { label: 'Sön', value: 11 },
+          ],
+        },
+      },
+      {
+        id: 'retention',
+        tab: 'Retention & kohorter',
+        kpis: [
+          { label: 'Unika gäster', value: '980' },
+          { label: 'Andel återkommande', value: '34 %' },
+          { label: 'Snittbesök per gäst', value: '1,6' },
+        ],
+        chart: {
+          kind: 'bars',
+          title: 'Prenumerationsretention',
+          unit: '%',
+          points: [
+            { label: 'Mån 1', value: 100 },
+            { label: 'Mån 2', value: 86 },
+            { label: 'Mån 3', value: 78 },
+            { label: 'Mån 4', value: 72 },
+            { label: 'Mån 5', value: 68 },
+            { label: 'Mån 6', value: 65 },
+          ],
+        },
+      },
     ],
-  } satisfies StatsOverviewContent,
+  } satisfies StatsAreasContent,
 };
 
 /*
@@ -149,28 +317,37 @@ export const etableradeStudio = {
     'Beskriv målet, så tar AI-assistenten fram en plan med kanaler och budskap som ni bygger kampanjen på.',
     'Skapa bilder till varje kanal, spara dem i bildbiblioteket och följ resultatet från era anslutna konton hos Google, Meta och TikTok på samma ställe.',
   ],
+  /*
+   * Skärmen följer portalens marknadsföringssida (public/marknadsforing-layout2.html 686–719):
+   * rubrik och underrubrik (686–687), målen (PURPOSE_CHOICE, public/js/marknadsforing.js 38),
+   * kampanjkorten med syfte, status och period (29, 37, 80–83, 351–355) och bildformaten
+   * (CREATIVE_FORMAT, 44–49). Kampanjnamnen är neutrala exempel.
+   */
   screen: {
-    label: 'Exempel: en kampanjplan från AI-assistenten i marknadsföringsstudion',
-    section: 'Marknadsföring',
-    campaign: 'Ny säsong',
-    status: 'Utkast',
-    tabs: ['Översikt', 'Kanaler', 'Assistent', 'Bilder'],
-    activeTab: 'Assistent',
-    plan: {
-      title: 'Plan från assistenten',
-      goal: { label: 'Mål', value: 'Nå befintliga kunder inför en ny säsong' },
-      channels: [
-        { id: 'epost', channel: 'E-post', idea: 'Nyhetsbrev till befintliga kunder' },
-        { id: 'meta', channel: 'Meta', idea: 'Bildannons i flödet' },
-        { id: 'google', channel: 'Google Ads', idea: 'Sökannons' },
+    label: 'Exempel: marknadsföringssidan i kundportalen med mål, kampanjer och bilder',
+    title: 'Marknadsföring',
+    subtitle: 'Välj vad du vill uppnå, få en plan, och följ vad varje kanal ger.',
+    goals: {
+      title: 'Vad vill du uppnå?',
+      chips: ['Göra företaget känt', 'Lansera en produkt eller tjänst', 'Sälja mer', 'Fylla bokningar', 'Få fler leads', 'Ett event'],
+      active: 'Sälja mer',
+    },
+    campaigns: {
+      title: 'Din marknadsföring',
+      items: [
+        { id: 'var', name: 'Vårens nyheter', purpose: 'Försäljning', status: 'Aktiv', tone: 'active', period: '3 mar – 30 mar · 3 kanaler' },
+        { id: 'lansering', name: 'Ny tjänst', purpose: 'Produktlansering', status: 'Planerad', tone: 'planned', period: '7 apr – 4 maj · 2 kanaler' },
+        { id: 'kanne', name: 'Lokal synlighet', purpose: 'Kännedom', status: 'Avslutad', tone: 'done', period: '3 feb – 28 feb · 2 kanaler' },
       ],
-      action: 'Skapa kanaler',
-      followUp: 'Ställ en följdfråga om planen',
     },
     images: {
-      title: 'Bilder',
-      formats: ['Kvadrat', 'Stående', 'Story', 'Liggande'],
-      note: 'Sparas i bildbiblioteket',
+      title: 'Dina bilder',
+      formats: [
+        { label: 'Kvadrat', ratio: 1 },
+        { label: 'Stående', ratio: 4 / 5 },
+        { label: 'Story', ratio: 9 / 16 },
+        { label: 'Liggande', ratio: 1200 / 628 },
+      ],
     },
   } satisfies StudioScreenContent,
 };

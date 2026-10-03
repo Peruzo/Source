@@ -26,6 +26,7 @@ import {
 import type { ServiceVideoSource, ServiceVideoStill } from '@/components/sections/tjanster/ServiceVideo';
 import type { FeatureItem, ServiceCta, ServiceImage } from '@/components/sections/tjanster/types';
 import type { LogisticsFlowContent } from '@/components/sections/tjanster/widgets/LogisticsFlow';
+import type { LogisticsReturnsContent } from '@/components/sections/tjanster/logistik/LogisticsReturnsSection';
 
 /*
  * ────────────────────────────────────────────────────────────────────────────
@@ -176,6 +177,76 @@ export const logistikFlode = {
     statuses: FLAGGOR.statushamtning ? ['Bokad', 'På väg', 'Levererad'] : undefined,
   },
 } satisfies LogisticsFlowContent;
+
+/*
+ * S3 som video (ersätter de fem korten i LogisticsFlowSection; rubrik, överrad och brödtext ovan
+ * är oförändrade). Renderad i ~/remotion-source, kompositionen LogistikFlode: 1920 × 1080,
+ * 30 bilder per sekund, 20 s, loopar. Samma innehåll och belägg som korten ovan, plus betalningen
+ * i kassan (kort, storefrontCheckoutService.js 2327) och notisen om ny beställning i portalen.
+ * Inga statusar efter bokningen.
+ */
+const FLODE = '/tjanster/logistik/logistik-flode';
+export const logistikFlodeVideo = {
+  sources: [
+    { src: `${FLODE}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
+    { src: `${FLODE}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
+    { src: `${FLODE}-1920.webm`, type: 'video/webm' },
+    { src: `${FLODE}-1920.mp4`, type: 'video/mp4' },
+  ],
+  poster: { src: `${FLODE}-poster-1920.webp`, smallSrc: `${FLODE}-poster-960.webp`, srcSet: `${FLODE}-poster-960.webp 960w, ${FLODE}-poster-1920.webp 1920w` },
+  end: { src: `${FLODE}-slut-1920.webp`, smallSrc: `${FLODE}-slut-960.webp`, srcSet: `${FLODE}-slut-960.webp 960w, ${FLODE}-slut-1920.webp 1920w` },
+} satisfies { sources: ServiceVideoSource[]; poster: ServiceVideoStill; end: ServiceVideoStill };
+
+/*
+ * Retursektionen under flödesvideon – renderas bara med FLAGGOR.returer, som dagens retursektion.
+ * Bara det som är live i kundportalen (source.database origin/develop):
+ *   ärendelistan, fliken "Alla returer" – public/logistik-layout2.html 746–981,
+ *     GET /api/shipping/returns (services/shipping/routes/returns.js 774)
+ *   statusarna – models/ReturnRequest.js 19, etiketter returns.js 8–17 (Begärd, Godkänd,
+ *     Mottagen, Avvisad)
+ *   ärendet med Konversation, Returartiklar, Anledning och Statushistorik – public/return-case.html 188–254
+ *   "Godkänn retur" – public/js/return-case.js 52 → PATCH /:id/status (returns.js 1771)
+ *   statusmejlet till kunden – "Uppdatering om din retur — Godkänd", "Status på din retur har
+ *     uppdaterats", "Vi återkommer med en returetikett inom kort." (services/emailTemplateEngine.js
+ *     687–712, 1570; returns.js 23–24, 1850)
+ * Inte: att kunden skickar bilder (kan inte, publicReturnRoutes.js 592–602), returetikett (manuellt
+ * steg), att etiketten mejlas automatiskt (finns inte), återbetalning och någon återbetalningsvy.
+ * Exempeldata är neutral och påhittad. Returer ingår i Growth (config/packageTiers.js 71, 74), inga
+ * paketnamn på sidan.
+ */
+const RETUR = '/tjanster/logistik/logistik-returer';
+export const logistikReturer = {
+  eyebrow: 'RETURER',
+  title: 'Varje retur blir ett ärende',
+  body: [
+    'Returerna samlas i logistiken, med kundens meddelanden, artiklarna och anledningen i samma ärende.',
+    'Godkänn returen, så får kunden ett mejl om att den är godkänd.',
+  ],
+  list: {
+    title: 'Returer',
+    subtitle: 'Exempel på ärenden',
+    label: 'Exempel: returärenden med status',
+    columns: ['Order', 'Kund', 'Artikel', 'Anledning', 'Status'],
+    cases: [
+      { order: '1042', customer: 'Sara L.', item: 'Vas', reason: 'Skadad vid leverans', status: 'Begärd', tone: 'requested' },
+      { order: '1039', customer: 'Johan B.', item: 'Bordslampa', reason: 'Ångrat köp', status: 'Begärd', tone: 'requested' },
+      { order: '1035', customer: 'Mira K.', item: 'Termos', reason: 'Fel artikel', status: 'Godkänd', tone: 'approved' },
+      { order: '1031', customer: 'Oskar N.', item: 'Förvaringskorg', reason: 'Saknar del', status: 'Mottagen', tone: 'received' },
+      { order: '1027', customer: 'Elin H.', item: 'Hörlurar', reason: 'Ångrat köp', status: 'Avvisad', tone: 'rejected' },
+    ],
+  },
+  video: {
+    label: 'Exempel: ett returärende öppnas, returen godkänns och kunden får ett mejl om att den är godkänd',
+    sources: [
+      { src: `${RETUR}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
+      { src: `${RETUR}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
+      { src: `${RETUR}-1920.webm`, type: 'video/webm' },
+      { src: `${RETUR}-1920.mp4`, type: 'video/mp4' },
+    ],
+    poster: { src: `${RETUR}-poster-1920.webp`, smallSrc: `${RETUR}-poster-960.webp`, srcSet: `${RETUR}-poster-960.webp 960w, ${RETUR}-poster-1920.webp 1920w` },
+    end: { src: `${RETUR}-slut-1920.webp`, smallSrc: `${RETUR}-slut-960.webp`, srcSet: `${RETUR}-slut-960.webp 960w, ${RETUR}-slut-1920.webp 1920w` },
+  },
+} satisfies LogisticsReturnsContent;
 
 /*
  * S4 – spårningslänken. Belägg: mejlet "Din order har skickats" med "Spårningsnummer" och

@@ -8,11 +8,16 @@ import { ServiceFullBleed } from '@/components/sections/tjanster/ServiceFullBlee
 import { ServicePageLayout } from '@/components/sections/tjanster/ServicePageLayout';
 import { ServicePicture } from '@/components/sections/tjanster/ServicePicture';
 import { ServiceVideo } from '@/components/sections/tjanster/ServiceVideo';
-import { LogisticsFlowSection, TrackingMailCard } from '@/components/sections/tjanster/widgets/LogisticsFlow';
+import { TrackingMailCard } from '@/components/sections/tjanster/widgets/LogisticsFlow';
+import { LogisticsFlowVideo } from './LogisticsFlowVideo';
+import { LogisticsReturnsSection } from './LogisticsReturnsSection';
 import {
+  FLAGGOR,
   logistikAvslut,
   logistikFeatures,
   logistikFlode,
+  logistikFlodeVideo,
+  logistikReturer,
   logistikFraktsedel,
   logistikImages,
   logistikIntro,
@@ -28,6 +33,8 @@ import {
  *
  * S4 has no photo: both candidates had text on lockers or on the carton. It shows the
  * tracking email instead. S5 is the mailbox video, played once like the scale on /bokforing.
+ * S3 is a looping UI video of the whole flow; under it, only with FLAGGOR.returer, the returns
+ * section with the case list and a short video of approving a return.
  */
 
 function PhotoMedia({ image }: { image: (typeof logistikImages)[keyof typeof logistikImages] }) {
@@ -62,8 +69,11 @@ export function LogistikSections() {
         media={<PhotoMedia image={logistikImages.fraktsedel} />}
       />
 
-      {/* S3 – hela bokningsflödet, motion design */}
-      <LogisticsFlowSection content={logistikFlode} />
+      {/* S3 – hela bokningsflödet som video (Remotion), samma rubrik och text som tidigare */}
+      <LogisticsFlowVideo eyebrow={logistikFlode.eyebrow} title={logistikFlode.title} intro={logistikFlode.intro} label={logistikFlode.label} video={logistikFlodeVideo} />
+
+      {/* S3b – returer: bara när returfunktionen är på, som dagens retursektion i app/logistik/page.tsx */}
+      {FLAGGOR.returer ? <LogisticsReturnsSection content={logistikReturer} /> : null}
 
       {/* S4 – spårningslänken; no photo, the email itself */}
       <ClippedImageSection

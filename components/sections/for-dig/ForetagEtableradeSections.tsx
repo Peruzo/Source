@@ -18,7 +18,7 @@ import {
 import { FullBleedImageSection } from './FullBleedImageSection';
 import { GettingStartedSection } from './GettingStartedSection';
 import { StudioScreenSection } from './foretag-etablerade/StudioScreenSection';
-import { ChatCard, StatsOverviewCard, StudioScreen } from './foretag-etablerade/widgets';
+import { ChatCard, StatsAreasWidget, StudioScreen } from './foretag-etablerade/widgets';
 import { StatusCard } from './foretag-vaxa/widgets';
 
 /**
@@ -37,8 +37,8 @@ export function ForetagEtableradeSections() {
 
   return (
     <>
-      {/* 1 – Statistik för ledningen. Text on the black upper left, card on the black above the highest arches.
-          Target of the hero's "Se hur det fungerar". */}
+      {/* 1 – Statistik för ledningen. Text on the black upper left; from lg the statistics widget on the black
+          upper right, above the highest arches, under the photo below lg. Target of the hero's "Se hur det fungerar". */}
       <ServiceFullBleed
         id={s.id}
         eyebrow={s.eyebrow}
@@ -47,11 +47,11 @@ export function ForetagEtableradeSections() {
         image={etableradeImages.statistik}
         tone="light"
         textPosition="top-left"
-        card={{
-          label: 'Exempel: ledningsöversikten i statistiken',
-          content: <StatsOverviewCard content={s.card} />,
-          anchor: { x: 62, y: 28 },
-          anchorPortrait: { x: 50, y: 30 },
+        panel={{
+          label: s.widget.label,
+          content: <StatsAreasWidget content={s.widget} />,
+          // Clear of the heading's longest line (about 37rem from the left edge at lg) from 1024 px up.
+          position: { right: 'clamp(1.5rem, 3vw, 5rem)', top: 'clamp(6.5rem, 15vh, 9rem)', width: 'min(36rem, 38vw)' },
         }}
       />
 
@@ -62,6 +62,7 @@ export function ForetagEtableradeSections() {
         title={st.title}
         body={st.body}
         image={etableradeImages.studio}
+        portraitShape="square"
         screen={STUDIO_SCREEN}
         label={st.screen.label}
       >
