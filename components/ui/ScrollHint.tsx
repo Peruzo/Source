@@ -120,7 +120,7 @@ export function ScrollHint() {
   return (
     <div aria-hidden="true" className="scroll-reminder">
       <svg className="scroll-reminder__mouse" width="14" height="22" viewBox="0 0 14 22" fill="none">
-        <rect x="1" y="1" width="12" height="20" rx="6" stroke="currentColor" strokeWidth="1.5" />
+        <rect x="1" y="1" width="12" height="20" rx="6" stroke="currentColor" strokeWidth="2" />
         <rect className="scroll-reminder__wheel" x="6" y="5" width="2" height="4" rx="1" fill="currentColor" />
       </svg>
       <span>Scrolla nedåt</span>
