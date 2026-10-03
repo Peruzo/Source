@@ -15,6 +15,10 @@ type LoopingVideoProps = {
   /** `sizes` for the still under reduced motion. */
   sizes: string;
   className?: string;
+  /** Posters by media query; the first that matches wins. Without it: 960 below md, otherwise 1920. */
+  posters?: { media: string; src: string }[];
+  /** Stills by media query under reduced motion, as <picture> sources (for clips with a different shape on phones). */
+  endSources?: { media: string; srcSet: string }[];
 };
 
 /*
@@ -27,14 +31,15 @@ type LoopingVideoProps = {
  *
  * Page-local to /logistik on purpose: ServiceVideo plays once and rests, this one loops.
  */
-export function LoopingVideo({ sources, poster, end, label, sizes, className = '' }: LoopingVideoProps) {
+export function LoopingVideo({ sources, poster, end, label, sizes, className = '', posters, endSources }: LoopingVideoProps) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const reduce = usePrefersReducedMotion();
   const [posterSrc, setPosterSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    setPosterSrc(window.matchMedia('(max-width: 767px)').matches ? poster.smallSrc : poster.src);
-  }, [poster.src, poster.smallSrc]);
+    const match = posters?.find((p) => window.matchMedia(p.media).matches);
+    setPosterSrc(match ? match.src : window.matchMedia('(max-width: 767px)').matches ? poster.smallSrc : poster.src);
+  }, [poster.src, poster.smallSrc, posters]);
 
   useEffect(() => {
     const video = ref.current;
@@ -58,6 +63,17 @@ export function LoopingVideo({ sources, poster, end, label, sizes, className = '
   }, [reduce]);
 
   if (reduce) {
+    if (endSources) {
+      return (
+        <picture>
+          {endSources.map((s) => (
+            <source key={s.media} media={s.media} srcSet={s.srcSet} />
+          ))}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={end.src} alt={label} loading="lazy" decoding="async" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
+        </picture>
+      );
+    }
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={end.src} srcSet={end.srcSet} sizes={sizes} alt={label} loading="lazy" decoding="async" className={`absolute inset-0 h-full w-full object-cover ${className}`} />
