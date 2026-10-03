@@ -96,15 +96,6 @@ export const etableradeImages = {
     focus: '50% 50%',
     portraitFocus: '50% 50%',
   },
-  // En person i mörk kavaj tittar på sin telefon i en hög hall av ljus betong i skymningsljus.
-  support: {
-    base: `${IMG}-support`,
-    alt: 'En person i mörk kavaj står i en hög hall av betong och läser på sin telefon.',
-    widths: LANDSCAPE,
-    portraitWidths: PORTRAIT,
-    focus: '50% 50%',
-    portraitFocus: '50% 50%',
-  },
 } satisfies Record<string, ServiceImage>;
 
 /*
