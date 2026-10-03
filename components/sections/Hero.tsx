@@ -11,6 +11,7 @@ import {
   type AnimationPlaybackControls,
 } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import { useScrollHint } from '@/components/ui/ScrollHint';
 import { useEffect, useRef, useState } from 'react';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
@@ -30,6 +31,9 @@ const SNAP_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  // Scrollpåminnelsens markör: täcker heron och är `hidden md:block`, så rutan följer
+  // samma mobilregel som övriga scrollsektioner (ingen ruta under 768 px).
+  const hintRef = useRef<HTMLDivElement | null>(null);
   const reduce = usePrefersReducedMotion();
   const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   const heroOff = nofx.hero; // TEMP: flicker bisect, remove after diagnosis
@@ -133,6 +137,10 @@ export function Hero() {
     (p) => `calc(var(--hero-pb) * ${Math.min(Math.max(p / 0.5, 0), 1)})`
   );
   const imageOpacity = useTransform(scrollYProgress, [0.3, 0.55], [1, 0]); // fade out mot slutet av hero-rörelsen
+  // Scrollpåminnelsen: heron är klar när bilden har tonat ut (0.55 ovan), så dess
+  // progress för rutan normaliseras till 0 → 1 över samma sträcka.
+  const hintProgress = useTransform(scrollYProgress, [0, 0.55], [0, 1]);
+  useScrollHint(hintRef, { enabled: !reduce, mode: 'flow', progress: hintProgress });
 
   // BACKGROUND TRANSFORM
   // Växla till vit bakgrund medan bilden fortfarande är synlig, men något senare,
@@ -156,6 +164,7 @@ export function Hero() {
         heroOff ? '' : 'will-change-transform transform-gpu'
       }`} // TEMP: flicker bisect, remove after diagnosis
     >
+      <div ref={hintRef} aria-hidden="true" className="pointer-events-none absolute inset-0 hidden md:block" />
       {/* Dark gradient mesh at the very top, fades away as we move into the white 2nd section */}
       <motion.div
         style={

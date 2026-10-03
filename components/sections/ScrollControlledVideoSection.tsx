@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import { useScrollHint } from '@/components/ui/ScrollHint';
 
 /** Release sticky when progress passes this; applied imperatively in RAF (no state). */
 const STICKY_RELEASE_PROGRESS = 0.9;
@@ -27,6 +29,13 @@ export function ScrollControlledVideoSection() {
   const rafScrollRef = useRef<number | null>(null);
   const rafLoopRef = useRef<number | null>(null);
   const stickyReleasedRef = useRef(false);
+
+  // Scrollpåminnelsen läser sekvensens egen målprogress; sektionens beteende är oförändrat.
+  // Markören täcker sektionen och är `hidden md:block`: ingen ruta under 768 px (mobilregeln).
+  const hintRef = useRef<HTMLDivElement | null>(null);
+  const reduce = usePrefersReducedMotion();
+  const hintProgress = useMemo(() => ({ get: () => targetProgressRef.current }), []);
+  useScrollHint(hintRef, { enabled: !reduce, mode: 'flow', progress: hintProgress });
 
   useEffect(() => {
     const preloadFrames = async () => {
@@ -151,6 +160,7 @@ export function ScrollControlledVideoSection() {
       className="scroll-section relative w-full"
       aria-label="Scroll-styrd videovisning av logistik"
     >
+      <div ref={hintRef} aria-hidden="true" className="pointer-events-none absolute inset-0 hidden md:block" />
       <div
         ref={sentinelRef}
         className="scroll-sentinel absolute left-0 top-0 w-full h-0 pointer-events-none"

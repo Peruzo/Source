@@ -4,11 +4,21 @@ import { useEffect, useSyncExternalStore, type RefObject } from 'react';
 
 /*
  * "Scrolla nedåt" – a small hint at the bottom left while the visitor is inside
- * a pinned, scroll-driven section and has not scrolled for a moment.
+ * a scroll-driven section and has not scrolled for a moment.
  *
- * Each pinned section registers its tall track with `usePinnedScrollHint`; the
- * single <ScrollHint /> in app/layout.tsx draws the hint, so there is never more
- * than one on the page.
+ * Each scroll-driven section registers an element with `useScrollHint` (pinned
+ * sections through the thin `usePinnedScrollHint` wrapper); the single
+ * <ScrollHint /> in app/layout.tsx draws the hint, so there is never more than
+ * one on the page.
+ *
+ * Two modes:
+ * - 'pinned': a track taller than the screen with a sticky frame. Inside means
+ *   the track's top has reached the top of the screen and its end is still below
+ *   the bottom.
+ * - 'flow': a scroll-driven section that does not pin. Inside means it covers
+ *   the middle of the screen and still has animation left: its own progress
+ *   (0 → 1) is below FLOW_DONE when the section passes one, otherwise the
+ *   section still continues below the bottom of the screen.
  *
  * Whether a section pins is decided by the section itself, never here:
  * - `pinned` is the section's own flag (`!shouldReduceMotion` in ScrollScene,
@@ -26,8 +36,18 @@ import { useEffect, useSyncExternalStore, type RefObject } from 'react';
  */
 
 const IDLE_MS = 2500;
+/** A 'flow' section's own progress at or above this counts as finished. */
+const FLOW_DONE = 0.98;
 
-const tracks = new Set<Element>();
+export type ScrollHintMode = 'pinned' | 'flow';
+
+type TrackEntry = {
+  mode: ScrollHintMode;
+  /** The section's own scroll progress, 0 → 1. A MotionValue fits, or any object with get(). */
+  progress?: { get(): number };
+};
+
+const tracks = new Map<Element, TrackEntry>();
 const listeners = new Set<() => void>();
 let visible = false;
 let timer: number | undefined;
@@ -39,20 +59,31 @@ function setVisible(next: boolean) {
   listeners.forEach((listener) => listener());
 }
 
-/** Inside: the track's top has reached the top of the screen and its end is still below the bottom. */
-function insidePinnedTrack() {
+function insideTrack(el: Element, entry: TrackEntry, viewportHeight: number) {
+  if (el.getClientRects().length === 0) return false; // display:none – this width is not scroll-driven
+  const rect = el.getBoundingClientRect();
+  if (entry.mode === 'pinned') {
+    // The track's top has reached the top of the screen and its end is still below the bottom.
+    return rect.top <= 1 && rect.bottom > viewportHeight + 1;
+  }
+  // 'flow': the section covers the middle of the screen and has animation left.
+  const middle = viewportHeight / 2;
+  if (rect.top > middle || rect.bottom < middle) return false;
+  if (entry.progress) return entry.progress.get() < FLOW_DONE;
+  return rect.bottom > viewportHeight + 1;
+}
+
+function insideAnyTrack() {
   const viewportHeight = window.innerHeight;
-  for (const el of tracks) {
-    if (el.getClientRects().length === 0) continue; // display:none – this width does not pin
-    const rect = el.getBoundingClientRect();
-    if (rect.top <= 1 && rect.bottom > viewportHeight + 1) return true;
+  for (const [el, entry] of tracks) {
+    if (insideTrack(el, entry, viewportHeight)) return true;
   }
   return false;
 }
 
 function scheduleCheck() {
   window.clearTimeout(timer);
-  timer = window.setTimeout(() => setVisible(insidePinnedTrack()), IDLE_MS);
+  timer = window.setTimeout(() => setVisible(insideAnyTrack()), IDLE_MS);
 }
 
 function onScroll() {
@@ -61,7 +92,7 @@ function onScroll() {
 }
 
 function onLayoutChange() {
-  if (insidePinnedTrack()) {
+  if (insideAnyTrack()) {
     if (!visible) scheduleCheck();
     return;
   }
@@ -69,12 +100,12 @@ function onLayoutChange() {
   setVisible(false);
 }
 
-function registerTrack(el: Element) {
+function registerTrack(el: Element, entry: TrackEntry) {
   if (tracks.size === 0) {
     window.addEventListener('scroll', onScroll, { passive: true });
     resizeObserver = new ResizeObserver(onLayoutChange);
   }
-  tracks.add(el);
+  tracks.set(el, entry);
   resizeObserver?.observe(el);
   onLayoutChange();
 
@@ -93,13 +124,31 @@ function registerTrack(el: Element) {
   };
 }
 
+type ScrollHintOptions = {
+  /** The section is scroll-driven right now (the section's own reduced-motion and state check). */
+  enabled: boolean;
+  /** Default 'pinned'. */
+  mode?: ScrollHintMode;
+  /** 'flow' only: the section's own scroll progress, 0 → 1. Pass a stable object. */
+  progress?: { get(): number };
+};
+
+/**
+ * Registers a scroll-driven section with the hint while `enabled` is true. The
+ * element decides the width: when it is display:none (a Tailwind breakpoint class
+ * such as `hidden lg:block`) the section counts as not scroll-driven at that width.
+ */
+export function useScrollHint(ref: RefObject<Element | null>, { enabled, mode = 'pinned', progress }: ScrollHintOptions) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled || !el) return;
+    return registerTrack(el, { mode, progress });
+  }, [ref, enabled, mode, progress]);
+}
+
 /** Registers a pinned section's tall track while `pinned` is true. */
 export function usePinnedScrollHint(trackRef: RefObject<Element | null>, pinned: boolean) {
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!pinned || !el) return;
-    return registerTrack(el);
-  }, [trackRef, pinned]);
+  useScrollHint(trackRef, { enabled: pinned, mode: 'pinned' });
 }
 
 function subscribe(listener: () => void) {

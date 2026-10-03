@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
+import { useScrollHint } from '@/components/ui/ScrollHint';
 
 interface TimelineNode {
   id: string;
@@ -34,12 +35,16 @@ export function ScrollTimeline({
   serviceSections = []
 }: ScrollTimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
+  // The line overlay is `hidden md:block`, so registering it gives the hint the same breakpoint.
+  const overlayRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = usePrefersReducedMotion();
   
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start'],
   });
+
+  useScrollHint(overlayRef, { enabled: !shouldReduceMotion, mode: 'flow', progress: scrollYProgress });
 
   // Line fills from 0 to 100% as section scrolls
   const lineScale = useTransform(
@@ -132,7 +137,7 @@ export function ScrollTimeline({
         </div>
 
         {/* Scroll Timeline Container - Hidden on mobile */}
-        <div className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none z-10">
+        <div ref={overlayRef} className="hidden md:block absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none z-10">
           {/* Base line (unfilled, faded) */}
           <div 
             className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2"
