@@ -77,6 +77,7 @@ export function FAQ() {
                 href="/kontakt"
                 variant="primary"
                 size="md"
+                className="min-h-11"
               >
                 Kontakta oss
               </AnimatedButton>
@@ -84,7 +85,7 @@ export function FAQ() {
                 href="/hjalp"
                 variant="ghost"
                 size="md"
-                className="!bg-white !text-black !border-black hover:!bg-gray-50 hover:!border-black hover:!text-black"
+                className="min-h-11 !bg-white !text-black !border-black hover:!bg-gray-50 hover:!border-black hover:!text-black"
               >
                 Se alla frågor och svar
               </AnimatedButton>

@@ -257,12 +257,16 @@ export default function PlatformRock() {
           ) : (
             <video
               ref={videoRef}
-              src={VIDEO_SRC}
               muted
               playsInline
               preload="auto"
               style={ROCK_MEDIA_STYLE}
-            />
+            >
+              {/* Servern och första klientrenderingen ser alltid denna gren (isMobile är false före
+                  hydreringen). Med media-villkoret väljer en mobil ingen källa, så videon laddas inte
+                  där innan stillbilden tar över; från md laddas den precis som förut. */}
+              <source src={VIDEO_SRC} type="video/mp4" media="(min-width: 768px)" />
+            </video>
           )}
         </div>
 

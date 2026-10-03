@@ -50,14 +50,14 @@ export function Footer({ serverYear }: FooterProps) {
                 <motion.a
                   href="#"
                   whileHover={{ scale: 1.1, y: -2 }}
-                  className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-teal/20 transition-colors"
+                  className="w-11 h-11 md:w-10 md:h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-teal/20 transition-colors"
                 >
                   <span className="text-sm">LI</span>
                 </motion.a>
                 <motion.a
                   href="#"
                   whileHover={{ scale: 1.1, y: -2 }}
-                  className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-teal/20 transition-colors"
+                  className="w-11 h-11 md:w-10 md:h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-teal/20 transition-colors"
                 >
                   <span className="text-sm">𝕏</span>
                 </motion.a>
@@ -69,7 +69,9 @@ export function Footer({ serverYear }: FooterProps) {
           <FadeIn delay={0.1}>
             <div>
               <h4 className="text-white font-semibold mb-4">Navigering</h4>
-              <ul className="space-y-3">
+              {/* Under md är varje länk i sidfoten en tryckyta på minst 44 × 44 (py-3/min-h-11, min-w-11) och
+                  listorna saknar mellanrum, så att ytorna inte överlappar; från md ser sidfoten ut som förut. */}
+              <ul className="md:space-y-3">
                 {navLinks.map((link, i) => (
                   <motion.li
                     key={link.href}
@@ -80,10 +82,10 @@ export function Footer({ serverYear }: FooterProps) {
                   >
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-teal transition-colors text-sm inline-block relative group"
+                      className="text-gray-400 hover:text-teal transition-colors text-sm inline-block relative group min-w-11 py-3 md:min-w-0 md:py-0"
                     >
                       {link.label}
-                      <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-teal transition-all duration-300 group-hover:w-full"></span>
+                      <span className="absolute bottom-2.5 md:-bottom-0.5 left-0 w-0 h-px bg-teal transition-all duration-300 group-hover:w-full"></span>
                     </Link>
                   </motion.li>
                 ))}
@@ -95,12 +97,12 @@ export function Footer({ serverYear }: FooterProps) {
           <FadeIn delay={0.2}>
             <div>
               <h4 className="text-white font-semibold mb-4">För kunder</h4>
-              <ul className="space-y-3">
+              <ul className="md:space-y-3">
                 <li>
                   <motion.a
                     whileHover={{ x: 5 }}
                     href="https://sourceportal.se/dashboard"
-                    className="text-teal hover:text-white transition-colors text-sm inline-flex items-center gap-2 group"
+                    className="text-teal hover:text-white transition-colors text-sm inline-flex min-h-11 md:min-h-0 items-center gap-2 group"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -125,11 +127,11 @@ export function Footer({ serverYear }: FooterProps) {
           <FadeIn delay={0.3}>
             <div>
               <h4 className="text-white font-semibold mb-4">Kontakt</h4>
-              <ul className="space-y-3">
+              <ul className="md:space-y-3">
                 <li>
                   <a
                     href="mailto:support@sourcesolutions.se"
-                    className="text-gray-400 hover:text-teal transition-colors text-sm block"
+                    className="text-gray-400 hover:text-teal transition-colors text-sm block py-3 md:py-0"
                   >
                     support@sourcesolutions.se
                   </a>
@@ -137,7 +139,7 @@ export function Footer({ serverYear }: FooterProps) {
                 <li>
                   <a
                     href="tel:+46106413114"
-                    className="text-gray-400 hover:text-teal transition-colors text-sm block"
+                    className="text-gray-400 hover:text-teal transition-colors text-sm block py-3 md:py-0"
                   >
                     010-641 31 14
                   </a>
@@ -160,10 +162,10 @@ export function Footer({ serverYear }: FooterProps) {
               © {currentYear} Source Solutions AB. Alla rättigheter förbehållna.
             </p>
             <div className="flex gap-6 text-sm">
-              <Link href="/legal/privacy" className="text-gray-500 hover:text-teal transition-colors">
+              <Link href="/legal/privacy" className="text-gray-500 hover:text-teal transition-colors inline-flex min-h-11 min-w-11 items-center md:min-h-0 md:min-w-0">
                 Integritet
               </Link>
-              <Link href="/legal/terms" className="text-gray-500 hover:text-teal transition-colors">
+              <Link href="/legal/terms" className="text-gray-500 hover:text-teal transition-colors inline-flex min-h-11 min-w-11 items-center md:min-h-0 md:min-w-0">
                 Villkor
               </Link>
             </div>

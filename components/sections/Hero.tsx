@@ -2,16 +2,10 @@
 
 import Image from 'next/image';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
-import {
-  motion,
-  animate,
-  useScroll,
-  useTransform,
-  AnimatePresence,
-  type AnimationPlaybackControls,
-} from 'framer-motion';
+import { motion, useTransform, AnimatePresence } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/components/sections/for-dig/useReveal';
-import { useScrollHint } from '@/components/ui/ScrollHint';
+import { useIdleScrollHint } from '@/components/ui/ScrollHint';
+import { useAutoplayProgress } from '@/lib/hooks/useAutoplayProgress';
 import { useEffect, useRef, useState } from 'react';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
 
@@ -20,14 +14,15 @@ const WORD_INTERVAL = 2500;
 /** Word shown when the visitor prefers reduced motion (no rotation). */
 const STATIC_WORD = 'Växa';
 
-/** Wheel snap: a downward tick this far into the hero (fraction of its height) still snaps to section 2. */
-const HERO_ZONE = 0.4;
-/** An upward tick within this many px of section 2's top snaps back to the hero. */
-const SECTION_TOP_TOLERANCE = 40;
-/** Snap animation length in seconds, and the wheel cooldown after it in ms. */
-const SNAP_DURATION = 0.8;
-const SNAP_COOLDOWN_MS = 300;
-const SNAP_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+/**
+ * Introt: herons bild-/kortövergång spelas av sig själv vid laddning i stället för att styras av
+ * scrollen. Samma transformer som när den var scrollstyrd, men baklänges: från kortläget vid
+ * INTRO_FROM (bilden som ett rundat kort på vit botten, texten dold) till helbild vid 0 – alltså
+ * slutläget är heron som den alltid har sett ut överst på sidan.
+ */
+const INTRO_FROM = 0.25;
+const INTRO_DURATION = 1.2;
+const INTRO_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -38,123 +33,45 @@ export function Hero() {
   const nofx = useNoFx(); // TEMP: flicker bisect, remove after diagnosis
   const heroOff = nofx.hero; // TEMP: flicker bisect, remove after diagnosis
 
-  // Wheel snap between the hero and section 2 (desktop only: touch never fires wheel events).
-  // Any downward tick inside the hero zone, however small, animates the page to #next-section;
-  // any upward tick at the top of section 2 animates it back to the hero. The page scroll is
-  // driven by framer-motion's animate with a fixed duration rather than native smooth scrolling,
-  // so the lock window is exact and the motion is the same in Safari as elsewhere. Wheel events
-  // are swallowed while the animation runs and for a short cooldown after it, so a trailing tick
-  // of the same gesture cannot bounce the page back.
-  useEffect(() => {
-    if (reduce) return;
+  // 0 → 1 en gång när heron är i bild (vid laddning); 1 direkt vid reducerad rörelse.
+  const intro = useAutoplayProgress(sectionRef, { duration: INTRO_DURATION, ease: INTRO_EASE, once: true });
+  // Samma skala som den tidigare scrollprogressen: INTRO_FROM → 0.
+  const heroProgress = useTransform(intro, [0, 1], [INTRO_FROM, 0]);
 
-    const html = document.documentElement;
-    let controls: AnimationPlaybackControls | null = null;
-    let animating = false;
-    let cooldownUntil = 0;
-    // globals.css sets scroll-behavior: smooth on everything; the per-frame scrollTo must be instant.
-    const previousScrollBehavior = html.style.scrollBehavior;
-
-    const finish = () => {
-      controls = null;
-      animating = false;
-      html.style.scrollBehavior = previousScrollBehavior;
-      cooldownUntil = performance.now() + SNAP_COOLDOWN_MS;
-    };
-
-    const snapTo = (target: number) => {
-      animating = true;
-      html.style.scrollBehavior = 'auto';
-      controls = animate(window.scrollY, target, {
-        duration: SNAP_DURATION,
-        ease: SNAP_EASE,
-        onUpdate: (v) => window.scrollTo(0, v),
-        onComplete: finish,
-      });
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      // Pinch-zoom on trackpads arrives as wheel + ctrlKey; horizontal ticks carry no deltaY.
-      if (e.ctrlKey || e.deltaY === 0) return;
-
-      if (animating || performance.now() < cooldownUntil) {
-        e.preventDefault();
-        return;
-      }
-
-      const next = document.getElementById('next-section');
-      const hero = sectionRef.current;
-      if (!next || !hero) return;
-
-      const scrollY = window.scrollY;
-      const heroTop = hero.getBoundingClientRect().top + scrollY;
-      const nextTop = next.getBoundingClientRect().top + scrollY;
-      const heroHeight = hero.offsetHeight || window.innerHeight;
-
-      if (e.deltaY > 0 && scrollY < heroTop + heroHeight * HERO_ZONE) {
-        e.preventDefault();
-        snapTo(nextTop);
-        return;
-      }
-
-      if (e.deltaY < 0 && Math.abs(scrollY - nextTop) <= SECTION_TOP_TOLERANCE) {
-        e.preventDefault();
-        snapTo(heroTop);
-      }
-      // Anywhere else: normal scrolling, untouched.
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      controls?.stop();
-      html.style.scrollBehavior = previousScrollBehavior;
-    };
-  }, [reduce]);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    // Track from top of page until end of hero to drive the whole transition.
-    offset: ['start start', 'end start'],
-  });
+  // Påminnelsen visas i heron först efter 5 s utan scroll och försvinner vid första scroll
+  // (aldrig under 768 px och aldrig vid reducerad rörelse).
+  useIdleScrollHint(hintRef, !reduce);
 
   // IMAGE / CARD TRANSFORM
-  // Låt animationen spela ut över lite mer scroll (ca 50% av hero),
-  // så en liten scroll fortfarande tar dig till sektion 2 men inte känns för “snabb”.
-  const imageScale = useTransform(scrollYProgress, [0, 0.2, 0.4, 0.5], [1.04, 0.95, 0.65, 0.45]);
+  const imageScale = useTransform(heroProgress, [0, 0.2, 0.4, 0.5], [1.04, 0.95, 0.65, 0.45]);
   // Positiv Y flyttar boxen ned mot nedre delen av viewporten.
-  const imageY = useTransform(scrollYProgress, [0, 0.5], ['0%', '42%']);
-  const imageRadius = useTransform(scrollYProgress, [0, 0.25, 0.5], [0, 24, 40]);
-  const framePadding = useTransform(scrollYProgress, [0, 0.5], [0, 96]); // px top-padding
+  const imageY = useTransform(heroProgress, [0, 0.5], ['0%', '42%']);
+  const imageRadius = useTransform(heroProgress, [0, 0.25, 0.5], [0, 24, 40]);
+  const framePadding = useTransform(heroProgress, [0, 0.5], [0, 96]); // px top-padding
   // Bottenluften under bilden växer på samma sätt från 0 till --hero-pb (2.5rem, md: 4rem).
   // Den var tidigare fast, så att bilden i toppläget slutade ~50px ovanför herons nederkant och
   // lämnade en remsa av den mörka bakgrunden (gradient-mesh + brus) synlig – mest märkbart på
   // låga fönster, t.ex. Windows med 125 % skalning. Vid 0 täcker bilden nu hela ytan; från
   // halva scrollen är luften densamma som förut.
   const framePaddingBottom = useTransform(
-    scrollYProgress,
+    heroProgress,
     (p) => `calc(var(--hero-pb) * ${Math.min(Math.max(p / 0.5, 0), 1)})`
   );
-  const imageOpacity = useTransform(scrollYProgress, [0.3, 0.55], [1, 0]); // fade out mot slutet av hero-rörelsen
-  // Scrollpåminnelsen: heron är klar när bilden har tonat ut (0.55 ovan), så dess
-  // progress för rutan normaliseras till 0 → 1 över samma sträcka.
-  const hintProgress = useTransform(scrollYProgress, [0, 0.55], [0, 1]);
-  useScrollHint(hintRef, { enabled: !reduce, mode: 'flow', progress: hintProgress });
+  const imageOpacity = useTransform(heroProgress, [0.3, 0.55], [1, 0]); // fade out mot slutet av hero-rörelsen
 
   // BACKGROUND TRANSFORM
   // Växla till vit bakgrund medan bilden fortfarande är synlig, men något senare,
   // så övergången till sektion 2 känns mjuk men inte blixtsnabb.
   // Made white background appear earlier and more smoothly to prevent gaps on Windows
-  const darkBgOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const darkBgOpacity = useTransform(heroProgress, [0, 0.15], [1, 0]);
   // White background div is now redundant since section has bg-white, but kept for smooth transition
-  const whiteBgOpacity = useTransform(scrollYProgress, [0, 0.25], [0, 1]);
+  const whiteBgOpacity = useTransform(heroProgress, [0, 0.25], [0, 1]);
 
   // OVERLAY CONTENT (text) – keep it readable on top of the image.
-  const overlayGradientOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0.85]);
+  const overlayGradientOpacity = useTransform(heroProgress, [0, 0.6], [1, 0.85]);
   // The copy sits in its own layer (it must not inherit the image's scale/y), so it
   // needs its own fade – otherwise white text would linger over the white background.
-  const textOpacity = useTransform(scrollYProgress, [0, 0.22], [1, 0]);
+  const textOpacity = useTransform(heroProgress, [0, 0.22], [1, 0]);
 
   return (
     <section
@@ -206,9 +123,8 @@ export function Hero() {
         className="absolute inset-0 bg-white z-[1]"
       />
 
-      {/* Wrapper that adds padding as we scroll so the full-bleed image
-          gradually gets more air around it, reading as a smaller box that
-          moves down towards section 2. */}
+      {/* Wrapper whose padding gives the image air in the card state; the intro
+          takes it from a smaller box to the full-bleed image. */}
       <motion.div
         style={
           heroOff
