@@ -17,6 +17,9 @@ export function GenerateStep(props: {
   resumeGenerating: boolean;
   onDone: (draft: DraftSummary) => void;
   onHelp: () => void;
+  /** Inga hela sajter kvar (PR F): bara vägen vidare visas, ingen generering startas. */
+  locked?: boolean;
+  onContinue: () => void;
 }) {
   const [phase, setPhase] = useState<'idle' | 'running' | 'waiting' | 'error'>(props.resumeGenerating ? 'waiting' : 'idle');
   const [stages, setStages] = useState<{ id: string; label: string }[]>([]);
@@ -73,7 +76,15 @@ export function GenerateStep(props: {
 
   return (
     <div className="w-full flex flex-col items-center gap-5">
-      {phase === 'idle' && (
+      {phase === 'idle' && props.locked && (
+        <div className="w-full flex flex-col items-center gap-3">
+          <InfoBox>{T.lockedSitesText}</InfoBox>
+          <PrimaryButton onClick={props.onContinue}>{T.becomeCustomer}</PrimaryButton>
+          <LinkButton onClick={props.onHelp}>{T.contactSupport}</LinkButton>
+        </div>
+      )}
+
+      {phase === 'idle' && !props.locked && (
         <>
           <p className="text-gray-600 text-center">{T.generateIntro}</p>
           <PrimaryButton onClick={start}>{T.generateStart}</PrimaryButton>
@@ -109,7 +120,9 @@ export function GenerateStep(props: {
       {phase === 'error' && error && (
         <ErrorBox message={error.message}>
           <div className="mt-3 flex flex-wrap gap-4">
-            {error.code !== 'LIMIT_REACHED' && <LinkButton onClick={start}>{T.retry}</LinkButton>}
+            {error.code === 'LIMIT_REACHED'
+              ? <LinkButton onClick={props.onContinue}>{T.becomeCustomer}</LinkButton>
+              : <LinkButton onClick={start}>{T.retry}</LinkButton>}
             <LinkButton onClick={props.onHelp}>{T.contactSupport}</LinkButton>
           </div>
         </ErrorBox>

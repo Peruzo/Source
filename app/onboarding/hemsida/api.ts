@@ -12,6 +12,8 @@ export type DraftSummary = {
   answersComplete: boolean;
   hasDefinition: boolean;
   outline: { pages: { slug: string; title: string; isHome: boolean; sections: { id: string; type: string }[] }[] } | null;
+  /** Taken före kundskap (kundportalen PR F). Saknas i äldre svar; se capsOf i flow-state.ts. */
+  caps?: { fullSites: { limit: number; remaining: number }; improvements: { limit: number; remaining: number } };
   remaining: { site: number; improve: number };
 };
 

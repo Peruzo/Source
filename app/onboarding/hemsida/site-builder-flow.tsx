@@ -6,18 +6,28 @@ import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 import { useOnboardingId } from '@/lib/onboarding/use-onboarding-id';
 import { getStoredPlanId, getStripeOnboardingUrl } from '@/lib/onboarding/selected-plan';
 import { LIMITS, OFFERINGS, PALETTES, SECTIONS, STYLES, T, TONES, defaultSections } from '@/lib/site-builder/texts';
+import { INITIAL_VIEW, loadPath, lockState, nextView, savePath, type PathState, type ResultView as ResultViewState } from '@/lib/site-builder/flow-state';
 import { api, type ApiError, type DraftSummary } from './api';
 import { ErrorBox, Field, InfoBox, LinkButton, OptionButton, PrimaryButton, SecondaryButton } from './ui';
 import { ExampleDialog } from './example-dialog';
 import { GenerateStep } from './generate-step';
 import { PreviewStep } from './preview-step';
 import { HelpPanel } from './help-panel';
+import { ResultView } from './result-view';
+import { ChoiceStep, QuoteSentStep, QuoteStep } from './quote-step';
 
 /**
  * Flödet "Gör min hemsida". Varje steg sparas hos kundportalen (PUT answers) när kunden går
  * vidare, så att hen kan lämna och återuppta. Svaren cachas dessutom i webbläsarens
  * localStorage per onboardingId, så att fälten är ifyllda vid återkomst; cachen töms när kunden
  * godkänner sajten. Kundportalens sammanfattning (POST draft) avgör var flödet fortsätter.
+ *
+ * PR F:
+ *   - Före byggarens första steg väljer kunden väg: själv med AI eller offert från Source.
+ *     Valet sparas per onboardingId (flow-state.ts) och kan bytas åt båda håll.
+ *   - Efter genereringen visas sajten i helskärm (result-view.tsx) med en fast list. "Redigera"
+ *     och "Byt utseende" öppnar redigeringsvyn (preview-step.tsx), som har vägen tillbaka.
+ *   - När ett tak är nått visas bara vägen vidare ("Gå vidare och bli kund") och support.
  */
 
 type Answers = {
@@ -43,7 +53,15 @@ const EMPTY: Answers = {
 };
 
 const STEPS = ['offering', 'company', 'tone', 'content', 'sections', 'design', 'generate', 'preview'] as const;
-type Step = (typeof STEPS)[number];
+// choice, quote och quoteSent ligger före byggaren; result är helskärmen efter genereringen.
+type Step = (typeof STEPS)[number] | 'choice' | 'quote' | 'quoteSent' | 'result';
+const TITLES: Record<Step, string> = {
+  ...T.stepTitles,
+  choice: T.choiceTitle,
+  quote: T.quoteTitle,
+  quoteSent: T.quoteSentTitle,
+  result: T.stepTitles.preview,
+};
 const DOT_STEPS = 7; // stegprickar för steg 1–7; förhandsvisningen visas utan prickar
 
 const cacheKey = (id: string) => `site-builder:${id}`;
@@ -71,6 +89,8 @@ export function SiteBuilderFlow() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [exampleOpen, setExampleOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [pathState, setPathState] = useState<PathState>({ path: null, quoteSent: false });
+  const [view, setView] = useState<ResultViewState>(INITIAL_VIEW);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   // Starta: skapa eller hämta utkastet och bestäm var kunden ska fortsätta.
@@ -87,9 +107,13 @@ export function SiteBuilderFlow() {
       if (!res.ok) { setError(res); setReady(true); return; }
       setSummary(res.draft);
       setGenerating(res.generating);
+      const saved = loadPath(safeStorage(), onboardingId);
+      setPathState(saved);
       if (res.generating) setStep('generate');
-      else if (res.draft.hasDefinition) setStep('preview');
-      else setStep(firstOpenStep(res.draft.answeredSteps));
+      else if (saved.path === 'quote') setStep(saved.quoteSent ? 'quoteSent' : 'quote');
+      else if (res.draft.hasDefinition) setStep('result');
+      else if (saved.path === 'ai' || res.draft.answeredSteps.length > 0) setStep(firstOpenStep(res.draft.answeredSteps));
+      else setStep('choice');
       setReady(true);
     })();
     return () => { cancelled = true; };
@@ -127,7 +151,30 @@ export function SiteBuilderFlow() {
   }, [onboardingId]);
 
   const goto = (s: Step) => { setError(null); setFieldErrors({}); setStep(s); };
-  const back = () => { const i = STEPS.indexOf(step); if (i > 0) goto(STEPS[i - 1]); };
+  const back = () => { const i = STEPS.indexOf(step as (typeof STEPS)[number]); if (i > 0) goto(STEPS[i - 1]); };
+
+  /** Väg: AI-byggaren eller offert. Sparas så att kunden kan byta senare, åt båda håll. */
+  const choosePath = (path: 'ai' | 'quote') => {
+    if (!onboardingId) return;
+    const next: PathState = { path, quoteSent: pathState.quoteSent };
+    setPathState(next);
+    savePath(safeStorage(), onboardingId, next);
+    if (path === 'quote') goto(next.quoteSent ? 'quoteSent' : 'quote');
+    else if (summary?.hasDefinition) { setView(nextView(view, 'fullscreen')); goto('result'); }
+    else goto(firstOpenStep(summary?.answeredSteps || []));
+  };
+  const quoteSent = () => {
+    if (!onboardingId) return;
+    const next: PathState = { path: 'quote', quoteSent: true };
+    setPathState(next);
+    savePath(safeStorage(), onboardingId, next);
+    goto('quoteSent');
+  };
+  const showResult = (action: 'edit' | 'theme' | 'fullscreen') => {
+    const v = nextView(view, action);
+    setView(v);
+    goto(v.mode === 'fullscreen' ? 'result' : 'preview');
+  };
   const leaveToStripe = () => {
     if (onboardingId) { try { window.localStorage.removeItem(cacheKey(onboardingId)); } catch { /* ignorera */ } }
     router.push(getStripeOnboardingUrl(getStoredPlanId()));
@@ -168,7 +215,7 @@ export function SiteBuilderFlow() {
     }
     const real = Object.fromEntries(Object.entries(errs).filter(([, v]) => v));
     if (Object.keys(real).length) { setFieldErrors(real); return; }
-    if (await save(steps)) goto(STEPS[STEPS.indexOf(step) + 1]);
+    if (await save(steps)) goto(STEPS[STEPS.indexOf(step as (typeof STEPS)[number]) + 1]);
   }
 
   // ── Rendering ─────────────────────────────────────────────────────────────────────────
@@ -179,17 +226,40 @@ export function SiteBuilderFlow() {
     return <OnboardingLayout><ErrorBox message={T.notReady} /></OnboardingLayout>;
   }
 
-  const dotIndex = Math.min(STEPS.indexOf(step), DOT_STEPS - 1);
+  if (step === 'result' && summary) {
+    return (
+      <>
+        <ResultView
+          onboardingId={onboardingId}
+          summary={summary}
+          onEdit={() => showResult('edit')}
+          onTheme={() => showResult('theme')}
+          onApprove={leaveToStripe}
+          onHelp={() => setHelpOpen(true)}
+        />
+        {helpOpen && <HelpPanel onboardingId={onboardingId} onClose={() => setHelpOpen(false)} />}
+      </>
+    );
+  }
+
+  const builderIndex = STEPS.indexOf(step as (typeof STEPS)[number]);
+  const dotIndex = Math.min(builderIndex, DOT_STEPS - 1);
   const wide = step === 'preview';
+  const showDots = builderIndex >= 0 && !wide;
+  const inBuilder = builderIndex >= 0;
   const sectionsChosen = answers.wantedSections ?? defaultSections(answers.offering);
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
   return (
-    <OnboardingLayout currentStep={wide ? undefined : dotIndex} totalSteps={wide ? undefined : DOT_STEPS} wide={wide}>
+    <OnboardingLayout currentStep={showDots ? dotIndex : undefined} totalSteps={showDots ? DOT_STEPS : undefined} wide={wide}>
       <div className="w-full flex flex-col items-center gap-6">
         <h1 ref={headingRef} tabIndex={-1} className="text-2xl md:text-3xl font-semibold text-gray-900 text-center focus:outline-none">
-          {T.stepTitles[step]}
+          {TITLES[step]}
         </h1>
+
+        {step === 'choice' && <ChoiceStep onAi={() => choosePath('ai')} onQuote={() => choosePath('quote')} />}
+        {step === 'quote' && <QuoteStep onboardingId={onboardingId} onSent={quoteSent} onSwitchToAi={() => choosePath('ai')} />}
+        {step === 'quoteSent' && <QuoteSentStep onContinue={leaveToStripe} onSwitchToAi={() => choosePath('ai')} />}
         {step === 'offering' && <p className="text-gray-600 text-center -mt-2">{T.intro}</p>}
 
         {step === 'offering' && (
@@ -257,8 +327,10 @@ export function SiteBuilderFlow() {
           <GenerateStep
             onboardingId={onboardingId}
             resumeGenerating={generating}
-            onDone={(draft) => { setSummary(draft); setGenerating(false); goto('preview'); }}
+            onDone={(draft) => { setSummary(draft); setGenerating(false); setView(nextView(view, 'fullscreen')); goto('result'); }}
             onHelp={() => setHelpOpen(true)}
+            locked={!generating && lockState(summary).fullSitesLocked}
+            onContinue={leaveToStripe}
           />
         )}
 
@@ -266,20 +338,27 @@ export function SiteBuilderFlow() {
           <PreviewStep
             onboardingId={onboardingId}
             summary={summary}
+            focus={view.focus}
             onSummary={setSummary}
             onRebuild={() => goto('generate')}
             onHelp={() => setHelpOpen(true)}
             onApprove={leaveToStripe}
+            onFullscreen={() => showResult('fullscreen')}
           />
         )}
 
         {error && step !== 'generate' && step !== 'preview' && (
           <ErrorBox message={error.message}>
-            {error.code === 'LIMIT_REACHED' && <div className="mt-2"><LinkButton onClick={() => setHelpOpen(true)}>{T.contactSupport}</LinkButton></div>}
+            {error.code === 'LIMIT_REACHED' && (
+              <div className="mt-2 flex flex-wrap gap-4">
+                <LinkButton onClick={leaveToStripe}>{T.becomeCustomer}</LinkButton>
+                <LinkButton onClick={() => setHelpOpen(true)}>{T.contactSupport}</LinkButton>
+              </div>
+            )}
           </ErrorBox>
         )}
 
-        {STEPS.indexOf(step) <= STEPS.indexOf('design') && (
+        {inBuilder && builderIndex <= STEPS.indexOf('design') && (
           <div className="w-full flex flex-col-reverse md:flex-row gap-3 md:justify-between items-center mt-2">
             {step !== 'offering' ? <SecondaryButton onClick={back}>{T.back}</SecondaryButton> : <span />}
             <PrimaryButton onClick={next} disabled={saving}>{saving ? T.saving : T.next}</PrimaryButton>
@@ -288,7 +367,8 @@ export function SiteBuilderFlow() {
 
         <div className="flex flex-col items-center gap-3 mt-2">
           <LinkButton onClick={() => setHelpOpen(true)}>{T.helpOpen}</LinkButton>
-          {step !== 'preview' && <LinkButton onClick={leaveToStripe}>{T.skip}</LinkButton>}
+          {inBuilder && <LinkButton onClick={() => choosePath('quote')}>{T.switchToQuote}</LinkButton>}
+          {step !== 'preview' && step !== 'quoteSent' && <LinkButton onClick={leaveToStripe}>{T.skip}</LinkButton>}
         </div>
       </div>
 
@@ -352,4 +432,13 @@ function DesignStep(props: { answers: Answers; onChange: (d: Answers['design']) 
       </fieldset>
     </div>
   );
+}
+
+/** localStorage om det går att nå; annars null (privat läge eller blockerat). */
+function safeStorage(): Storage | null {
+  try {
+    return typeof window !== 'undefined' ? window.localStorage : null;
+  } catch {
+    return null;
+  }
 }
