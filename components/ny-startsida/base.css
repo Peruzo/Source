@@ -1,0 +1,658 @@
+/* NY STARTSIDA – MEKANIK (inte utseende), från experimentets redesign.
+   Scopad till #ny-startsida. Här ligger positionering för scrollscener och
+   widgets, rörelse (endast transform och opacity) och reducerad rörelse.
+   Färger, typografi, kort och layout ligger i ny-startsida.css. */
+
+#ny-startsida {
+  position: relative;
+  overflow-x: clip;
+  font-family: var(--font-general-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+#ny-startsida *,
+#ny-startsida *::before,
+#ny-startsida *::after {
+  box-sizing: border-box;
+}
+#ny-startsida .rd-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+#ny-startsida img {
+  max-width: 100%;
+}
+#ny-startsida .rd-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+#ny-startsida .rd-icon {
+  width: 20px;
+  height: 20px;
+}
+#ny-startsida .rd-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+#ny-startsida .rd-ctas-center,
+#ny-startsida .rd-center {
+  justify-content: center;
+  text-align: center;
+}
+#ny-startsida .rd-center {
+  display: flex;
+}
+#ny-startsida a:focus-visible,
+#ny-startsida button:focus-visible,
+#ny-startsida summary:focus-visible {
+  outline: 3px solid #1ab65c;
+  outline-offset: 3px;
+}
+
+/* ---------- Hero: roterande ord (CSS, 2,5 s per ord som i dag) ---------- */
+#ny-startsida .rd-hero {
+  position: relative;
+}
+#ny-startsida .rd-hero-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#ny-startsida .rd-rot {
+  display: inline-grid;
+}
+#ny-startsida .rd-rot > span {
+  grid-area: 1 / 1;
+  justify-self: end;
+  opacity: 0;
+  animation: rd-rot 7.5s infinite both;
+}
+#ny-startsida .rd-rot > span:nth-child(2) {
+  animation-delay: 2.5s;
+}
+#ny-startsida .rd-rot > span:nth-child(3) {
+  animation-delay: 5s;
+}
+@keyframes rd-rot {
+  0% {
+    opacity: 0;
+    transform: translateY(0.25em);
+  }
+  4.7%,
+  28.6% {
+    opacity: 1;
+    transform: none;
+  }
+  33.33%,
+  100% {
+    opacity: 0;
+    transform: translateY(-0.25em);
+  }
+}
+
+/* ---------- Stenen (PlatformRock) ---------- */
+#ny-startsida .rd-rock {
+  position: relative;
+}
+#ny-startsida .rd-rock-stage {
+  top: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#ny-startsida .rd-rock-media {
+  position: relative;
+  width: min(92vw, 1040px);
+}
+#ny-startsida .rd-rock-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+#ny-startsida .rd-rock-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#ny-startsida .rd-chip-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+#ny-startsida .rd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+#ny-startsida .rd-rock-msg {
+  position: relative;
+  z-index: 6;
+  padding: 0 24px;
+  text-align: center;
+}
+#ny-startsida .rd-hot-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+#ny-startsida .rd-hot-line {
+  position: absolute;
+  height: 1px;
+  transform: scaleX(0);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#ny-startsida .rd-hot-marker {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.7);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#ny-startsida .rd-hot-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font: inherit;
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+#ny-startsida .rd-hot-left {
+  flex-direction: row-reverse;
+}
+#ny-startsida .rd-hot-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+#ny-startsida .rd-hot-plus[data-open] {
+  transform: rotate(45deg);
+}
+#ny-startsida [data-revealed] .rd-hot-line {
+  transform: scaleX(1);
+}
+#ny-startsida [data-revealed] .rd-hot-marker {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+#ny-startsida [data-revealed] .rd-hot-label {
+  opacity: 1;
+  pointer-events: auto;
+}
+#ny-startsida .rd-hot-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: auto;
+}
+#ny-startsida .rd-hot-menu {
+  position: absolute;
+  z-index: 21;
+  width: 246px;
+  max-height: 56vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 8px 10px;
+  pointer-events: auto;
+  animation: rd-pop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#ny-startsida .rd-hot-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+@keyframes rd-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Desktop: budskapet ligger över scenens nederkant (som i dag), så stenen står i mitten
+   och chipsen träffar dess mitt. */
+@media (min-width: 768px) {
+  #ny-startsida .rd-rock-msg {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 7%;
+  }
+}
+/* Mobil: hotspot-etiketterna blir mindre så att de ryms på stenen. */
+@media (max-width: 767px) {
+  #ny-startsida .rd-rock-stage {
+    padding: 72px 0 56px;
+    gap: 24px;
+  }
+  #ny-startsida .rd-hot-label {
+    font-size: 15px !important;
+  }
+  #ny-startsida .rd-hot-marker {
+    width: 28px;
+    height: 28px;
+  }
+  #ny-startsida .rd-hot-menu {
+    width: 200px;
+  }
+}
+
+/* ---------- WhatWeDo: tidslinjen ---------- */
+#ny-startsida .rd-timeline {
+  position: relative;
+}
+#ny-startsida .rd-timeline-line {
+  display: none;
+}
+#ny-startsida .rd-service-frame {
+  position: relative;
+  overflow: hidden;
+}
+#ny-startsida .rd-service-img {
+  object-fit: cover;
+}
+
+/* ---------- Tillväxt-bildspelet ---------- */
+#ny-startsida .rd-growth {
+  position: relative;
+  overflow: hidden;
+}
+#ny-startsida .rd-growth-media {
+  position: relative;
+  overflow: hidden;
+}
+#ny-startsida .rd-growth-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+#ny-startsida .rd-growth-img[data-active] {
+  opacity: 1;
+}
+#ny-startsida .rd-growth-slide {
+  animation: rd-slide-in 0.3s ease both;
+}
+@keyframes rd-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+#ny-startsida .rd-indicators {
+  display: flex;
+  gap: 12px;
+}
+#ny-startsida .rd-indicator {
+  position: relative;
+  flex: 1;
+  max-width: 120px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  cursor: pointer;
+}
+#ny-startsida .rd-indicator-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+#ny-startsida .rd-indicator-fill[data-running] {
+  animation-name: rd-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+#ny-startsida .rd-indicator-full {
+  transform: none;
+}
+@keyframes rd-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- AI-bubblorna ---------- */
+#ny-startsida .rd-bubbles {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+}
+#ny-startsida .rd-bubbles-typing,
+#ny-startsida .rd-bubbles-float {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+#ny-startsida .rd-bubbles-typing {
+  gap: 14px;
+  opacity: 0;
+  transform: scale(0.96);
+}
+#ny-startsida [data-typing] .rd-bubbles-typing {
+  opacity: 1;
+  transform: none;
+}
+#ny-startsida [data-typing] .rd-bubbles-float {
+  opacity: 0;
+  transform: scale(0.96);
+}
+#ny-startsida .rd-bubbles-typing span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  animation: rd-dot-bounce 1s ease-in-out infinite;
+}
+#ny-startsida .rd-bubbles-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+#ny-startsida .rd-bubbles-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes rd-dot-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+#ny-startsida .rd-bubbles-float {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+}
+#ny-startsida .rd-bubble {
+  position: absolute;
+  border-radius: 999px;
+  animation: rd-float 6s ease-in-out infinite;
+}
+#ny-startsida .rd-bubble-1 {
+  width: 88px;
+  height: 88px;
+  z-index: 1;
+}
+#ny-startsida .rd-bubble-2 {
+  left: 8px;
+  bottom: 14px;
+  width: 44px;
+  height: 44px;
+  animation-delay: -2s;
+}
+#ny-startsida .rd-bubble-3 {
+  right: 6px;
+  top: 14px;
+  width: 52px;
+  height: 52px;
+  animation-delay: -4s;
+}
+@keyframes rd-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ---------- Portfolio: skärmdump vid hovring ---------- */
+#ny-startsida .rd-featured,
+#ny-startsida .rd-concept-link {
+  position: relative;
+  display: grid;
+  color: inherit;
+  text-decoration: none;
+}
+#ny-startsida .rd-featured-media,
+#ny-startsida .rd-concept-media,
+#ny-startsida .rd-featured-logo {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+#ny-startsida .rd-featured-img {
+  object-fit: cover;
+  object-position: top;
+}
+#ny-startsida .rd-contain {
+  object-fit: contain;
+}
+#ny-startsida .rd-concept-logo {
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+}
+#ny-startsida .rd-concept-shot {
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#ny-startsida .rd-concept-link:hover .rd-concept-logo,
+#ny-startsida .rd-concept-link:focus-visible .rd-concept-logo {
+  opacity: 0;
+}
+#ny-startsida .rd-concept-link:hover .rd-concept-shot,
+#ny-startsida .rd-concept-link:focus-visible .rd-concept-shot {
+  opacity: 1;
+}
+#ny-startsida .rd-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+#ny-startsida a:hover .rd-arrow {
+  transform: translateX(4px);
+}
+/* Konceptraden: horisontell svep på mobil (som i dag), grid från 1024. */
+#ny-startsida .rd-concept-row {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+#ny-startsida .rd-concept {
+  flex: none;
+  width: 280px;
+  scroll-snap-align: start;
+}
+@media (min-width: 1024px) {
+  #ny-startsida .rd-concept-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow: visible;
+  }
+  #ny-startsida .rd-concept {
+    width: auto;
+  }
+}
+
+/* ---------- FAQ: en öppen åt gången, svaret tonar in ---------- */
+#ny-startsida .rd-faq-item summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+#ny-startsida .rd-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+#ny-startsida .rd-faq-icon {
+  flex: none;
+  transition: transform 0.3s ease;
+}
+#ny-startsida .rd-faq-item[open] .rd-faq-icon {
+  transform: rotate(180deg);
+}
+#ny-startsida .rd-faq-item[open] .rd-faq-answer {
+  animation: rd-slide-in 0.3s ease both;
+}
+
+/* ---------- Pris ---------- */
+#ny-startsida .rd-price-card {
+  position: relative;
+}
+#ny-startsida .rd-check {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+/* ---------- Scroll-driven animations (endast med stöd och rörelse tillåten) ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Heron: bilden drar ihop sig och texten tonar bort när heron scrollas ut
+       (samma idé som dagens Hero, men med transform/opacity och utan hjulsnäpp). */
+    #ny-startsida .rd-hero {
+      view-timeline: --rd-hero block;
+    }
+    #ny-startsida .rd-hero-media {
+      animation: rd-hero-shrink linear both;
+      animation-timeline: --rd-hero;
+      animation-range: exit 0% exit 90%;
+    }
+    #ny-startsida .rd-hero-copy {
+      animation: rd-hero-fade linear both;
+      animation-timeline: --rd-hero;
+      animation-range: exit 0% exit 45%;
+    }
+    #ny-startsida .rd-reveal {
+      animation: rd-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    #ny-startsida .rd-timeline {
+      view-timeline: --rd-timeline block;
+    }
+    #ny-startsida .rd-timeline-line {
+      animation: rd-grow-y linear both;
+      animation-timeline: --rd-timeline;
+      animation-range: cover 10% cover 90%;
+    }
+  }
+}
+@keyframes rd-hero-shrink {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: translateY(18%) scale(0.82);
+    opacity: 0.4;
+  }
+}
+@keyframes rd-hero-fade {
+  to {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+/* Bara förflyttning, ingen opacitet: innehållet är alltid synligt, även för den som
+   inte scrollar (eller i en helsidesbild), och glider bara på plats när det kommer in. */
+@keyframes rd-reveal {
+  from {
+    transform: translateY(32px);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes rd-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ---------- Reducerad rörelse: allt statiskt ----------
+   Den globala regeln i app/globals.css kortar bara ned duration; här stängs allt av
+   uttryckligen. Det roterande ordet står still på "Växa" (som i dagens Hero). */
+@media (prefers-reduced-motion: reduce) {
+  #ny-startsida *,
+  #ny-startsida *::before,
+  #ny-startsida *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  #ny-startsida .rd-rot > span {
+    opacity: 0;
+  }
+  #ny-startsida .rd-rot > .rd-rot-static {
+    opacity: 1;
+  }
+  #ny-startsida .rd-reveal,
+  #ny-startsida .rd-hero-media,
+  #ny-startsida .rd-hero-copy {
+    opacity: 1;
+    transform: none;
+  }
+  #ny-startsida .rd-growth-slide,
+  #ny-startsida .rd-faq-answer {
+    opacity: 1;
+    transform: none;
+  }
+}
