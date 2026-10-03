@@ -24,11 +24,11 @@ import {
 } from '@heroicons/react/24/outline';
 import type { CardAnchor, FeatureItem, ServiceCta, ServiceImage } from '@/components/sections/tjanster/types';
 import type { BookingWidgetContent } from '@/components/sections/for-dig/interactive/BookingWidget';
-import type { ServiceBookingContent } from '@/components/sections/for-dig/product-widgets/content';
 import type { PackageListContent } from '@/components/sections/tjanster/widgets/AiAssistantDemos';
 import type {
   BookingEmailCardContent,
   BookingPaymentDemoContent,
+  BookingTimeCardContent,
   DayTimelineDemoContent,
   SettingsCardContent,
 } from '@/components/sections/tjanster/widgets/BookingDemos';
@@ -50,21 +50,39 @@ export const bokningHero = {
 };
 
 /*
- * Fotosektionerna. Bilderna läggs in i nästa pass – fyll i `image` (ServiceImage från
- * scripts/tjanster-bilder.mjs) så renderas sektionen, utan annan ändring. Så länge `image`
- * är null renderas ingenting. Briefen för varje bild står i planens punkt 4.2 och i
- * ~/cc-rapporter/betalningar-bokning-bygge-1.md.
+ * Fotosektionerna. En sektion renderas när dess `image` finns (ServiceImage från
+ * scripts/tjanster-bilder.mjs, sidan bokning), annars ingenting. Briefen för varje bild står
+ * i planens punkt 4.2 och i ~/cc-rapporter/betalningar-bokning-bygge-1.md.
  *
- *   tjanster – bild 1, Tjänster och tider (ServiceFullBleed med kort). Kortet landar på
- *              ytterväggens träpanel, i högra tredjedelen.
- *   personal – bild 2, bakgrund till Personal, scheman och resurser (StickySteps).
- *              Stegkorten landar på golvets öppna yta i nedre halvan.
- *   mejl     – bild 3, Mejl till kunden och avbokning (ServiceFullBleed med kort). Kortet
- *              landar i himlen, till vänster om personen.
+ *   tjanster – Tjänster och tider (ServiceFullBleed med kort): kvinnan som bokar i telefonen
+ *              under paraplyet (bokning-b2, telefonen i profil, ingen skärm syns). Kortet ligger
+ *              på gatan nere till vänster, fritt från ansikte och händer.
+ *   personal – Personal, scheman och resurser (StickySteps): kvinnan som ställer i ordning
+ *              rummet med surfplattan (bokning-a). Stegkorten ligger nere till vänster i
+ *              bildrutan, över dörren och golvet, fritt från ansiktet och händerna.
+ *   mejl     – Mejl till kunden och avbokning (ServiceFullBleed med kort). Ingen bild.
+ *
+ * Den första bilden till tjanster (bokning-b, mannen under paraplyet) kasserades: telefonens
+ * skärm visar halvläsbar text i hans hand, och inget kort kan täcka den utan att täcka handen.
  */
 export const bokningImages: Record<'tjanster' | 'personal' | 'mejl', ServiceImage | null> = {
-  tjanster: null,
-  personal: null,
+  tjanster: {
+    base: '/tjanster/bokning/bokning-tjanster',
+    alt: 'En kvinna i grön regnjacka står under ett paraply på en lövkantad gata och bokar något i sin telefon.',
+    widths: [640, 1024, 1536, 2048],
+    portraitWidths: [480, 720],
+    focus: '10% 50%',
+    // Nederkanten: händerna flyttar upp så att kortet ryms under dem på telefoner.
+    portraitFocus: '50% 100%',
+  },
+  personal: {
+    base: '/tjanster/bokning/bokning-personal',
+    alt: 'En kvinna i ett ljust rum håller en surfplatta under armen och ställer en stol till rätta vid ett stort fönster.',
+    widths: [640, 1024, 1536, 2048],
+    portraitWidths: [480, 720],
+    focus: '50% 45%',
+    portraitFocus: '50% 40%',
+  },
   mejl: null,
 };
 
@@ -82,23 +100,18 @@ export const bokningTjanster = {
     'Lägg upp det du erbjuder med längd och pris, sätt öppettider och intervall och stäng dagar när du behöver. Kunden ser bara tider som går att boka.',
     'Ingår i Growth och Enterprise.',
   ],
-  // Ankare att justera mot bilden i nästa pass: på träpanelen, högra tredjedelen.
-  cardAnchor: { x: 76, y: 50 } satisfies CardAnchor,
-  cardAnchorPortrait: { x: 50, y: 78 } satisfies CardAnchor,
+  // Procent av bilden: på gatan nere till vänster (landskap), nedtill under händerna (porträtt).
+  // Ansiktet ligger kring x 51–60 %, y 13–39 % och händerna med telefonen kring x 39–53 %,
+  // y 55–79 % i 16:9.
+  cardAnchor: { x: 17, y: 68 } satisfies CardAnchor,
+  cardAnchorPortrait: { x: 50, y: 90 } satisfies CardAnchor,
   card: {
-    name: 'Möte',
-    details: '60 min',
-    price: 600,
-    timesHeading: 'Välj tid',
-    times: [
-      { id: 't0900', label: '09:00' },
-      { id: 't1100', label: '11:00' },
-      { id: 't1400', label: '14:00' },
-    ],
-    defaultTimeId: 't1100',
-    bookLabel: 'Boka',
-  } satisfies ServiceBookingContent,
-  cardLabel: 'Exempel: en tjänst med tre lediga tider',
+    label: 'Exempel: en tjänst med tre lediga tider',
+    title: 'Möte',
+    details: '60 min · 600 kr',
+    times: ['09:00', '11:00', '14:00'],
+    selected: '11:00',
+  } satisfies BookingTimeCardContent,
 };
 
 /*

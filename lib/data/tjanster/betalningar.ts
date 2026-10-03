@@ -24,18 +24,14 @@ import {
   ReceiptPercentIcon,
 } from '@heroicons/react/24/outline';
 import type { CardAnchor, FeatureItem, ServiceCta, ServiceImage } from '@/components/sections/tjanster/types';
-import type { CheckoutCardContent } from '@/components/sections/for-dig/payment-cards/content';
-import type { CreateInvoiceContent, InvoicePreviewContent } from '@/components/sections/for-dig/invoice-widgets/content';
+import type { SettingsCardContent } from '@/components/sections/tjanster/widgets/BookingDemos';
 import type { PackageListContent } from '@/components/sections/tjanster/widgets/AiAssistantDemos';
 import type {
   InvoicePaidCardContent,
-  PaymentLinkDemoContent,
+  PaymentReceivedCardContent,
   PaymentsRefundDemoContent,
   SubscriptionDemoContent,
 } from '@/components/sections/tjanster/widgets/PaymentDemos';
-
-export const PAYMENT_CURRENCY = 'SEK';
-export const PAYMENT_LOCALE = 'sv-SE';
 
 /*
  * Heron. Layout och video är orörda, texten är rättad enligt planens punkt 6.1: kassan tar
@@ -55,21 +51,39 @@ export const betalningarHero = {
 };
 
 /*
- * Fotosektionerna. Bilderna läggs in i nästa pass – fyll i `image` (ServiceImage från
- * scripts/tjanster-bilder.mjs) så renderas sektionen, utan annan ändring. Så länge `image`
- * är null renderas ingenting. Briefen för varje bild står i planens punkt 4.2 och i
- * ~/cc-rapporter/betalningar-bokning-bygge-1.md.
+ * Fotosektionerna. En sektion renderas när dess `image` finns (ServiceImage från
+ * scripts/tjanster-bilder.mjs, sidan betalningar), annars ingenting.
  *
- *   kort     – bild 1, Kortbetalningar till ditt eget konto (ServiceFullBleed med kort).
- *              Kortet landar intill telefonen, i vänstra delen av bilden.
- *   fakturor – bild 2, bakgrund till Fakturor (StickySteps). Stegkorten landar på bänken
- *              intill datorn, i nedre delen av bilden.
+ *   kort     – Kortbetalningar till ditt eget konto (ServiceFullBleed med kort): kvinnan på
+ *              bryggan med telefonen (betalningar-b, beskuren utan båtnumret – se
+ *              scripts/tjanster-bilder/betalningar.mjs). Kortet ligger på bryggan nere till
+ *              vänster, under texten och fritt från ansikte och händer.
+ *   fakturor – Fakturor (StickySteps): mannen vid datorn på stugverandan, datorn strikt från
+ *              sidan (betalningar-a2). Stegkorten ligger nere till vänster i bildrutan, över
+ *              ryggen och filten, fritt från ansikte och händer.
+ *
+ * Den första bilden till fakturor (betalningar-a) kasserades: datorlocket visar en tydlig
+ * logotyp intill händerna (x 38,1–39,4 %, y 57,8–62,1 % i 16:9), som inget stegkort kan täcka.
  *
  * Bild 3 (Hemsidan) byggs inte: sektionen hör till hosting, som är borttaget.
  */
 export const betalningarImages: Record<'kort' | 'fakturor', ServiceImage | null> = {
-  kort: null,
-  fakturor: null,
+  kort: {
+    base: '/tjanster/betalningar/betalningar-kort',
+    alt: 'En kvinna i ljus kappa sitter på en träbrygga i kvällssol och ler mot sin telefon, med båtar på vattnet bakom sig.',
+    widths: [640, 1024, 1536],
+    portraitWidths: [480, 720],
+    focus: '28% 50%',
+    portraitFocus: '50% 50%',
+  },
+  fakturor: {
+    base: '/tjanster/betalningar/betalningar-fakturor',
+    alt: 'En man i stickad tröja sitter på en stugveranda och skriver på en bärbar dator, med en kaffemugg på bordet och skog bakom sig.',
+    widths: [640, 1024, 1536, 2048],
+    portraitWidths: [480, 720],
+    focus: '20% 50%',
+    portraitFocus: '50% 50%',
+  },
 };
 
 /*
@@ -83,19 +97,24 @@ export const betalningarKort = {
   id: 'kortbetalningar',
   eyebrow: 'KORTBETALNINGAR',
   title: 'Kortbetalningar till ditt eget konto',
+  // Avgifter nämns inte på sidan (beslut), så meningen om att Source inte tar någon avgift är borttagen.
   body: [
-    'Koppla ditt eget Stripe-konto, så tar din butik betalt med kort och pengarna går till ditt konto. Source tar ingen avgift på din försäljning.',
+    'Koppla ditt eget Stripe-konto, så tar din butik betalt med kort och pengarna går till ditt konto.',
     'Ingår i alla paket. Kassan i ditt utseende ingår i Growth och Enterprise.',
   ],
-  // Ankare att justera mot bilden i nästa pass: kortet intill telefonen, vänstra delen.
-  cardAnchor: { x: 30, y: 62 } satisfies CardAnchor,
-  cardAnchorPortrait: { x: 50, y: 78 } satisfies CardAnchor,
+  // Procent av bilden: på bryggplankorna nere till vänster (landskap), nedtill över kappan och
+  // bryggan (porträtt). Ansiktet ligger kring x 45–54 %, y 16–31 % och händerna med telefonen
+  // kring x 56–64 %, y 30–51 % i den beskurna bilden.
+  cardAnchor: { x: 22, y: 76 } satisfies CardAnchor,
+  cardAnchorPortrait: { x: 50, y: 84 } satisfies CardAnchor,
   card: {
-    label: 'Exempel: kassan i en butik tar betalt med kort',
+    label: 'Exempel: en kortbetalning har kommit in',
+    title: 'Betalning mottagen',
+    status: 'Betald',
     orderLine: 'Startpaket · Order 1024',
     amount: 450,
-    methodGroups: [[{ id: 'kort', label: 'Betala med kort', actionLabel: 'Välj' }]],
-  } satisfies CheckoutCardContent,
+    method: 'Kort · till ditt Stripe-konto',
+  } satisfies PaymentReceivedCardContent,
 };
 
 /*
@@ -116,30 +135,24 @@ export const betalningarFakturor = {
     { title: 'Skicka med PDF', body: 'Fakturan mejlas till kunden med PDF, och kunden kan betala via en länk.' },
     { title: 'Se när den är betald', body: 'Betalar kunden på annat sätt markerar du fakturan som betald.' },
   ],
+  // Kompakta stegkort (tre rader): ett helt fakturadokument blir så högt att det når mannens
+  // ansikte i bildrutan.
   create: {
-    buttonLabel: 'Ny faktura',
     title: 'Ny faktura',
-    recipient: { label: 'Kund', value: 'Exempel AB' },
-    item: { label: 'Rad', value: 'Startpaket' },
-    amount: { label: 'Belopp', value: 450 },
-    due: { label: 'Förfaller', value: '2026-10-30' },
-    submitLabel: 'Skapa faktura',
-  } satisfies CreateInvoiceContent,
-  preview: {
-    label: 'Exempel: en faktura som PDF',
-    sender: { name: 'Ditt företag', address: 'Exempelgatan 1, 123 45 Exempelstad' },
-    documentTitle: 'Faktura',
-    number: { label: 'Fakturanummer', value: '1024' },
-    recipient: { label: 'Till', name: 'Exempel AB', address: 'Exempelvägen 2, 123 45 Exempelstad' },
-    issued: { label: 'Fakturadatum', value: '2026-10-01' },
-    due: { label: 'Förfallodatum', value: '2026-10-30' },
-    line: { description: 'Startpaket', detail: '1 st' },
-    total: 450,
-    vatRate: 0.25,
-    netLabel: 'Netto',
-    vatLabel: 'Moms',
-    totalLabel: 'Att betala',
-  } satisfies InvoicePreviewContent,
+    rows: [
+      { label: 'Kund', value: 'Exempel AB' },
+      { label: 'Rad', value: 'Startpaket' },
+      { label: 'Förfaller', value: '30 okt' },
+    ],
+  } satisfies SettingsCardContent,
+  sent: {
+    title: 'Faktura 1024',
+    rows: [
+      { label: 'Skickad till', value: 'Exempel AB' },
+      { label: 'Bilaga', value: 'PDF' },
+      { label: 'Betala via', value: 'Betalningslänk' },
+    ],
+  } satisfies SettingsCardContent,
   paid: {
     title: 'Faktura 1024',
     recipient: 'Exempel AB',
@@ -147,34 +160,6 @@ export const betalningarFakturor = {
     link: 'Betalningslänk',
     markPaid: 'Markera som betald',
   } satisfies InvoicePaidCardContent,
-};
-
-/*
- * Sektion 2 – Betalningslänk. Belägg: riktiga Stripe Payment Links på det anslutna kontot
- * (routes/paymentLinks.js:264, 438), automatisk moms (:371), adress (:375-381), antal
- * betalningar (:387-406), status (:626). Alla paket (server.js:3519). Tenanten kopierar
- * länken själv – portalen skickar inte SMS eller DM, och rabattkoder på länkar finns inte.
- */
-export const betalningarLank = {
-  id: 'betalningslank',
-  eyebrow: 'BETALNINGSLÄNK',
-  title: 'Skapa en betalningslänk och dela den var du vill',
-  body: [
-    'Välj en produkt, bestäm om adressen ska fyllas i och hur många gånger länken kan användas. Kopiera länken och dela den där dina kunder finns.',
-    'Du ser direkt när den är betald.',
-  ],
-  packageNote: 'Ingår i alla paket.',
-  label: 'Exempel: en betalningslänk skapas, kopieras och blir betald',
-  demo: {
-    title: 'Ny betalningslänk',
-    status: { idle: 'Aktiv', done: 'Betald' },
-    product: { label: 'Produkt', value: 'Startpaket' },
-    options: ['Samla in adress', 'Automatisk moms', 'Kan betalas en gång'],
-    create: 'Skapa länk',
-    link: { label: 'Länk', value: 'Klar att dela', copy: 'Kopiera' },
-    listTitle: 'Betalningslänkar',
-    row: 'Startpaket',
-  } satisfies PaymentLinkDemoContent,
 };
 
 /*

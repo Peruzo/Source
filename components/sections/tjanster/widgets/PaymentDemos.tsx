@@ -20,28 +20,12 @@ import {
  * first frame, and at 1 the demo rests in its final state – which is also what reduced
  * motion shows.
  *
- * The flows follow the customer portal: a payment link is a Stripe Payment Link the
- * business copies and shares itself, a subscription is a product with an interval paid by
+ * The flows follow the customer portal: a subscription is a product with an interval paid by
  * card, and a refund covers the whole payment or chosen lines. No card brands, no totals
  * or key figures – the amounts are a fictional shop's prices.
  */
 
 /* ── Shared pieces ──────────────────────────────────────────────────────── */
-
-/** A check box that fills in at `at`, with its label always readable. */
-function CheckOption({ progress, at, children }: { progress: MotionValue<number>; at: number; children: ReactNode }) {
-  const on = useStep(progress, at, at + 0.05);
-  return (
-    <li className="flex items-center gap-2.5 py-1.5">
-      <span className={`relative flex h-5 w-5 flex-shrink-0 items-center justify-center border border-gray-400 ${RADIUS.field}`} aria-hidden="true">
-        <motion.span style={{ opacity: on }} className={`absolute inset-[-1px] flex items-center justify-center bg-teal-dark text-white ${RADIUS.field}`}>
-          <CheckMark />
-        </motion.span>
-      </span>
-      <span className="text-ui-body text-black">{children}</span>
-    </li>
-  );
-}
 
 /** Two labels in one spot, the second fading in over the first. */
 export function Swap({ show, from, to }: { show: MotionValue<number>; from: ReactNode; to: ReactNode }) {
@@ -74,65 +58,6 @@ export function Segments({ progress, at, options, selected }: { progress: Motion
         </span>
       ))}
     </div>
-  );
-}
-
-/* ── Betalningslänk ─────────────────────────────────────────────────────── */
-
-export type PaymentLinkDemoContent = {
-  title: string;
-  status: { idle: string; done: string };
-  product: { label: string; value: string };
-  options: string[];
-  create: string;
-  link: { label: string; value: string; copy: string };
-  listTitle: string;
-  row: string;
-};
-
-export function PaymentLinkDemo({ progress, content }: { progress: MotionValue<number>; content: PaymentLinkDemoContent }) {
-  const titleId = useId();
-  const c = content;
-  const linkIn = useStep(progress, 0.5, 0.58);
-  const rowIn = useStep(progress, 0.7, 0.76);
-  const paid = useStep(progress, 0.84, 0.9);
-
-  return (
-    <Card titleId={titleId} title={c.title}>
-      <Box label={c.product.label} className="mt-3">
-        {c.product.value}
-      </Box>
-      <ul className="mt-2">
-        {c.options.map((option, i) => (
-          <CheckOption key={option} progress={progress} at={0.1 + i * 0.09}>
-            {option}
-          </CheckOption>
-        ))}
-      </ul>
-      <div className="mt-2">
-        <PressButton progress={progress} at={0.44} full>
-          {c.create}
-        </PressButton>
-      </div>
-
-      <motion.div style={{ opacity: linkIn }} className={`mt-3 flex items-center justify-between gap-3 bg-gray-50 px-3.5 py-2 ${RADIUS.field}`}>
-        <span className="min-w-0">
-          <span className="text-ui-label block text-gray-600">{c.link.label}</span>
-          <span className="text-ui-body block truncate">{c.link.value}</span>
-        </span>
-        <PressButton progress={progress} at={0.64}>
-          {c.link.copy}
-        </PressButton>
-      </motion.div>
-
-      <motion.div style={{ opacity: rowIn }} className="mt-3">
-        <p className="text-ui-overline text-gray-600">{c.listTitle}</p>
-        <div className="mt-1 flex items-center justify-between gap-3 border-t border-gray-100 py-2">
-          <span className="text-ui-body min-w-0 truncate">{c.row}</span>
-          <StatusPill show={paid} idle={c.status.idle} done={c.status.done} />
-        </div>
-      </motion.div>
-    </Card>
   );
 }
 
@@ -289,7 +214,7 @@ export function PaymentsRefundDemo({ progress, content }: { progress: MotionValu
   );
 }
 
-/** CheckOption without the list item, for rows that carry an amount beside it. */
+/** A check box that fills in at `at`, inline, for rows that carry an amount beside it. */
 function CheckOptionInline({ progress, at, children }: { progress: MotionValue<number>; at: number; children: ReactNode }) {
   const on = useStep(progress, at, at + 0.05);
   return (
@@ -301,6 +226,43 @@ function CheckOptionInline({ progress, at, children }: { progress: MotionValue<n
       </span>
       <span className="text-ui-body text-black">{children}</span>
     </span>
+  );
+}
+
+/* ── Fotosektionen Kortbetalningar: kortet över bilden ─────────────────── */
+
+export type PaymentReceivedCardContent = {
+  /** Accessible name for the floating card (ServiceFullBleedCard.label). */
+  label: string;
+  title: string;
+  status: string;
+  orderLine: string;
+  amount: number;
+  method: string;
+};
+
+/**
+ * The floating card in the Kortbetalningar photo section: one payment that has come in.
+ * One figure, one row, no button – the size of the cards on the other service pages.
+ */
+export function PaymentReceivedCard({ content }: { content: PaymentReceivedCardContent }) {
+  const titleId = useId();
+  const c = content;
+  return (
+    <div role="group" aria-labelledby={titleId} className={`w-full bg-white p-5 text-left text-black ${CARD_EDGE} ${RADIUS.card}`}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 id={titleId} className="text-ui-title">
+          {c.title}
+        </h3>
+        <span className={`text-ui-label inline-flex items-center gap-1 bg-teal-light px-2.5 py-0.5 font-semibold text-teal-darker ${RADIUS.control}`}>
+          <CheckMark />
+          {c.status}
+        </span>
+      </div>
+      <p className="text-ui-label mt-1 text-gray-600">{c.orderLine}</p>
+      <p className="text-ui-amount mt-3 tabular-nums">{money(c.amount)}</p>
+      <p className="text-ui-label mt-1 text-gray-700">{c.method}</p>
+    </div>
   );
 }
 

@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/AnimatedButton';
 import { ClippedImageSection } from '@/components/sections/for-dig/ClippedImageSection';
 import { BookingWidget } from '@/components/sections/for-dig/interactive/BookingWidget';
-import { ServiceBooking } from '@/components/sections/for-dig/product-widgets/widgets';
 import { useReveal } from '@/components/sections/for-dig/useReveal';
 import { FeatureCarousel } from '../FeatureCarousel';
 import { ScrollScene } from '../ScrollScene';
@@ -13,7 +12,7 @@ import { ServiceFullBleed } from '../ServiceFullBleed';
 import { ServicePageLayout } from '../ServicePageLayout';
 import { StickySteps } from '../StickySteps';
 import { PackageList } from '../widgets/AiAssistantDemos';
-import { BookingEmailCard, BookingPaymentDemo, DayTimelineDemo, SettingsCard } from '../widgets/BookingDemos';
+import { BookingEmailCard, BookingPaymentDemo, BookingTimeCard, DayTimelineDemo, SettingsCard } from '../widgets/BookingDemos';
 import {
   BOOKING_CURRENCY,
   BOOKING_LOCALE,
@@ -78,8 +77,8 @@ function BookingOnSiteSection() {
  * lib/data/tjanster/bokning.ts, with the evidence for each claim. The package is stated in
  * every section: Growth and Enterprise for the booking system, Enterprise for statistics.
  *
- * The three photo sections (1, 3 and 5) are prepared but not rendered until their photo is
- * in bokningImages – see the comment there.
+ * The three photo sections (1, 3 and 5) render only when their photo is in bokningImages –
+ * see the comment there. Today sections 1 (tjanster) and 3 (personal) have one.
  */
 export function BokningSections() {
   const tjansterImage = bokningImages.tjanster;
@@ -94,8 +93,8 @@ export function BokningSections() {
 
   return (
     <ServicePageLayout>
-      {/* Fotosektion 1 – Tjänster och tider (bild 1). Kortet landar på ytterväggens
-          träpanel, i högra tredjedelen. Renderas först när bilden finns. */}
+      {/* Fotosektion 1 – Tjänster och tider: kvinnan som bokar under paraplyet. Texten uppe till
+          vänster, kortet på gatan under texten, fritt från ansikte och händer. */}
       {tjansterImage ? (
         <ServiceFullBleed
           id={bokningTjanster.id}
@@ -104,14 +103,13 @@ export function BokningSections() {
           body={bokningTjanster.body}
           image={tjansterImage}
           tone="light"
+          // Full scrim: the yellow trees and the sky behind the text gave white text under 4.5:1
+          // against the lightest 5 % with the side scrim alone.
+          scrim="full"
           textPosition="top-left"
           card={{
-            label: bokningTjanster.cardLabel,
-            content: (
-              <div className="@container w-[min(22rem,80vw)]">
-                <ServiceBooking content={bokningTjanster.card} {...money} />
-              </div>
-            ),
+            label: bokningTjanster.card.label,
+            content: <BookingTimeCard content={bokningTjanster.card} />,
             anchor: bokningTjanster.cardAnchor,
             anchorPortrait: bokningTjanster.cardAnchorPortrait,
             anchorTo: 'image',
@@ -122,8 +120,8 @@ export function BokningSections() {
       {/* 2 – Kunden bokar på din hemsida, med BookingWidget. */}
       <BookingOnSiteSection />
 
-      {/* Fotosektion 2 – Personal, scheman och resurser (bild 2 som bakgrund). Stegkorten
-          landar på golvets öppna yta i nedre halvan. Renderas först när bilden finns. */}
+      {/* Fotosektion 2 – Personal, scheman och resurser: kvinnan som ställer i ordning rummet.
+          Stegkorten ligger nere till vänster, över dörren och golvet. */}
       {personalImage ? (
         <StickySteps id={p.id} eyebrow={p.eyebrow} title={p.title} intro={p.intro} image={personalImage} steps={staffSteps} />
       ) : null}

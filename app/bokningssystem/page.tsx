@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Container } from '@/components/ui/Container';
+import { BookingInPersonShowcaseSection } from '@/components/sections/BookingInPersonShowcaseSection';
 import { BokningSections } from '@/components/sections/tjanster/bokning/BokningSections';
 import { bokningHero } from '@/lib/data/tjanster/bokning';
 
@@ -107,6 +108,10 @@ export default function BokningssystemPage() {
           </div>
         </Container>
       </section>
+
+      {/* Sektion 2 från origin/develop 557069b, återställd exakt. Våra nya sektioner ligger efter den,
+          med paketlistan sist. */}
+      <BookingInPersonShowcaseSection />
 
       <BokningSections />
     </>
