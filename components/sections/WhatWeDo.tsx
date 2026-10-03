@@ -3,8 +3,11 @@
 import { FadeIn } from '@/components/animations/FadeIn';
 import { ScrollTimeline } from '@/components/ui/ScrollTimeline';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import { ServicePicture } from '@/components/sections/tjanster/ServicePicture';
 import { useNoFx } from '@/lib/hooks/useNoFx'; // TEMP: flicker bisect, remove after diagnosis
+
+/** Widths written by `node scripts/tjanster-bilder.mjs startsida public` (scripts/tjanster-bilder/startsida.mjs). */
+const CARD_IMAGE_WIDTHS = [640, 1024, 1536];
 
 type Service = {
   number: string;
@@ -12,9 +15,8 @@ type Service = {
   description: string;
   details: string[];
   imagePlaceholder: string;
-  imageSrc: string;
-  imageFit: string;
-  imageClassName: string;
+  /** Path without width and extension, as written by scripts/tjanster-bilder.mjs (startsida). */
+  imageBase: string;
   bgColor: string;
   bannerImages?: {
     src: string;
@@ -35,9 +37,7 @@ const services: Service[] = [
       'SEO-optimering',
     ],
     imagePlaceholder: 'E-commerce UI',
-    imageSrc: '/tillvarhemsida.png',
-    imageFit: 'object-cover',
-    imageClassName: '',
+    imageBase: '/startsida/startsida-hemsida',
     bgColor: 'from-white to-beige-light',
   },
   {
@@ -52,9 +52,7 @@ const services: Service[] = [
       'Insikter och rapporter',
     ],
     imagePlaceholder: 'Analytics Dashboard',
-    imageSrc: '/marketingone.png',
-    imageFit: 'object-cover',
-    imageClassName: '',
+    imageBase: '/startsida/startsida-marknadsforing',
     bgColor: 'from-beige-light to-white',
   },
   {
@@ -69,9 +67,7 @@ const services: Service[] = [
       'PostNord- och Fortnox-integrationer',
     ],
     imagePlaceholder: 'Payment Systems',
-    imageSrc: '/logositske.png',
-    imageFit: 'object-cover',
-    imageClassName: '',
+    imageBase: '/startsida/startsida-logistik',
     bgColor: 'from-white to-gray-50',
   },
   {
@@ -86,9 +82,7 @@ const services: Service[] = [
       'Personlig hjälp',
     ],
     imagePlaceholder: 'Support Portal',
-    imageSrc: '/supportfordem.png',
-    imageFit: 'object-cover',
-    imageClassName: '',
+    imageBase: '/startsida/startsida-support',
     bgColor: 'from-gray-50 to-white',
   },
 ];
@@ -226,14 +220,13 @@ export function WhatWeDo() {
                     >
                       <div className="glass relative aspect-[16/9] overflow-hidden rounded-[2.5rem] md:rounded-[5rem] border border-white/20 flex items-center justify-center">
                         {/* Placeholder content - replace with actual screenshots */}
-                        {service.imageSrc ? (
+                        {service.imageBase ? (
                           <div className="absolute inset-0 rounded-[2.5rem] md:rounded-[5rem] overflow-hidden">
-                            <Image
-                              src={service.imageSrc}
-                              alt={service.title}
-                              fill
-                              className={`${service.imageFit ?? 'object-cover'} ${service.imageClassName ?? ''} h-full w-full block`}
-                              sizes="(min-width: 1024px) 480px, 100vw"
+                            {/* Pre-generated WebP widths with srcset (next.config has images.unoptimized,
+                                so next/image would send the full 1920 px original to every screen). */}
+                            <ServicePicture
+                              image={{ base: service.imageBase, alt: service.title, widths: CARD_IMAGE_WIDTHS }}
+                              sizes="(min-width: 1024px) calc(50vw - 80px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 48px)"
                             />
                             <div className="absolute inset-0 bg-gradient-to-br from-teal/0 to-teal/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
                           </div>
