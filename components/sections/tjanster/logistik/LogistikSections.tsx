@@ -33,8 +33,8 @@ import {
  *
  * S4 has no photo: both candidates had text on lockers or on the carton. It shows the
  * tracking email instead. S5 is the mailbox video, played once like the scale on /bokforing.
- * S3 is a looping UI video of the whole flow; under it, only with FLAGGOR.returer, the returns
- * section with the case list and a short video of approving a return.
+ * S3 is a full-bleed looping UI video of the whole flow in 4K; under it, with FLAGGOR.returerSektion,
+ * the returns section with the case list and a short video of approving a return.
  */
 
 function PhotoMedia({ image }: { image: (typeof logistikImages)[keyof typeof logistikImages] }) {
@@ -69,11 +69,11 @@ export function LogistikSections() {
         media={<PhotoMedia image={logistikImages.fraktsedel} />}
       />
 
-      {/* S3 – hela bokningsflödet som video (Remotion), samma rubrik och text som tidigare */}
+      {/* S3 – hela flödet från kassan som helskärmsvideo i 4K (Remotion), samma rubrik och text som tidigare */}
       <LogisticsFlowVideo eyebrow={logistikFlode.eyebrow} title={logistikFlode.title} intro={logistikFlode.intro} label={logistikFlode.label} video={logistikFlodeVideo} />
 
-      {/* S3b – returer: bara när returfunktionen är på, som dagens retursektion i app/logistik/page.tsx */}
-      {FLAGGOR.returer ? <LogisticsReturnsSection content={logistikReturer} /> : null}
+      {/* S3b – returer: egen flagga, så att den äldre retursektionen i app/logistik/page.tsx (FLAGGOR.returer) förblir dold */}
+      {FLAGGOR.returerSektion ? <LogisticsReturnsSection content={logistikReturer} /> : null}
 
       {/* S4 – spårningslänken; no photo, the email itself */}
       <ClippedImageSection

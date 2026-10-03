@@ -86,8 +86,9 @@ function CaseList({ list }: { list: LogisticsReturnsContent['list'] }) {
 }
 
 /*
- * Returns on /logistik, under the flow video. Rendered only when FLAGGOR.returer is on
- * (lib/data/tjanster/logistik.ts), like the existing returns section in app/logistik/page.tsx.
+ * Returns on /logistik, under the flow video. Rendered when FLAGGOR.returerSektion is on
+ * (lib/data/tjanster/logistik.ts); the older returns section in app/logistik/page.tsx stays behind
+ * FLAGGOR.returer.
  * Shows only what is live in the portal: the case list, a case with its message thread,
  * "Godkänn retur" and the status email to the customer (video rendered in ~/remotion-source,
  * Returer). No customer photos, no return label, no refunds view.

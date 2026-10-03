@@ -34,8 +34,15 @@ import type { LogisticsReturnsContent } from '@/components/sections/tjanster/log
  * Båda är AV tills vidare (utils/featureFlags.js 4 och 9 är av som standard).
  *
  *   returer        FEATURE_RETURNS. På: lägger till kortet "Returer" i karusellen
- *                  (logistikFeatures nedan). Belägg: services/shipping/routes/returns.js
- *                  193–199, 261; public/js/return-case.js 52–80.
+ *                  (logistikFeatures nedan), den äldre retursektionen med 0330.mp4 i
+ *                  app/logistik/page.tsx och retursektionen på /tjanster/inventarier.
+ *                  Belägg: services/shipping/routes/returns.js 193–199, 261;
+ *                  public/js/return-case.js 52–80.
+ *   returerSektion Den nya retursektionen under flödesvideon (logistikReturer nedan). PÅ
+ *                  (beslut 2026-10-03): den visar bara det som är live i portalen – ärendelistan,
+ *                  ärendet med meddelandetråd, "Godkänn retur" och statusmejlet. Egen flagga så
+ *                  att den äldre sektionen och karusellkortet (som nämner returetikett och
+ *                  återbetalning) förblir dolda.
  *   statushamtning FEATURE_TRACKING_POLLING eller en konfigurerad PostNord-webhook.
  *                  På: mejlet i bokningsflödet visar statusarna Bokad, På väg och
  *                  Levererad (logistikFlode.mail.statuses). Belägg: public/js/
@@ -44,6 +51,7 @@ import type { LogisticsReturnsContent } from '@/components/sections/tjanster/log
  */
 export const FLAGGOR = {
   returer: false,
+  returerSektion: true,
   statushamtning: false,
 };
 
@@ -132,7 +140,7 @@ export const logistikFlode = {
   eyebrow: 'SÅ GÅR DET TILL',
   title: 'Från kassan till kundens inkorg',
   intro: 'Kunden väljer hur paketet ska komma, du bokar hos PostNord med ett klick, och fraktsedeln och mejlet med spårningslänken följer med.',
-  label: 'Exempel: en beställning går från leveransval i kassan till bokning, fraktsedel och mejl med spårningslänk',
+  label: 'Exempel: kunden väljer leveranssätt och betalar med kort i kassan, ordern kommer in i kundportalen, bokas hos PostNord, fraktsedeln visas som PDF och kunden får ett mejl med spårningslänk',
   steps: ['Leveranssätt', 'Order', 'Bokning', 'Fraktsedel', 'Spårningslänk'],
   checkout: {
     title: 'Välj leveranssätt',
@@ -179,17 +187,33 @@ export const logistikFlode = {
 } satisfies LogisticsFlowContent;
 
 /*
- * S3 som video (ersätter de fem korten i LogisticsFlowSection; rubrik, överrad och brödtext ovan
- * är oförändrade). Renderad i ~/remotion-source, kompositionen LogistikFlode: 1920 × 1080,
- * 30 bilder per sekund, 20 s, loopar. Samma innehåll och belägg som korten ovan, plus betalningen
- * i kassan (kort, storefrontCheckoutService.js 2327) och notisen om ny beställning i portalen.
- * Inga statusar efter bokningen.
+ * S3 som video i helskärm (rubrik, överrad och brödtext ovan är oförändrade och ligger som HTML
+ * ovanpå videons övre 22 %, som är ett lugnt fält utan UI). Renderad i ~/remotion-source,
+ * kompositionen LogistikKassa4K: 3840 × 2160, 30 bilder per sekund, 26 s, loopar. Kodad med
+ * Homebrews ffmpeg från en ProRes-master. Allt UI ligger inom x 380–3460, så inget viktigt beskärs
+ * med object-fit: cover på 16:10 och 3:2.
+ *
+ * Innehåll och belägg:
+ *   kassan – en neutral hostad kortkassa utan varumärken: e-post, leveransadress, leveranssätten
+ *     med portalens standardpriser (storefrontCheckoutService.js 390–396; deliveryPricing.js 20–26),
+ *     bara kortbetalning (storefrontCheckoutService.js 2575; payment_method_types ['card']).
+ *     Leveranstiderna är exempeltexter; i portalen kommer de från PostNord (friendlyDeliveryInfo,
+ *     services/deliveryOptionsService.js 287–288, 500–501; storefrontRoutes.js 1740). I portalen
+ *     väljs leveranssättet i butikens leveranssteg och kassan får just det valet – videon visar
+ *     båda stegen i samma vy.
+ *   notisen och ordern i portalen, Boka hos PostNord med paketprofil, stegen och "Skapa och boka",
+ *     fraktsedeln som PDF och mejlet "Din order har skickats" med spårningslänk – som korten ovan.
+ * Inga statusar efter bokningen. Butik, kund, produkt och nummer är påhittade.
+ *
+ * Källorna väljs i ordning: 960 på telefon, 3840 bara på skärmar som är minst 2560 px breda med hög
+ * pixeltäthet (bara MP4), annars 1920 – WebM före MP4.
  */
-const FLODE = '/tjanster/logistik/logistik-flode';
+const FLODE = '/tjanster/logistik/logistik-kassaflode';
 export const logistikFlodeVideo = {
   sources: [
     { src: `${FLODE}-960.webm`, type: 'video/webm', media: '(max-width: 767px)' },
     { src: `${FLODE}-960.mp4`, type: 'video/mp4', media: '(max-width: 767px)' },
+    { src: `${FLODE}-3840.mp4`, type: 'video/mp4', media: '(min-width: 2560px) and (min-resolution: 2dppx)' },
     { src: `${FLODE}-1920.webm`, type: 'video/webm' },
     { src: `${FLODE}-1920.mp4`, type: 'video/mp4' },
   ],
@@ -198,7 +222,8 @@ export const logistikFlodeVideo = {
 } satisfies { sources: ServiceVideoSource[]; poster: ServiceVideoStill; end: ServiceVideoStill };
 
 /*
- * Retursektionen under flödesvideon – renderas bara med FLAGGOR.returer, som dagens retursektion.
+ * Retursektionen under flödesvideon – renderas med FLAGGOR.returerSektion (på). Den äldre
+ * retursektionen i app/logistik/page.tsx ligger kvar bakom FLAGGOR.returer (av).
  * Bara det som är live i kundportalen (source.database origin/develop):
  *   ärendelistan, fliken "Alla returer" – public/logistik-layout2.html 746–981,
  *     GET /api/shipping/returns (services/shipping/routes/returns.js 774)
