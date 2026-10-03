@@ -1,0 +1,2036 @@
+/* NY STARTSIDA (redesign 1) – lugn premium.
+   Mycket luft, stora mjuka ytor (radie 32–40 px), centrerad typografi i medelvikt,
+   produktbilderna i stora inramade kort. Mörk topp under den transparenta headern.
+   #1AB65C är enda accent; på ljus botten bärs den som understrykning, inte som text. */
+
+#ny-startsida {
+  --r1-ink: #111211;
+  --r1-paper: #ffffff;
+  --r1-soft: #f3f3f0;
+  --r1-muted: #5e5e59;
+  --r1-line: #e5e5e0;
+  --r1-accent: #1ab65c;
+  --r1-wrap: 1240px;
+  --r1-gutter: clamp(16px, 5vw, 64px);
+  color: var(--r1-ink);
+  background: var(--r1-paper);
+}
+
+/* Typografi */
+#ny-startsida .rd-overline {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-overline-on-dark {
+  color: rgba(255, 255, 255, 0.72);
+}
+#ny-startsida .rd-h2 {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 4.4vw, 56px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+#ny-startsida .rd-h3 {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+#ny-startsida .rd-body-lg {
+  margin: 0 0 16px;
+  font-size: clamp(17px, 1.4vw, 19px);
+  line-height: 1.55;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-body {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-accent {
+  text-decoration: underline;
+  text-decoration-color: var(--r1-accent);
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.12em;
+}
+#ny-startsida .rd-accent-on-dark {
+  color: var(--r1-accent);
+}
+#ny-startsida .rd-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--r1-accent);
+  flex: none;
+}
+
+/* Pills */
+#ny-startsida .rd-pill {
+  min-height: 50px;
+  padding: 0 26px;
+  font-size: 16px;
+  font-weight: 600;
+}
+#ny-startsida .rd-pill-lg {
+  min-height: 56px;
+  padding: 0 32px;
+}
+#ny-startsida .rd-pill-primary {
+  background: var(--r1-accent);
+  color: var(--r1-ink);
+}
+#ny-startsida .rd-pill-primary:hover {
+  background: var(--r1-ink);
+  color: var(--r1-paper);
+}
+#ny-startsida .rd-pill-ghost-dark {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: var(--r1-paper);
+}
+#ny-startsida .rd-pill-outline,
+#ny-startsida .rd-pill-quiet {
+  border: 1px solid var(--r1-ink);
+  color: var(--r1-ink);
+  background: var(--r1-paper);
+}
+
+/* 1 Hero – PASS 2: utfallande helbild på full bredd och höjd, som på dagens startsida
+   (components/sections/Hero.tsx: object-cover, object-position 50% 65%, svart ton nerifrån
+   from-black/75 via-black/35 to-transparent). Tonen görs här som ett platt svart lager med
+   en mask, så att den inte är en egen färgyta. Texten centreras på desktop och ligger lågt
+   på mobil (samma luft som originalet), så ansiktet förblir fritt. */
+#ny-startsida .rd-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 0 16px clamp(6.5rem, calc(55svh - 268px), 11.25rem);
+  overflow: hidden;
+  background: var(--r1-ink);
+  color: var(--r1-paper);
+}
+@media (min-width: 768px) {
+  #ny-startsida .rd-hero {
+    align-items: center;
+    padding-bottom: 0;
+  }
+}
+#ny-startsida .rd-hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  text-align: center;
+}
+#ny-startsida .rd-h1 {
+  margin: 0 0 18px;
+  font-size: clamp(42px, 6.4vw, 92px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+#ny-startsida .rd-rot {
+  color: var(--r1-accent);
+}
+#ny-startsida .rd-hero-sub {
+  max-width: 36ch;
+  margin: 0 auto 28px;
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.75);
+}
+#ny-startsida .rd-hero .rd-ctas {
+  justify-content: center;
+}
+#ny-startsida .rd-hero-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+#ny-startsida .rd-hero-img {
+  object-position: 50% 65%;
+}
+#ny-startsida .rd-hero-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.35) 50%, transparent);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.35) 50%, transparent);
+}
+
+/* 2 Value – mjuk sten-yta, centrerad, tunna rader */
+#ny-startsida .rd-value {
+  padding: clamp(120px, 16vw, 220px) var(--r1-gutter);
+  background: var(--r1-soft);
+  text-align: center;
+}
+#ny-startsida .rd-value-h {
+  max-width: 1000px;
+  margin: 0 auto;
+  font-size: clamp(26px, 5.4vw, 64px);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+}
+#ny-startsida .rd-value-line {
+  display: block;
+  color: #9a9a94;
+}
+#ny-startsida .rd-value-close {
+  margin-top: 0.9em;
+  color: var(--r1-ink);
+  font-weight: 600;
+}
+
+/* PASS 9: sektion 2 med kaos, rad för rad och kundportalfönster (redesign/r1/ValueR1.tsx).
+   Bara transform och opacitet animeras (av JS, styrt av scrollpositionen). Texten är mörk
+   med opacitet 0,4 i viloläget, vilket ger dagens grå. PASS 9B: bron till stenen borttagen. */
+#ny-startsida .r1-value {
+  position: relative;
+  overflow-x: clip;
+}
+#ny-startsida .r1-value-text {
+  position: relative;
+}
+#ny-startsida .r1-vline {
+  color: var(--r1-ink);
+}
+#ny-startsida .r1-vline-inner {
+  position: relative;
+  display: inline-block;
+}
+#ny-startsida .r1-vline-txt {
+  opacity: 0.4;
+}
+#ny-startsida .r1-vline-strike {
+  position: absolute;
+  left: -0.04em;
+  right: -0.04em;
+  top: 56%;
+  height: max(2px, 0.04em);
+  background: var(--r1-ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* Kaoskorten: flata, små, lätt roterade. Neutrala gråtoner, grönt bara som små detaljer. */
+#ny-startsida .r1-cc {
+  --w: clamp(150px, 14vw, 210px);
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: var(--w);
+  padding: 10px 12px 12px;
+  border: 1px solid var(--r1-line);
+  border-radius: 14px;
+  background: var(--r1-paper);
+  transform: rotate(var(--rot));
+  pointer-events: none;
+  text-align: left;
+}
+#ny-startsida .r1-cc-title {
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--r1-line);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--r1-muted);
+}
+#ny-startsida .r1-cc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+#ny-startsida .r1-cc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#ny-startsida .r1-cc-bar {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: #e7e7e2;
+}
+#ny-startsida .r1-cc-bar-dark {
+  background: #cfcfc9;
+}
+#ny-startsida .r1-cc-rule {
+  display: block;
+  height: 1px;
+  background: var(--r1-line);
+}
+#ny-startsida .r1-cc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  border: 1px solid var(--r1-line);
+  border-radius: 999px;
+}
+#ny-startsida .r1-cc-dot {
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--r1-accent);
+}
+#ny-startsida .r1-cc-dot-mute {
+  background: #d6d6d0;
+}
+#ny-startsida .r1-cc-grid {
+  display: grid;
+  gap: 4px;
+}
+#ny-startsida .r1-cc-grid-7 {
+  grid-template-columns: repeat(7, 1fr);
+}
+#ny-startsida .r1-cc-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: #efefea;
+}
+#ny-startsida .r1-cc-cell-on {
+  background: var(--r1-accent);
+}
+#ny-startsida .r1-cc-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--r1-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+#ny-startsida .r1-cc-sheet {
+  height: 14px;
+  border-right: 1px solid var(--r1-line);
+  border-bottom: 1px solid var(--r1-line);
+}
+#ny-startsida .r1-cc-sheet-head {
+  background: #f0f0ec;
+}
+#ny-startsida .r1-cc-ledger {
+  padding-bottom: 5px;
+  border-bottom: 1px dashed var(--r1-line);
+}
+#ny-startsida .r1-cc-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--r1-line);
+}
+#ny-startsida .r1-cc-label {
+  width: 28px;
+  font-size: 10px;
+  color: var(--r1-muted);
+}
+#ny-startsida .r1-cc-bubble {
+  display: block;
+  width: 70%;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--r1-soft);
+}
+#ny-startsida .r1-cc-bubble-me {
+  align-self: flex-end;
+  background: #e9e9e4;
+}
+/* Placering från 1024 px: korten runt texten ligger utanför textens bredd (vänster och
+   höger), två ligger i fönstrets zon under texten och tonar ut innan fönstret visas. */
+#ny-startsida .r1-cc-kassa {
+  --rot: -4deg;
+  left: 1%;
+  top: -40px;
+}
+#ny-startsida .r1-cc-kalender {
+  --rot: 3deg;
+  right: 0;
+  top: 0;
+}
+#ny-startsida .r1-cc-fakturor {
+  --rot: 2.5deg;
+  left: 3%;
+  top: 170px;
+}
+#ny-startsida .r1-cc-kalkylark {
+  --rot: -3deg;
+  right: 2%;
+  top: 200px;
+}
+#ny-startsida .r1-cc-chatt {
+  --rot: -2deg;
+  left: 0;
+  top: 360px;
+}
+#ny-startsida .r1-cc-bokforing {
+  --rot: 2deg;
+  left: 10%;
+  top: 0;
+}
+#ny-startsida .r1-cc-mejl {
+  --rot: -2.5deg;
+  right: 10%;
+  top: 12px;
+}
+
+/* Kundportalfönstret under texten. Det tar plats i flödet hela tiden (osynligt först),
+   så sektionens höjd ändras aldrig under förloppet. */
+#ny-startsida .r1-portal-zone {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(24px, 4vw, 56px);
+}
+#ny-startsida .r1-portal {
+  width: min(340px, 100%);
+  padding: 14px 16px 16px;
+  border: 1px solid var(--r1-line);
+  border-radius: 20px;
+  background: var(--r1-paper);
+  text-align: left;
+  opacity: 0;
+  transform: translateY(24px) scale(0.96);
+}
+#ny-startsida .r1-portal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--r1-line);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--r1-ink);
+}
+#ny-startsida .r1-portal-rows {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#ny-startsida .r1-portal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--r1-soft);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--r1-ink);
+  opacity: 0;
+}
+#ny-startsida .r1-portal-check {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+#ny-startsida .r1-portal-check circle {
+  fill: var(--r1-accent);
+}
+#ny-startsida .r1-portal-check path {
+  fill: none;
+  stroke: var(--r1-paper);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (max-width: 1023px) {
+  #ny-startsida .r1-cc-desk {
+    display: none;
+  }
+  #ny-startsida .r1-cc {
+    width: 44%;
+    max-width: 200px;
+    padding: 8px 10px 10px;
+    gap: 6px;
+  }
+  #ny-startsida .r1-cc-body > :nth-child(n + 4) {
+    display: none;
+  }
+  #ny-startsida .r1-cc-kassa,
+  #ny-startsida .r1-cc-fakturor {
+    top: auto;
+    bottom: calc(100% + 14px);
+  }
+  #ny-startsida .r1-cc-kassa {
+    left: 0;
+  }
+  #ny-startsida .r1-cc-fakturor {
+    left: auto;
+    right: 0;
+  }
+  /* Under texten: lite luft mot sista raden även medan den glider in (.rd-reveal, 32 px). */
+  #ny-startsida .r1-cc-bokforing {
+    left: 0;
+    top: 22px;
+  }
+  #ny-startsida .r1-cc-mejl {
+    right: 0;
+    top: 26px;
+  }
+  #ny-startsida .r1-portal-zone {
+    margin-top: 16px;
+  }
+  #ny-startsida .r1-portal {
+    width: min(300px, 100%);
+    padding: 10px 12px 12px;
+  }
+  #ny-startsida .r1-portal-title {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+  #ny-startsida .r1-portal-rows {
+    gap: 4px;
+  }
+  #ny-startsida .r1-portal-row {
+    padding: 4px 10px;
+    font-size: 14px;
+  }
+}
+/* Slutläget: när förloppet har spelats (data-done), från ett tidigare besök
+   (html[data-r1-chaos-done], satt före målning) eller vid reducerad rörelse. */
+#ny-startsida .r1-value[data-done] .r1-cc,
+html[data-r1-chaos-done] #ny-startsida .r1-cc {
+  display: none;
+}
+#ny-startsida .r1-value[data-done] .r1-vline-txt,
+html[data-r1-chaos-done] #ny-startsida .r1-vline-txt,
+#ny-startsida .r1-value[data-done] .r1-portal-row,
+html[data-r1-chaos-done] #ny-startsida .r1-portal-row {
+  opacity: 1 !important;
+}
+#ny-startsida .r1-value[data-done] .r1-vline-strike,
+html[data-r1-chaos-done] #ny-startsida .r1-vline-strike {
+  transform: none !important;
+}
+#ny-startsida .r1-value[data-done] .r1-portal,
+html[data-r1-chaos-done] #ny-startsida .r1-portal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  #ny-startsida .r1-cc {
+    display: none;
+  }
+  #ny-startsida .r1-vline-txt,
+  #ny-startsida .r1-portal-row {
+    opacity: 1 !important;
+  }
+  #ny-startsida .r1-vline-strike {
+    transform: none !important;
+  }
+  #ny-startsida .r1-portal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* 3 Stenen – PASS 4: renderas exakt som develops PlatformRock (49f3724). Varje lager och
+   värde nedan är develops eget: scenens radiella vinjett (PlatformRock.tsx:237-238), stenens
+   bredd och radiella mask (ROCK_MEDIA_STYLE, :52-59), svävrörelsen rockFloat (:335-340),
+   skuggvinjetten (:274-276) och ljusglöden (:287-289). Develops gradienter är medvetet
+   behållna här, eftersom uppdraget kräver exakt samma ljussättning; de är stenscenens egna
+   och inte nya färgytor.
+   Det enda tillägget är övergången mot nästa sektion: bakgrunds-, skugg- och glödlagret
+   (.r1-rock-under) maskas ut i scenens nedersta 14 %, under stenen (som slutar vid ca 83 %
+   av scenhöjden inklusive svävningen). Inget lager över stenen tonas eller filtreras. */
+#ny-startsida .r1-rock-stage {
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#ny-startsida .r1-rock-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle farthest-corner at 50% 34%, #ecedeb 0%, #d2d3cf 38%, #adada8 70%, #9a9a92 100%);
+}
+/* PASS 7: mjuk övergång från sektion 2. Scenens lager (bakgrund, skugga, ljusglöd) tonas in
+   uppifrån med en mjuk kurva över --r1-fade, och under dem ligger sektion 2:s färg
+   (.r1-rock-base) i samma zon. Överst syns alltså exakt #f3f3f0, och vid --r1-fade är
+   lagren helt täckande igen. --r1-fade slutar 16 px ovanför stenens översta punkt (stenen
+   börjar ca 11 % ned i videorutan, rutan är 16:9 och centrerad, svävningen lyfter 13 px), så
+   inget lager över eller runt stenen ändras där stenen finns. Nedre övergången är orörd. */
+#ny-startsida .r1-rock-stage {
+  --r1-fade: calc(50% - min(92vw, 1040px) * 0.2194 - 16px);
+}
+#ny-startsida .r1-rock-base {
+  position: absolute;
+  inset: 0;
+  background: var(--r1-soft);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 var(--r1-fade), transparent var(--r1-fade));
+  mask-image: linear-gradient(to bottom, #000 0, #000 var(--r1-fade), transparent var(--r1-fade));
+}
+#ny-startsida .r1-rock-under {
+  --r1-fade-mask: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.02) calc(var(--r1-fade) * 0.1),
+    rgba(0, 0, 0, 0.07) calc(var(--r1-fade) * 0.2),
+    rgba(0, 0, 0, 0.15) calc(var(--r1-fade) * 0.3),
+    rgba(0, 0, 0, 0.26) calc(var(--r1-fade) * 0.4),
+    rgba(0, 0, 0, 0.4) calc(var(--r1-fade) * 0.5),
+    rgba(0, 0, 0, 0.55) calc(var(--r1-fade) * 0.6),
+    rgba(0, 0, 0, 0.7) calc(var(--r1-fade) * 0.7),
+    rgba(0, 0, 0, 0.83) calc(var(--r1-fade) * 0.8),
+    rgba(0, 0, 0, 0.94) calc(var(--r1-fade) * 0.9),
+    #000 var(--r1-fade),
+    #000 86%,
+    transparent 100%
+  );
+  -webkit-mask-image: var(--r1-fade-mask);
+  mask-image: var(--r1-fade-mask);
+}
+#ny-startsida .r1-rock-media {
+  position: relative;
+  width: min(92vw, 1040px);
+}
+#ny-startsida .r1-rock-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side at 50% 50%, #000 82%, transparent 100%);
+}
+#ny-startsida .r1-rock-float {
+  animation: r1-rock-float 7s ease-in-out infinite;
+}
+@keyframes r1-rock-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-13px) rotate(-0.5deg);
+  }
+}
+/* PASS 7: scenens höjd i CSS i stället för inline, så att slutläget gäller från första
+   målningen. Animerad: sticky scen. Statisk (mobil, reducerad rörelse), klar (data-done)
+   eller klar från ett tidigare besök (html[data-r1-rock-done]): en vanlig sektion på 100svh
+   utan sticky-läge.
+   PASS 10: utan chips räcker en kortare sträcka för gräset: 200svh (100svh scroll) i stället
+   för 240svh (140svh scroll). */
+#ny-startsida .r1-rock {
+  position: relative;
+  height: 200svh;
+}
+#ny-startsida .r1-rock-stage {
+  position: sticky;
+}
+#ny-startsida .r1-rock:is([data-static], [data-done]),
+html[data-r1-rock-done] #ny-startsida .r1-rock {
+  height: 100svh;
+}
+#ny-startsida .r1-rock:is([data-static], [data-done]) .r1-rock-stage,
+html[data-r1-rock-done] #ny-startsida .r1-rock-stage {
+  position: relative;
+}
+@media (max-width: 767px), (prefers-reduced-motion: reduce) {
+  #ny-startsida .r1-rock {
+    height: 100svh;
+  }
+  #ny-startsida .r1-rock-stage {
+    position: relative;
+  }
+}
+/* Klar men ännu synlig: svävningen stannar där den står (ingen hoppande återgång). */
+#ny-startsida .r1-rock[data-complete] .r1-rock-float {
+  animation-play-state: paused;
+}
+/* Slutbilden före hydrering vid omladdning med flaggan. React renderar sedan samma slutläge. */
+#ny-startsida .r1-rock-prefinal {
+  display: none;
+}
+html[data-r1-rock-done] #ny-startsida .r1-rock-prefinal {
+  display: block;
+}
+html[data-r1-rock-done] #ny-startsida .r1-rock-live {
+  display: none;
+}
+html[data-r1-rock-done] #ny-startsida .r1-rock-float {
+  animation: none;
+}
+html[data-r1-rock-done] #ny-startsida .r1-rock-shadow {
+  opacity: 0 !important;
+}
+html[data-r1-rock-done] #ny-startsida .r1-rock-glow {
+  opacity: 0.3 !important;
+}
+html[data-r1-rock-done] #ny-startsida .r1-rock-msg {
+  opacity: 1 !important;
+  transform: none !important;
+}
+#ny-startsida .r1-rock-shadow,
+#ny-startsida .r1-rock-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#ny-startsida .r1-rock-shadow {
+  background: radial-gradient(72% 64% at 50% 46%, rgba(6, 10, 12, 0) 32%, rgba(6, 10, 12, 0.34) 64%, rgba(4, 7, 9, 0.74) 100%);
+}
+#ny-startsida .r1-rock-glow {
+  background: radial-gradient(58% 54% at 50% 42%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 72%);
+}
+/* Texten under stenen: redesign 1:s typografi, placerad som i develop (11 % från botten). */
+#ny-startsida .r1-rock-msg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11%;
+}
+/* Hotspots med develops utseende (RockHotspots.tsx:111-190). */
+#ny-startsida .r1-hot-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+#ny-startsida .r1-hot-line {
+  position: absolute;
+  height: 1px;
+  background: rgba(20, 24, 26, 0.32);
+  transform: scaleX(0);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#ny-startsida .r1-hot-marker {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 16px rgba(10, 20, 18, 0.18);
+  cursor: pointer;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.7);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#ny-startsida .r1-hot-marker[data-open] {
+  border-color: var(--r1-accent);
+}
+#ny-startsida .r1-hot-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 600;
+  color: #121212;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+#ny-startsida .r1-hot-right {
+  transform: translateY(-50%) translateX(-6px);
+}
+#ny-startsida .r1-hot-left {
+  flex-direction: row-reverse;
+  transform: translateY(-50%) translateX(6px);
+}
+#ny-startsida .r1-hot-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(18, 18, 18, 0.35);
+  font-size: 14px;
+  line-height: 1;
+  color: rgba(18, 18, 18, 0.6);
+  transition: transform 0.2s ease;
+}
+#ny-startsida .r1-hot-plus[data-open] {
+  transform: rotate(45deg);
+}
+#ny-startsida [data-revealed] .r1-hot-line {
+  transform: scaleX(1);
+}
+#ny-startsida [data-revealed] .r1-hot-marker {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+#ny-startsida [data-revealed] .r1-hot-label {
+  opacity: 1;
+  pointer-events: auto;
+}
+#ny-startsida [data-revealed] .r1-hot-right,
+#ny-startsida [data-revealed] .r1-hot-left {
+  transform: translateY(-50%);
+}
+/* PASS 10: funktionschipsens stilar (.rd-chip, .r1-chip-big) är borttagna. */
+#ny-startsida .rd-rock-title {
+  margin: 0;
+  font-size: clamp(28px, 4.2vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+#ny-startsida .rd-hot-menu {
+  border-radius: 20px;
+  border: 1px solid var(--r1-line);
+  background: var(--r1-paper);
+  color: var(--r1-ink);
+}
+#ny-startsida .rd-hot-menu .rd-overline {
+  margin: 0 10px 8px;
+  font-size: 12px;
+}
+#ny-startsida .rd-hot-menu a {
+  border-radius: 12px;
+  color: var(--r1-ink);
+}
+#ny-startsida .rd-hot-menu a:hover {
+  background: var(--r1-soft);
+}
+
+/* 4 WhatWeDo – luftiga rader, bilden i ett stort mjukt kort */
+#ny-startsida .rd-what {
+  padding: clamp(96px, 12vw, 180px) 0;
+}
+#ny-startsida .rd-what-head {
+  max-width: 820px;
+  margin: 0 auto clamp(56px, 8vw, 120px);
+  padding: 0 var(--r1-gutter);
+  text-align: center;
+}
+#ny-startsida .rd-timeline {
+  max-width: var(--r1-wrap);
+  margin: 0 auto;
+  padding: 0 var(--r1-gutter);
+  display: grid;
+  gap: clamp(72px, 10vw, 160px);
+}
+#ny-startsida .rd-service {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  #ny-startsida .rd-service {
+    grid-template-columns: 1fr 1.3fr;
+    gap: 80px;
+  }
+  #ny-startsida .rd-odd .rd-service-text {
+    order: 2;
+  }
+}
+#ny-startsida .rd-service-num {
+  display: inline-block;
+  margin-bottom: 16px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--r1-soft);
+  font-size: 13px;
+  font-weight: 600;
+}
+#ny-startsida .rd-details {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+#ny-startsida .rd-details li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-service-fig {
+  margin: 0;
+}
+#ny-startsida .rd-service-frame {
+  aspect-ratio: 16 / 10;
+  border-radius: 40px;
+  background: var(--r1-soft);
+}
+#ny-startsida .rd-caption {
+  display: none;
+}
+
+/* 5 Tillväxt – PASS 2: som på dagens startsida (components/sections/DataGrowthSlideshow.tsx):
+   utfallande, minst en skärmhöjd, bilderna fyller hela sektionen (cover, centrerade) och
+   texten ligger centrerad överst ovanpå. Originalets ton nerifrån (from-black/40 via-black/10)
+   görs som ett platt svart lager med mask. */
+#ny-startsida .rd-growth {
+  position: relative;
+  min-height: 100svh;
+  background: #000;
+  color: var(--r1-paper);
+}
+#ny-startsida .rd-growth-media {
+  position: absolute;
+  inset: 0;
+}
+#ny-startsida .rd-growth-img {
+  object-position: 50% 50%;
+}
+#ny-startsida .rd-growth-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1) 50%, transparent);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1) 50%, transparent);
+}
+#ny-startsida .rd-growth-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 896px;
+  margin: 0 auto;
+  padding: clamp(96px, 12vw, 144px) 24px;
+  text-align: center;
+}
+#ny-startsida .rd-growth .rd-body-lg {
+  color: rgba(255, 255, 255, 0.8);
+}
+#ny-startsida .rd-growth-slide {
+  min-height: 9em;
+}
+#ny-startsida .rd-indicators {
+  justify-content: center;
+}
+#ny-startsida .rd-indicator {
+  background: rgba(255, 255, 255, 0.14);
+}
+#ny-startsida .rd-indicator-fill {
+  background: var(--r1-accent);
+}
+
+/* 6 AI-assistent – vit, centrerad, mjuka bubblor */
+#ny-startsida .rd-assistant {
+  padding: clamp(96px, 12vw, 180px) var(--r1-gutter);
+  text-align: center;
+}
+#ny-startsida .rd-assistant-copy {
+  max-width: 760px;
+  margin: 40px auto 0;
+}
+#ny-startsida .rd-bubble-1,
+#ny-startsida .rd-bubbles-typing span {
+  background: var(--r1-accent);
+}
+#ny-startsida .rd-bubble-2 {
+  background: var(--r1-soft);
+}
+#ny-startsida .rd-bubble-3 {
+  background: var(--r1-ink);
+}
+#ny-startsida .rd-muted {
+  color: #77776f;
+}
+#ny-startsida .rd-assistant-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+#ny-startsida .rd-note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--r1-muted);
+}
+
+/* 7 Portfolio – mjuka kort på sten */
+#ny-startsida .rd-portfolio {
+  padding: clamp(96px, 12vw, 180px) var(--r1-gutter);
+  background: var(--r1-soft);
+}
+#ny-startsida .rd-portfolio > * {
+  max-width: var(--r1-wrap);
+  margin-left: auto;
+  margin-right: auto;
+}
+#ny-startsida .rd-portfolio-head {
+  text-align: center;
+  margin-bottom: 64px;
+}
+#ny-startsida .rd-featured {
+  margin-bottom: 72px;
+  border-radius: 40px;
+  overflow: hidden;
+  background: var(--r1-paper);
+}
+@media (min-width: 1024px) {
+  #ny-startsida .rd-featured {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+#ny-startsida .rd-featured-media {
+  min-height: 300px;
+  aspect-ratio: 16 / 9;
+}
+#ny-startsida .rd-featured-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px;
+}
+#ny-startsida .rd-featured-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  border: 1px solid var(--r1-line);
+}
+#ny-startsida .rd-featured .rd-overline {
+  margin: 0;
+}
+#ny-startsida .rd-featured-title {
+  font-size: clamp(26px, 2.6vw, 34px);
+  font-weight: 600;
+}
+#ny-startsida .rd-card-cta {
+  display: inline-flex;
+  gap: 8px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--r1-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+#ny-startsida .rd-concepts-head {
+  margin-bottom: 28px;
+}
+#ny-startsida .rd-concept-link {
+  gap: 4px;
+  padding: 12px 12px 20px;
+  border-radius: 32px;
+  background: var(--r1-paper);
+}
+#ny-startsida .rd-concept-media {
+  aspect-ratio: 4 / 3;
+  margin-bottom: 12px;
+  border-radius: 24px;
+}
+#ny-startsida .rd-concept-kind {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-concept-title {
+  font-size: 19px;
+  font-weight: 600;
+}
+#ny-startsida .rd-concept-metric {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-portfolio .rd-center {
+  margin-top: 56px;
+}
+
+/* 8 Showcase – videon i stort rundat kort */
+#ny-startsida .rd-showcase {
+  padding: clamp(96px, 12vw, 180px) var(--r1-gutter);
+}
+#ny-startsida .rd-showcase-head {
+  max-width: 820px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+#ny-startsida .rd-showcase-grid {
+  max-width: var(--r1-wrap);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+#ny-startsida .rd-showcase-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 40px;
+  overflow: hidden;
+  background: var(--r1-ink);
+}
+#ny-startsida .rd-showcase-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+#ny-startsida .rd-showcase-badge {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--r1-paper);
+  font-size: 14px;
+  font-weight: 600;
+}
+#ny-startsida .rd-showcase-info {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  border-radius: 32px;
+  background: var(--r1-soft);
+  text-align: center;
+}
+#ny-startsida .rd-showcase-info-title {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+/* 9 FAQ */
+#ny-startsida .rd-faq {
+  padding: clamp(96px, 12vw, 160px) var(--r1-gutter);
+}
+#ny-startsida .rd-faq-head {
+  text-align: center;
+  margin-bottom: 48px;
+}
+#ny-startsida .rd-faq-list {
+  max-width: 860px;
+  margin: 0 auto;
+  display: grid;
+  gap: 10px;
+}
+#ny-startsida .rd-faq-item {
+  border-radius: 24px;
+  background: var(--r1-soft);
+}
+#ny-startsida .rd-faq-item summary {
+  padding: 22px 28px;
+  font-size: 18px;
+  font-weight: 600;
+}
+#ny-startsida .rd-faq-icon {
+  color: var(--r1-accent);
+  font-size: 22px;
+}
+#ny-startsida .rd-faq-answer {
+  margin: 0;
+  padding: 0 28px 24px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--r1-muted);
+}
+
+/* 10 Pris – ett stort mjukt kort */
+#ny-startsida .rd-pricing {
+  padding: clamp(96px, 12vw, 180px) var(--r1-gutter);
+  background: var(--r1-soft);
+}
+#ny-startsida .rd-pricing-head {
+  text-align: center;
+  margin-bottom: 48px;
+}
+#ny-startsida .rd-price-card {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 64px);
+  border-radius: 40px;
+  background: var(--r1-paper);
+  text-align: center;
+}
+#ny-startsida .rd-price-badge {
+  display: inline-block;
+  margin-bottom: 24px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--r1-ink);
+  color: var(--r1-paper);
+  font-weight: 600;
+  font-size: 14px;
+}
+#ny-startsida .rd-price-from,
+#ny-startsida .rd-price-period {
+  margin: 0;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-price-amount {
+  margin: 4px 0;
+  font-size: clamp(64px, 9vw, 112px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+#ny-startsida .rd-price-amount span {
+  font-size: 0.45em;
+  color: var(--r1-muted);
+}
+#ny-startsida .rd-price-checks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 28px;
+  margin: 36px 0 24px;
+  padding: 0;
+  list-style: none;
+  font-weight: 500;
+}
+#ny-startsida .rd-price-checks li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#ny-startsida .rd-check {
+  color: var(--r1-accent);
+}
+#ny-startsida .rd-price-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 0 0 36px;
+  padding: 0;
+  list-style: none;
+}
+#ny-startsida .rd-price-features li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--r1-soft);
+  text-align: left;
+  font-weight: 500;
+}
+#ny-startsida .rd-footnote {
+  margin: 28px 0 0;
+  text-align: center;
+  color: var(--r1-muted);
+}
+
+/* 11 Final */
+#ny-startsida .rd-final {
+  padding: clamp(120px, 16vw, 220px) var(--r1-gutter);
+  background: var(--r1-ink);
+  color: var(--r1-paper);
+  text-align: center;
+}
+#ny-startsida .rd-final-h {
+  margin: 0 0 24px;
+  font-size: clamp(44px, 6.4vw, 88px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+#ny-startsida .rd-final-body {
+  max-width: 40ch;
+  margin: 0 auto 36px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+#ny-startsida .rd-stats {
+  display: grid;
+  gap: 16px;
+  max-width: 900px;
+  margin: 72px auto 0;
+}
+@media (min-width: 768px) {
+  #ny-startsida .rd-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+#ny-startsida .rd-stats > div {
+  padding: 28px;
+  border-radius: 28px;
+  background: #1c1d1c;
+}
+#ny-startsida .rd-stat-value {
+  margin: 0 0 4px;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--r1-accent);
+}
+#ny-startsida .rd-stat-label {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Tidslinjen: en tunn grön linje i vänsterkanten som växer med scrollen (från 768 px). */
+@media (min-width: 768px) {
+  #ny-startsida .rd-timeline-line {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--r1-gutter) / 2);
+    width: 2px;
+    background: var(--r1-accent);
+    transform-origin: top;
+  }
+}
+
+/* PASS 8: den slingrande linjen (redesign/r1/WhatLineR1.tsx) ersätter den raka. SVG:n
+   täcker hela sektionen. Linjen har samma tjocklek (2px) och färg som den raka, med runda
+   ändar. Bara stroke-dashoffset ändras för framritningen (undantag för just linjen). */
+#ny-startsida .rd-what {
+  position: relative;
+}
+#ny-startsida .r1-line-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+#ny-startsida .r1-line-path {
+  fill: none;
+  stroke: var(--r1-accent);
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+/* Knappen där linjen slutar: samma storlek som övriga primära knappar (rd-pill), grön
+   fyllning och vit text. Poppar upp från 0.8 till 1 på 300 ms med lätt överslängning. */
+#ny-startsida .r1-line-cta {
+  position: absolute;
+  z-index: 2;
+  background: var(--r1-accent);
+  color: #ffffff;
+  font-family: var(--font-general-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.8);
+  transform-origin: left center;
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0.3s,
+    background-color 0.2s ease;
+}
+#ny-startsida .r1-line-cta[data-shown] {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s,
+    background-color 0.2s ease;
+}
+#ny-startsida .r1-line-cta[data-instant] {
+  transition: none;
+}
+#ny-startsida .r1-line-cta:hover {
+  background: var(--r1-ink);
+  color: #ffffff;
+}
+#ny-startsida .r1-line-cta:focus-visible {
+  outline: 2px solid var(--r1-ink);
+  outline-offset: 3px;
+}
+/* Staplade kolumner: plats för den raka linjen till vänster om innehållet (24 px fritt). */
+@media (max-width: 1023px) {
+  #ny-startsida .rd-timeline {
+    padding-left: calc(var(--r1-gutter) + 36px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #ny-startsida .r1-line-cta {
+    transition: none;
+  }
+}
+
+/* PASS 3: kategorisektionen – ingress, grön rad och byggda UI-vyer (redesign/r1/ConfigViews.tsx).
+   Vyn ligger på en stor mjuk yta (redesign 1:s språk) i ett vitt platt fönster. Bara
+   opacitet och transform har övergångar; färgbyten sker utan animation. */
+#ny-startsida .r1-what-lead {
+  max-width: 46ch;
+  margin: 16px auto 0;
+}
+#ny-startsida .r1-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #e5f6ec;
+  color: #0b6b35;
+  font-size: 14px;
+  font-weight: 600;
+}
+#ny-startsida .r1-view-wrap {
+  margin: 0;
+  padding: clamp(14px, 3vw, 40px);
+  border-radius: 40px;
+  background: var(--r1-soft);
+}
+@media (max-width: 767px) {
+  #ny-startsida .r1-view-wrap {
+    border-radius: 28px;
+  }
+}
+#ny-startsida .r1v-frame {
+  border-radius: 24px;
+  border: 1px solid var(--r1-line);
+  background: var(--r1-paper);
+  overflow: hidden;
+  font-size: 14px;
+}
+#ny-startsida .r1v-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--r1-line);
+  font-weight: 600;
+}
+#ny-startsida .r1v-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--r1-accent);
+}
+#ny-startsida .r1v-body {
+  padding: 16px;
+}
+#ny-startsida .r1v-label {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--r1-muted);
+}
+#ny-startsida .r1v-label:first-child {
+  margin-top: 0;
+}
+#ny-startsida .r1v-pill {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--r1-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+#ny-startsida .r1v-pill-accent {
+  background: var(--r1-accent);
+  color: var(--r1-ink);
+}
+#ny-startsida .r1v-pill-ok {
+  background: #e5f6ec;
+  color: #0b6b35;
+}
+#ny-startsida .r1v-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#ny-startsida .r1v-list li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--r1-line);
+}
+#ny-startsida .r1v-list li:first-child {
+  border-top: 0;
+}
+#ny-startsida .r1v-name {
+  flex: 1;
+  min-width: 0;
+}
+#ny-startsida .r1v-grip {
+  flex: none;
+  width: 12px;
+  height: 8px;
+  border-top: 2px solid var(--r1-line);
+  border-bottom: 2px solid var(--r1-line);
+}
+/* Reglage: knappen glider med transform. */
+#ny-startsida .r1v-toggle {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--r1-line);
+}
+#ny-startsida .r1v-toggle[data-on] {
+  background: var(--r1-accent);
+}
+#ny-startsida .r1v-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--r1-paper);
+  transition: transform 0.3s ease;
+}
+#ny-startsida .r1v-toggle[data-on] .r1v-knob {
+  transform: translateX(16px);
+}
+
+/* Vy 01: butikens utseende */
+#ny-startsida .r1v-store {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 560px) {
+  #ny-startsida .r1v-store {
+    grid-template-columns: 200px 1fr;
+  }
+  #ny-startsida .r1v-nav {
+    grid-column: 1 / -1;
+  }
+}
+#ny-startsida .r1v-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 13px;
+}
+#ny-startsida .r1v-nav > span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--r1-soft);
+}
+#ny-startsida .r1v-swap {
+  display: inline-grid;
+}
+#ny-startsida .r1v-swap > span {
+  grid-area: 1 / 1;
+  justify-self: start;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#ny-startsida .r1v-swap > span[data-show] {
+  opacity: 1;
+}
+#ny-startsida .r1v-accent-word {
+  box-shadow: inset 0 -2px 0 var(--r1-accent);
+}
+#ny-startsida .r1v-seg {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--r1-soft);
+  font-size: 12px;
+}
+#ny-startsida .r1v-seg > span {
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+#ny-startsida .r1v-seg > span[data-active] {
+  background: var(--r1-ink);
+  color: var(--r1-paper);
+}
+#ny-startsida .r1v-field {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--r1-line);
+  font-size: 13px;
+}
+#ny-startsida .r1v-products {
+  position: relative;
+  height: 176px;
+  overflow: hidden;
+}
+#ny-startsida .r1v-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#ny-startsida .r1v-grid[data-show] {
+  opacity: 1;
+}
+#ny-startsida .r1v-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+#ny-startsida .r1v-img {
+  flex: 1;
+  min-height: 24px;
+  border-radius: 10px;
+  background: var(--r1-soft);
+}
+#ny-startsida .r1v-line {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--r1-line);
+}
+#ny-startsida .r1v-line-short {
+  width: 55%;
+}
+#ny-startsida .r1v-grid-0 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 10px;
+}
+#ny-startsida .r1v-grid-1 {
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 6px;
+}
+#ny-startsida .r1v-grid-1 .r1v-card {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-content: center;
+}
+#ny-startsida .r1v-grid-1 .r1v-img {
+  grid-row: 1 / span 2;
+  height: 34px;
+  min-height: 0;
+}
+#ny-startsida .r1v-grid-2 {
+  display: flex;
+  gap: 10px;
+}
+#ny-startsida .r1v-grid-2 .r1v-card {
+  flex: none;
+  width: 44%;
+}
+
+/* Vy 03: konton */
+#ny-startsida .r1v-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+#ny-startsida .r1v-accounts li::before {
+  content: '';
+  position: absolute;
+  inset: 2px -8px;
+  border-radius: 10px;
+  background: var(--r1-soft);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#ny-startsida .r1v-accounts li[data-active]::before {
+  opacity: 1;
+}
+#ny-startsida .r1v-accounts li > span {
+  position: relative;
+}
+#ny-startsida .r1v-arrow {
+  color: var(--r1-muted);
+}
+#ny-startsida .r1v-account {
+  padding: 2px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--r1-line);
+  background: var(--r1-paper);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vy 04: team och behörigheter */
+#ny-startsida .r1v-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#ny-startsida .r1v-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--r1-line);
+  font-weight: 600;
+}
+#ny-startsida .r1v-person-active {
+  border-color: var(--r1-ink);
+}
+#ny-startsida .r1v-avatar {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--r1-soft);
+  font-size: 12px;
+}
+
+/* PASS 5: kategorisektionen visar åter develops originalbilder (1920 × 1080, 16:9) i
+   redesign 1:s mjuka kort. 16:9 i stället för 16:10 så att bildens inbakade text inte beskärs.
+   Widgeten ligger under bilden med lite luft, aldrig över den. */
+#ny-startsida .r1-fig {
+  margin: 0;
+}
+#ny-startsida .r1-photo {
+  aspect-ratio: 16 / 9;
+}
+#ny-startsida .r1-photo-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#ny-startsida .r1-under-photo {
+  margin-top: 16px;
+  padding: clamp(12px, 2vw, 24px);
+  border-radius: 32px;
+}
+@media (max-width: 767px) {
+  #ny-startsida .r1-photo {
+    border-radius: 24px;
+  }
+  #ny-startsida .r1-under-photo {
+    border-radius: 24px;
+  }
+}
+
+/* PASS 6: bubblorna som kod ovanpå fotona (redesign/r1/PhotoBubbles.tsx). Bildramen är
+   container, så alla storlekar i komponenten (cqw) är andelar av bildens bredd, precis som
+   bubblorna i originalbilderna. Färgerna är uppmätta ur originalen och sätts inline. */
+#ny-startsida .r1-photo {
+  container-type: inline-size;
+}
+#ny-startsida .r1-bubs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#ny-startsida .r1-bub {
+  position: absolute;
+  margin: 0;
+  font-family: var(--font-general-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+#ny-startsida .r1-bub-line {
+  display: block;
+}
+#ny-startsida .r1-bub-truck {
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+#ny-startsida .r1-bub-icon {
+  display: block;
+  flex: none;
+}
+#ny-startsida .r1-bub-truck-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Bildramen har overflow: hidden och räknas därför som scrollcontainer, så bubblorna
+     följer ramens egen namngivna view-timeline mot sidan i stället för view(). */
+  @supports (animation-timeline: view()) {
+    #ny-startsida .r1-photo {
+      view-timeline-name: --r1-photo;
+    }
+    #ny-startsida .r1-bub {
+      animation: r1-bub-in linear both;
+      animation-timeline: --r1-photo;
+      animation-range: entry 30% entry 90%;
+    }
+  }
+}
+@keyframes r1-bub-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* PASS 4: videon med "Source AI i praktiken." – 82 % av tidigare bredd (18 % smalare),
+   centrerad. Radie, märke och allt annat är oförändrat. */
+#ny-startsida .rd-showcase-video {
+  width: 82%;
+  margin: 0 auto;
+}
+
+/* PASS 4: widgetarna i kategorisektionen (redesign/r1/CategoryWidgets.tsx). Fönster, rubrik
+   och etiketter återanvänder .r1v-*. Bara opacitet och transform har övergångar. */
+#ny-startsida .r1w-check {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+#ny-startsida .r1w-path-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+#ny-startsida .r1w-path-title {
+  font-weight: 600;
+}
+#ny-startsida .r1w-path-note {
+  font-size: 13px;
+  color: var(--r1-muted);
+}
+
+/* a) Tre vägar */
+#ny-startsida .r1w-paths {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+#ny-startsida .r1w-paths li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--r1-line);
+}
+#ny-startsida .r1w-paths li::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  border: 2px solid var(--r1-accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#ny-startsida .r1w-paths li[data-active]::before {
+  opacity: 1;
+}
+#ny-startsida .r1w-radio {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid var(--r1-line);
+}
+#ny-startsida .r1w-radio > span {
+  position: absolute;
+  inset: 3px;
+  border-radius: 999px;
+  background: var(--r1-accent);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#ny-startsida .r1w-paths li[data-active] .r1w-radio > span {
+  opacity: 1;
+  transform: none;
+}
+/* Kommer snart: dämpad, streckad, inte klickbar och inte vald. */
+#ny-startsida .r1w-soon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px dashed #c9c9c3;
+  background: var(--r1-soft);
+  color: var(--r1-muted);
+  cursor: default;
+  user-select: none;
+}
+#ny-startsida .r1w-soon .r1w-path-title {
+  color: var(--r1-muted);
+}
+#ny-startsida .r1w-soon-pill {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #c9c9c3;
+  background: var(--r1-paper);
+  color: var(--r1-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* b) och d) chatt */
+#ny-startsida .r1w-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#ny-startsida .r1w-msg {
+  max-width: 88%;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 18px;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+#ny-startsida .r1w-msg[data-show] {
+  opacity: 1;
+  transform: none;
+}
+#ny-startsida .r1w-msg-me {
+  align-self: flex-end;
+  background: var(--r1-ink);
+  color: var(--r1-paper);
+}
+#ny-startsida .r1w-msg-ai {
+  align-self: flex-start;
+  background: var(--r1-soft);
+}
+#ny-startsida .r1w-who {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+#ny-startsida .r1w-msg-ai .r1w-who {
+  color: #0b6b35;
+  opacity: 1;
+}
+#ny-startsida .r1w-options,
+#ny-startsida .r1w-hub {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+#ny-startsida .r1w-options[data-show],
+#ny-startsida .r1w-hub[data-show] {
+  opacity: 1;
+  transform: none;
+}
+#ny-startsida .r1w-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#ny-startsida .r1w-opt {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--r1-line);
+  font-size: 13px;
+}
+#ny-startsida .r1w-opt-on {
+  border-color: var(--r1-accent);
+  background: #e5f6ec;
+  color: #0b6b35;
+  font-weight: 600;
+}
+#ny-startsida .r1w-plan-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--r1-paper);
+  font-weight: 600;
+}
+#ny-startsida .r1w-hub {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--r1-line);
+}
+#ny-startsida .r1w-hub-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#ny-startsida .r1w-foot,
+#ny-startsida .r1w-example {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--r1-muted);
+}
+#ny-startsida .r1w-example {
+  margin: 0 0 10px;
+}
+
+/* c) Steg */
+#ny-startsida .r1w-steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#ny-startsida .r1w-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  opacity: 0.25;
+  transform: translateX(6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+#ny-startsida .r1w-steps li[data-show] {
+  opacity: 1;
+  transform: none;
+}
+#ny-startsida .r1w-step-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #e5f6ec;
+  color: var(--r1-accent);
+}
+#ny-startsida .r1w-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--r1-accent);
+  color: var(--r1-ink);
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+#ny-startsida .r1w-confirm[data-show] {
+  opacity: 1;
+  transform: none;
+}
