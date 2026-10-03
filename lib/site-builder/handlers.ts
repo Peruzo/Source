@@ -18,6 +18,9 @@ import type { GenerationLock, RateLimiter } from './guards';
  * den svenska kundtexten (lib/site-builder/errors.ts). Kundportalens interna texter skickas
  * aldrig vidare.
  *
+ * SUPPORT (POST support-request) skickar även offertbegäran: category quote_request med fältet
+ * quote (vad sajten ska innehålla, förebilder som https-länkar och tidplan).
+ *
  * GENERERING (POST generate) svarar med Server-Sent Events:
  *   started   stegen som visas
  *   progress  nästa steg i förloppet (tidsbaserat; kundportalen svarar först när sajten är klar,
@@ -185,7 +188,13 @@ export function createHandlers(deps: HandlerDeps) {
       simple(request, (g) => ({
         method: 'POST',
         path: `${API}/support-request`,
-        payload: { ...ids(g), category: g.body.category, ...(typeof g.body.message === 'string' ? { message: g.body.message } : {}) },
+        payload: {
+          ...ids(g),
+          category: g.body.category,
+          ...(typeof g.body.message === 'string' ? { message: g.body.message } : {}),
+          // Offertbegäran (quote_request): innehåll, förebilder och tidplan. Kundportalen validerar.
+          ...(g.body.quote && typeof g.body.quote === 'object' ? { quote: g.body.quote } : {}),
+        },
       }), {}, (body) => ({ supportRequest: body.supportRequest })),
 
     /** GET: exempelsajterna för designvalet, med hela adressen till kundportalen. */
